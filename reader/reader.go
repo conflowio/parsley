@@ -9,36 +9,45 @@ import (
 
 // Reader defines a byte reader
 type Reader struct {
-	b           []byte
-	i           int64
-	line, col   int
-	regexpCache map[string]*regexp.Regexp
+	b                 []byte
+	i                 int
+	line, col         int
+	regexpCache       map[string]*regexp.Regexp
+	ignoreWhitespaces bool
 }
 
 // New creates a new reader instance
 func New(b []byte) *Reader {
 	return &Reader{
-		b:           b,
-		line:        1,
-		col:         1,
-		regexpCache: make(map[string]*regexp.Regexp),
+		b:                 b,
+		i:                 0,
+		line:              1,
+		col:               1,
+		regexpCache:       make(map[string]*regexp.Regexp),
+		ignoreWhitespaces: true,
 	}
 }
 
 // Clone creates a new reader with the same position
 func (r *Reader) Clone() *Reader {
 	return &Reader{
-		b:           r.b,
-		i:           r.i,
-		line:        r.line,
-		col:         r.col,
-		regexpCache: r.regexpCache,
+		b:                 r.b,
+		i:                 r.i,
+		line:              r.line,
+		col:               r.col,
+		regexpCache:       r.regexpCache,
+		ignoreWhitespaces: true,
 	}
+}
+
+// SetIgnoreWhitespaces sets whether reads should ignore any whitespaces on the left
+func (r *Reader) SetIgnoreWhitespaces(ignoreWhitespaces bool) {
+	r.ignoreWhitespaces = ignoreWhitespaces
 }
 
 // ReadRune reads the next character
 func (r *Reader) ReadRune() (ch rune, size int, err error) {
-	if r.i >= int64(len(r.b)) {
+	if r.i >= len(r.b) {
 		return 0, 0, io.EOF
 	}
 	if c := r.b[r.i]; c < utf8.RuneSelf {
@@ -50,7 +59,7 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 			return 0, 0, fmt.Errorf("Invalid UTF-8 byte sequence encountered at %d:%d", r.line, r.col)
 		}
 	}
-	r.i += int64(size)
+	r.i += size
 	if ch != '\n' {
 		r.col++
 	} else {
@@ -60,23 +69,40 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 	return
 }
 
+func (r *Reader) getWhitespaceIndex() int {
+	loc := r.getPattern("^\\s*").FindIndex(r.b[r.i:])
+	if loc == nil {
+		return 0
+	}
+	return loc[1]
+}
+
 // ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string) (str string, size int, ok bool) {
+func (r *Reader) ReadMatch(expr string) (matches []string) {
 	if expr[0] != '^' {
 		panic("Regexp match should start with ^")
 	}
-	loc := r.getPattern(expr).FindIndex(r.b[r.i:])
+
+	whitespaceIndex := 0
+	if r.ignoreWhitespaces {
+		whitespaceIndex = r.getWhitespaceIndex()
+	}
+
+	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.i+whitespaceIndex:])
 	if loc == nil {
-		return "", 0, false
+		return nil
 	}
-	if loc[0] != 0 {
-		// This should never happen
-		panic("Regexp expression should match the beginning of the text")
+	r.i += whitespaceIndex
+	matches = make([]string, len(loc)/2)
+	matches[0] = string(r.b[r.i : r.i+loc[1]])
+	if len(loc) > 2 {
+		for i := 1; i < len(loc)/2; i++ {
+			matches[i] = string(r.b[r.i+loc[i*2] : r.i+loc[i*2+1]])
+		}
 	}
-	str = string(r.b[r.i : r.i+int64(loc[1])])
-	size = loc[1] - loc[0]
-	r.i += int64(size)
-	for _, ch := range str {
+
+	r.i += loc[1]
+	for _, ch := range matches[0] {
 		if ch != '\n' {
 			r.col += len(string(ch))
 		} else {
@@ -84,7 +110,8 @@ func (r *Reader) ReadMatch(expr string) (str string, size int, ok bool) {
 			r.col = 1
 		}
 	}
-	return str, size, true
+
+	return matches
 }
 
 // Position returns the current line and column position
@@ -99,4 +126,13 @@ func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
 		r.regexpCache[expr] = rc
 	}
 	return
+}
+
+// IsEOF returns true if we reached the end of the buffer
+func (r *Reader) IsEOF() bool {
+	whitespaceIndex := 0
+	if r.ignoreWhitespaces {
+		whitespaceIndex = r.getWhitespaceIndex()
+	}
+	return r.i+whitespaceIndex >= len(r.b)
 }
