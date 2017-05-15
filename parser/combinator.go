@@ -7,9 +7,14 @@ import (
 
 // And combines multiple parsers
 func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
-	return Func(func(h *History, r *reader.Reader) Results {
+	return Func(func(h *History, r *reader.Reader) (results Results) {
 		if parsers == nil {
 			return nil
+		}
+
+		results, found := h.GetResults(name, r.Position())
+		if found {
+			return
 		}
 
 		if pos, ok := h.GetLastPosition(name); ok && pos == r.Position() {
@@ -18,9 +23,9 @@ func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
 		h.Push(name, r.Position())
 		defer h.Pop(name)
 
-		results := NewResults()
 		nodes := make([]ast.Node, len(parsers))
 		andRec(h, nodeBuilder, &results, 0, nodes, r, parsers...)
+		h.RegisterResults(name, r.Position(), results)
 		return results
 	})
 }
@@ -47,12 +52,16 @@ func andRec(h *History, nodeBuilder ast.NodeBuilder, results *Results, depth int
 
 // Or chooses the first matching parser
 func Or(name string, parsers ...Parser) Func {
-	return Func(func(h *History, r *reader.Reader) Results {
+	return Func(func(h *History, r *reader.Reader) (results Results) {
 		if parsers == nil {
-			return nil
+			return
 		}
 
-		var results []Result
+		results, found := h.GetResults(name, r.Position())
+		if found {
+			return
+		}
+
 		for _, parser := range parsers {
 			for _, result := range parser.Parse(h, r.Clone()) {
 				results = append(results, result)
@@ -62,6 +71,7 @@ func Or(name string, parsers ...Parser) Func {
 				}
 			}
 		}
+		h.RegisterResults(name, r.Position(), results)
 		return results
 	})
 }

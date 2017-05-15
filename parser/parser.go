@@ -56,12 +56,17 @@ func (r *Results) Add(node ast.Node, reader *reader.Reader) {
 // History contains for each parser's last call position
 type History struct {
 	calls     map[string][]int
+	results   map[string]map[int]Results
 	callCount int
 }
 
 // NewHistory creates a new history instance
 func NewHistory() *History {
-	return &History{make(map[string][]int), 0}
+	return &History{
+		calls:     make(map[string][]int),
+		callCount: 0,
+		results:   make(map[string]map[int]Results),
+	}
 }
 
 // Push registers a parser call
@@ -89,4 +94,18 @@ func (h *History) GetLastPosition(parser string) (int, bool) {
 // GetCallCount returns with the call count
 func (h *History) GetCallCount() int {
 	return h.callCount
+}
+
+// RegisterResults registers a parser result for a certain position
+func (h *History) RegisterResults(parser string, pos int, results Results) {
+	if _, ok := h.results[parser]; !ok {
+		h.results[parser] = make(map[int]Results)
+	}
+	h.results[parser][pos] = results
+}
+
+// GetResults return with a previously saved result
+func (h *History) GetResults(parser string, pos int) (results Results, ok bool) {
+	results, ok = h.results[parser][pos]
+	return
 }

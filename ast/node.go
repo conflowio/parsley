@@ -83,5 +83,5 @@ func (n *NonTerminalNode) Value() (interface{}, error) {
 }
 
 func (n *NonTerminalNode) String() string {
-	return fmt.Sprintf("N{%s, %d}", n.token.String(), len(n.children))
+	return fmt.Sprintf("N{%s, %s}", n.token.String(), n.children)
 }

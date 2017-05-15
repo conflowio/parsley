@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	input := []byte("1 + 2 - 3 + 4 - 5 + 6 - 7 + 8 - 9 + 10 - 11 + 12 - 13")
+	input := []byte("1 + 2 - 3 + 4 - 5")
 	r := reader.New(input)
 	var expr parser.Func
 
@@ -50,4 +50,5 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Result was: %v, calls: %d, number of AST trees: %d\n", result, h.GetCallCount(), len(results))
+	fmt.Printf("AST: %s\n", results[0].Node())
 }
