@@ -10,21 +10,18 @@ import (
 )
 
 func main() {
-	input := []byte("(1 + (2 - 3))")
+	input := []byte("1 + 2 - 3 + 4 - 5 + 6 - 7 + 8 - 9 + 10 - 11 + 12 - 13")
 	r := reader.New(input)
 	var expr parser.Func
 
 	value := parser.Or(
+		"VALUE",
 		parser.IntLiteral(),
-		parser.And(
-			ast.SingleNodeBuilder(1),
-			parser.Rune('(', token.LPAREN),
-			&expr,
-			parser.Rune(')', token.RPAREN),
-		),
+		&expr,
 	)
 
 	add := parser.And(
+		"ADD",
 		ast.BinaryOperatorBuilder(token.ADD, func(children []interface{}) (interface{}, error) {
 			return children[0].(int) + children[1].(int), nil
 		}),
@@ -33,6 +30,7 @@ func main() {
 		value,
 	)
 	subtract := parser.And(
+		"SUB",
 		ast.BinaryOperatorBuilder(token.SUB, func(children []interface{}) (interface{}, error) {
 			return children[0].(int) - children[1].(int), nil
 		}),
@@ -40,9 +38,10 @@ func main() {
 		parser.Rune('-', token.SUB),
 		value,
 	)
-	expr = parser.Or(add, subtract)
-	all := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
-	results := all.Parse(r)
+	expr = parser.Or("EXPR", add, subtract)
+	all := parser.And("ALL", ast.SingleNodeBuilder(0), value, parser.End())
+	h := parser.NewHistory()
+	results := all.Parse(h, r)
 	if results == nil {
 		panic(fmt.Sprintf("Couldn't parse the expression: %s", input))
 	}
@@ -50,5 +49,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Result was: %v\n", result)
+	fmt.Printf("Result was: %v, calls: %d, number of AST trees: %d\n", result, h.GetCallCount(), len(results))
 }
