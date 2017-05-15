@@ -42,11 +42,11 @@ func main() {
 	)
 	expr = parser.Or(add, subtract)
 	all := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
-	rootNode, _ := all.Parse(r)
-	if rootNode == nil {
+	results := all.Parse(r)
+	if results == nil {
 		panic(fmt.Sprintf("Couldn't parse the expression: %s", input))
 	}
-	result, err := rootNode.Value()
+	result, err := results[0].Node().Value()
 	if err != nil {
 		panic(err)
 	}

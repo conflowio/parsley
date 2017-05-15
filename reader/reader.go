@@ -70,6 +70,7 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 }
 
 func (r *Reader) getWhitespaceIndex() int {
+	// TODO: column and line is not handled
 	loc := r.getPattern("^\\s*").FindIndex(r.b[r.i:])
 	if loc == nil {
 		return 0
@@ -78,7 +79,7 @@ func (r *Reader) getWhitespaceIndex() int {
 }
 
 // ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string) (matches []string) {
+func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
 	if expr[0] != '^' {
 		panic("Regexp match should start with ^")
 	}
@@ -90,9 +91,10 @@ func (r *Reader) ReadMatch(expr string) (matches []string) {
 
 	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.i+whitespaceIndex:])
 	if loc == nil {
-		return nil
+		return nil, -1
 	}
 	r.i += whitespaceIndex
+	pos = r.i
 	matches = make([]string, len(loc)/2)
 	matches[0] = string(r.b[r.i : r.i+loc[1]])
 	if len(loc) > 2 {
@@ -111,11 +113,16 @@ func (r *Reader) ReadMatch(expr string) (matches []string) {
 		}
 	}
 
-	return matches
+	return
 }
 
-// Position returns the current line and column position
-func (r *Reader) Position() (int, int) {
+// Position returns the current byte index
+func (r *Reader) Position() int {
+	return r.i
+}
+
+// TestPosition returns the current line and column position
+func (r *Reader) TestPosition() (int, int) {
 	return r.line, r.col
 }
 
@@ -128,11 +135,10 @@ func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
 	return
 }
 
-// IsEOF returns true if we reached the end of the buffer
-func (r *Reader) IsEOF() bool {
-	whitespaceIndex := 0
+// ReadEOF returns true if we reached the end of the buffer
+func (r *Reader) ReadEOF() bool {
 	if r.ignoreWhitespaces {
-		whitespaceIndex = r.getWhitespaceIndex()
+		r.i += r.getWhitespaceIndex()
 	}
-	return r.i+whitespaceIndex >= len(r.b)
+	return r.i >= len(r.b)
 }

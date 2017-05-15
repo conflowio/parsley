@@ -12,44 +12,44 @@ import (
 
 // End matches the end of the input
 func End() Func {
-	return Func(func(r *reader.Reader) (ast.Node, *reader.Reader) {
-		if r.IsEOF() {
-			return ast.NewTerminalNode(token.EOF, ""), r
+	return Func(func(r *reader.Reader) Results {
+		if r.ReadEOF() {
+			return NewResults(Result{ast.NewTerminalNode(token.EOF, r.Position(), nil), r})
 		}
-		return nil, nil
+		return nil
 	})
 }
 
 // Rune matches one specific character
 func Rune(char rune, token token.Token) Func {
-	return Func(func(r *reader.Reader) (ast.Node, *reader.Reader) {
-		if matches := r.ReadMatch("^\\s?" + regexp.QuoteMeta(string(char)) + "\\s?"); matches != nil {
-			return ast.NewTerminalNode(token, string(char)), r
+	return Func(func(r *reader.Reader) Results {
+		if matches, pos := r.ReadMatch("^\\s?" + regexp.QuoteMeta(string(char)) + "\\s?"); matches != nil {
+			return NewResults(Result{ast.NewTerminalNode(token, pos, string(char)), r})
 		}
-		return nil, nil
+		return nil
 	})
 }
 
 // CharLiteral matches a character literal enclosed in single quotes
 func CharLiteral() Func {
-	return Func(func(r *reader.Reader) (ast.Node, *reader.Reader) {
-		if matches := r.ReadMatch("^'(.)'"); matches != nil {
-			return ast.NewTerminalNode(token.CHAR, matches[1]), r
+	return Func(func(r *reader.Reader) Results {
+		if matches, pos := r.ReadMatch("^'(.)'"); matches != nil {
+			return NewResults(Result{ast.NewTerminalNode(token.CHAR, pos, matches[1]), r})
 		}
-		return nil, nil
+		return nil
 	})
 }
 
 // IntLiteral matches an integer literal
 func IntLiteral() Func {
-	return Func(func(r *reader.Reader) (ast.Node, *reader.Reader) {
-		if matches := r.ReadMatch("^[\\-+]?[1-9][0-9]*"); matches != nil {
+	return Func(func(r *reader.Reader) Results {
+		if matches, pos := r.ReadMatch("^[\\-+]?[1-9][0-9]*"); matches != nil {
 			intValue, err := strconv.Atoi(matches[0])
 			if err != nil {
 				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
 			}
-			return ast.NewTerminalNode(token.INT, intValue), r
+			return NewResults(Result{ast.NewTerminalNode(token.INT, pos, intValue), r})
 		}
-		return nil, nil
+		return nil
 	})
 }

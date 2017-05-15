@@ -1,6 +1,9 @@
 package ast
 
-import "go/token"
+import (
+	"fmt"
+	"go/token"
+)
 
 // Interpreter is a function to evaluate an
 type Interpreter func(children []interface{}) (interface{}, error)
@@ -14,13 +17,15 @@ type Node interface {
 // TerminalNode is a leaf node in the AST
 type TerminalNode struct {
 	token token.Token
+	pos   int
 	value interface{}
 }
 
 // NewTerminalNode creates a new TerminalNode instance
-func NewTerminalNode(token token.Token, value interface{}) *TerminalNode {
+func NewTerminalNode(token token.Token, pos int, value interface{}) *TerminalNode {
 	return &TerminalNode{
 		token: token,
+		pos:   pos,
 		value: value,
 	}
 }
@@ -33,6 +38,14 @@ func (t *TerminalNode) Token() token.Token {
 // Value returns with the value of the node
 func (t *TerminalNode) Value() (interface{}, error) {
 	return t.value, nil
+}
+
+func (t *TerminalNode) String() string {
+	if t.value != nil {
+		return fmt.Sprintf("T{%v, %d}", t.value, t.pos)
+	} else {
+		return fmt.Sprintf("T{%s, %d}", t.token.String(), t.pos)
+	}
 }
 
 // NonTerminalNode represents a non-leaf node in the AST
@@ -67,4 +80,8 @@ func (n *NonTerminalNode) Value() (interface{}, error) {
 		childrenValues[i] = childValue
 	}
 	return n.interpreter(childrenValues)
+}
+
+func (n *NonTerminalNode) String() string {
+	return fmt.Sprintf("N{%s, %d}", n.token.String(), len(n.children))
 }
