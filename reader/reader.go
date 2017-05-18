@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"regexp"
@@ -11,20 +12,26 @@ import (
 type Reader struct {
 	b                 []byte
 	i                 int
-	line, col         int
-	regexpCache       map[string]*regexp.Regexp
+	charCount         int
+	line              int
+	col               int
 	ignoreWhitespaces bool
+	regexpCache       map[string]*regexp.Regexp
 }
 
 // New creates a new reader instance
-func New(b []byte) *Reader {
+func New(b []byte, ignoreWhitespaces bool) *Reader {
+	if ignoreWhitespaces {
+		b = bytes.Trim(b, "\r\n\t ")
+	}
 	return &Reader{
 		b:                 b,
 		i:                 0,
+		charCount:         utf8.RuneCount(b),
 		line:              1,
 		col:               1,
+		ignoreWhitespaces: ignoreWhitespaces,
 		regexpCache:       make(map[string]*regexp.Regexp),
-		ignoreWhitespaces: true,
 	}
 }
 
@@ -33,16 +40,12 @@ func (r *Reader) Clone() *Reader {
 	return &Reader{
 		b:                 r.b,
 		i:                 r.i,
+		charCount:         r.charCount,
 		line:              r.line,
 		col:               r.col,
+		ignoreWhitespaces: r.ignoreWhitespaces,
 		regexpCache:       r.regexpCache,
-		ignoreWhitespaces: true,
 	}
-}
-
-// SetIgnoreWhitespaces sets whether reads should ignore any whitespaces on the left
-func (r *Reader) SetIgnoreWhitespaces(ignoreWhitespaces bool) {
-	r.ignoreWhitespaces = ignoreWhitespaces
 }
 
 // ReadRune reads the next character
@@ -60,6 +63,7 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 		}
 	}
 	r.i += size
+	r.charCount--
 	if ch != '\n' {
 		r.col++
 	} else {
@@ -69,31 +73,20 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 	return
 }
 
-func (r *Reader) getWhitespaceIndex() int {
-	// TODO: column and line is not handled
-	loc := r.getPattern("^\\s*").FindIndex(r.b[r.i:])
-	if loc == nil {
-		return 0
-	}
-	return loc[1]
-}
-
 // ReadMatch reads a set of characters matching the given regular expression
 func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
 	if expr[0] != '^' {
 		panic("Regexp match should start with ^")
 	}
 
-	whitespaceIndex := 0
 	if r.ignoreWhitespaces {
-		whitespaceIndex = r.getWhitespaceIndex()
+		r.readWhitespaces()
 	}
 
-	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.i+whitespaceIndex:])
+	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.i:])
 	if loc == nil {
 		return nil, -1
 	}
-	r.i += whitespaceIndex
 	pos = r.i
 	matches = make([]string, len(loc)/2)
 	matches[0] = string(r.b[r.i : r.i+loc[1]])
@@ -105,6 +98,7 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
 
 	r.i += loc[1]
 	for _, ch := range matches[0] {
+		r.charCount--
 		if ch != '\n' {
 			r.col += len(string(ch))
 		} else {
@@ -116,14 +110,51 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
 	return
 }
 
+// CharsRemaining returns with the remaining character count
+func (r *Reader) CharsRemaining() int {
+	return r.charCount
+}
+
 // Position returns the current byte index
 func (r *Reader) Position() int {
 	return r.i
 }
 
-// TestPosition returns the current line and column position
-func (r *Reader) TestPosition() (int, int) {
-	return r.line, r.col
+// Line returns the current line position
+func (r *Reader) Line() int {
+	return r.line
+}
+
+// Column returns the current column position
+func (r *Reader) Column() int {
+	return r.col
+}
+
+// IsEOF returns true if we reached the end of the buffer
+func (r *Reader) IsEOF() bool {
+	return r.i >= len(r.b)
+}
+
+func (r *Reader) String() string {
+	return fmt.Sprintf("Reader{pos: %d, %d chars left}\n", r.i, r.CharsRemaining())
+}
+
+func (r *Reader) readWhitespaces() {
+	loc := r.getPattern("^[ \n\r\t]+").FindIndex(r.b[r.i:])
+	if loc == nil {
+		return
+	}
+
+	for _, ch := range r.b[r.i : r.i+loc[1]] {
+		r.charCount--
+		if ch != '\n' {
+			r.col++
+		} else {
+			r.line++
+			r.col = 1
+		}
+	}
+	r.i += loc[1]
 }
 
 func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
@@ -133,12 +164,4 @@ func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
 		r.regexpCache[expr] = rc
 	}
 	return
-}
-
-// ReadEOF returns true if we reached the end of the buffer
-func (r *Reader) ReadEOF() bool {
-	if r.ignoreWhitespaces {
-		r.i += r.getWhitespaceIndex()
-	}
-	return r.i >= len(r.b)
 }
