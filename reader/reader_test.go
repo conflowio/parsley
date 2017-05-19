@@ -8,12 +8,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func assertCursor(t *testing.T, pos int, line int, col int, r *reader.Reader) {
+	assert.Equal(t, reader.NewPosition(pos, line, col), r.Cursor())
+}
+
+func TestPositionMethods(t *testing.T) {
+	p := reader.NewPosition(1, 2, 3)
+	assert.Equal(t, 1, p.Pos())
+	assert.Equal(t, 2, p.Line())
+	assert.Equal(t, 3, p.Col())
+	assert.Equal(t, "2:3", p.String())
+}
+
 func TestEmptyReader(t *testing.T) {
 	r := reader.New([]byte{}, true)
-	assert.Equal(t, 0, r.Position())
+	assertCursor(t, 0, 1, 1, r)
 	assert.Equal(t, 0, r.CharsRemaining())
-	assert.Equal(t, 1, r.Line())
-	assert.Equal(t, 1, r.Column())
 	assert.True(t, r.IsEOF())
 	_, _, err := r.ReadRune()
 	assert.Exactly(t, io.EOF, err)
@@ -39,21 +49,16 @@ func TestCloneShouldCreateReaderWithSameParams(t *testing.T) {
 	rc := r.Clone()
 
 	assert.Equal(t, r.CharsRemaining(), rc.CharsRemaining())
-	assert.Equal(t, r.Position(), rc.Position())
+	assert.Equal(t, r.Cursor(), rc.Cursor())
 	assert.Equal(t, r.IsEOF(), rc.IsEOF())
 
 	rc.ReadMatch("^d\nef")
 
 	assert.Equal(t, 4, r.CharsRemaining())
 	assert.Equal(t, 0, rc.CharsRemaining())
+	assertCursor(t, 4, 2, 2, r)
+	assertCursor(t, 8, 3, 3, rc)
 	assert.False(t, r.IsEOF())
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 2, r.Column())
-
-	assert.Equal(t, 4, r.Position())
-	assert.Equal(t, 8, rc.Position())
-	assert.Equal(t, 3, rc.Line())
-	assert.Equal(t, 3, rc.Column())
 	assert.True(t, rc.IsEOF())
 
 }
@@ -83,20 +88,16 @@ func TestReadRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
 
 func TestReadRuneShouldFollowLinesAndColumns(t *testing.T) {
 	r := reader.New([]byte("a\nb"), true)
-	assert.Equal(t, 1, r.Line())
-	assert.Equal(t, 1, r.Column())
+	assertCursor(t, 0, 1, 1, r)
 
 	r.ReadRune()
-	assert.Equal(t, 1, r.Line())
-	assert.Equal(t, 2, r.Column())
+	assertCursor(t, 1, 1, 2, r)
 
 	r.ReadRune()
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 1, r.Column())
+	assertCursor(t, 2, 2, 1, r)
 
 	r.ReadRune()
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 2, r.Column())
+	assertCursor(t, 3, 2, 2, r)
 }
 
 func TestReadMatchShouldReturnErrorIfNotMatchingTheBeginning(t *testing.T) {
@@ -112,7 +113,7 @@ func TestReadMatchShouldReturnMatchAndSubmatches(t *testing.T) {
 	assert.Equal(t, "123", matches[1])
 	assert.Equal(t, "abc", matches[2])
 	assert.Equal(t, "DEF", matches[3])
-	assert.Equal(t, 0, pos)
+	assert.Equal(t, reader.NewPosition(0, 1, 1), pos)
 }
 
 func TestReadMatchShouldReturnOnlyMainMatchIfNoCatchGroups(t *testing.T) {
@@ -128,10 +129,8 @@ func TestReadMatchShouldIgnoreWhitespacesIfSet(t *testing.T) {
 	matches, pos := r.ReadMatch("^[a-z]+")
 	assert.Equal(t, 1, len(matches))
 	assert.Equal(t, "abc", matches[0])
-	assert.Equal(t, 8, r.Position())
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 5, r.Column())
-	assert.Equal(t, 5, pos)
+	assertCursor(t, 8, 2, 5, r)
+	assert.Equal(t, reader.NewPosition(5, 2, 2), pos)
 }
 
 func TestReadMatchShouldNotIgnoreWhitespacesIfNotSet(t *testing.T) {
@@ -141,7 +140,7 @@ func TestReadMatchShouldNotIgnoreWhitespacesIfNotSet(t *testing.T) {
 
 	matches2, pos := r.ReadMatch("^\\s+[a-z]+")
 	assert.Equal(t, 1, len(matches2))
-	assert.Equal(t, 0, pos)
+	assert.Equal(t, reader.NewPosition(0, 1, 1), pos)
 }
 
 func TestReadMatchShouldReturnNilIfNoMatch(t *testing.T) {
@@ -152,24 +151,20 @@ func TestReadMatchShouldReturnNilIfNoMatch(t *testing.T) {
 
 func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {
 	r := reader.New([]byte("a\nb"), false)
-	assert.Equal(t, 1, r.Line())
-	assert.Equal(t, 1, r.Column())
+	assertCursor(t, 0, 1, 1, r)
 
 	r.ReadMatch("^(?s).")
-	assert.Equal(t, 1, r.Line())
-	assert.Equal(t, 2, r.Column())
+	assertCursor(t, 1, 1, 2, r)
 
 	r.ReadMatch("^(?s).")
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 1, r.Column())
+	assertCursor(t, 2, 2, 1, r)
 
 	r.ReadMatch("^(?s).")
-	assert.Equal(t, 2, r.Line())
-	assert.Equal(t, 2, r.Column())
+	assertCursor(t, 3, 2, 2, r)
 }
 
 func TestStringShouldReturnStatusString(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
 	r.ReadRune()
-	assert.Equal(t, "Reader{pos: 1, 1 chars left}\n", r.String())
+	assert.Equal(t, "Reader{1:2}\n", r.String())
 }

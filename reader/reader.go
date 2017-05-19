@@ -8,13 +8,42 @@ import (
 	"unicode/utf8"
 )
 
+// Position represents a token position
+type Position struct {
+	pos  int
+	line int
+	col  int
+}
+
+// NewPosition creates a new position instance
+func NewPosition(pos int, line int, col int) Position {
+	return Position{pos, line, col}
+}
+
+// Pos returns with the byte position
+func (p Position) Pos() int {
+	return p.pos
+}
+
+// Line returns with the line position
+func (p Position) Line() int {
+	return p.line
+}
+
+// Col returns with the column position
+func (p Position) Col() int {
+	return p.col
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("%d:%d", p.line, p.col)
+}
+
 // Reader defines a byte reader
 type Reader struct {
 	b                 []byte
-	i                 int
+	cur               Position
 	charCount         int
-	line              int
-	col               int
 	ignoreWhitespaces bool
 	regexpCache       map[string]*regexp.Regexp
 }
@@ -26,10 +55,8 @@ func New(b []byte, ignoreWhitespaces bool) *Reader {
 	}
 	return &Reader{
 		b:                 b,
-		i:                 0,
+		cur:               NewPosition(0, 1, 1),
 		charCount:         utf8.RuneCount(b),
-		line:              1,
-		col:               1,
 		ignoreWhitespaces: ignoreWhitespaces,
 		regexpCache:       make(map[string]*regexp.Regexp),
 	}
@@ -39,10 +66,8 @@ func New(b []byte, ignoreWhitespaces bool) *Reader {
 func (r *Reader) Clone() *Reader {
 	return &Reader{
 		b:                 r.b,
-		i:                 r.i,
+		cur:               r.cur,
 		charCount:         r.charCount,
-		line:              r.line,
-		col:               r.col,
 		ignoreWhitespaces: r.ignoreWhitespaces,
 		regexpCache:       r.regexpCache,
 	}
@@ -50,31 +75,31 @@ func (r *Reader) Clone() *Reader {
 
 // ReadRune reads the next character
 func (r *Reader) ReadRune() (ch rune, size int, err error) {
-	if r.i >= len(r.b) {
+	if r.cur.pos >= len(r.b) {
 		return 0, 0, io.EOF
 	}
-	if c := r.b[r.i]; c < utf8.RuneSelf {
+	if c := r.b[r.cur.pos]; c < utf8.RuneSelf {
 		ch = rune(c)
 		size = 1
 	} else {
-		ch, size = utf8.DecodeRune(r.b[r.i:])
+		ch, size = utf8.DecodeRune(r.b[r.cur.pos:])
 		if ch == utf8.RuneError {
-			return 0, 0, fmt.Errorf("Invalid UTF-8 byte sequence encountered at %d:%d", r.line, r.col)
+			return 0, 0, fmt.Errorf("Invalid UTF-8 byte sequence encountered at %s", r.cur)
 		}
 	}
-	r.i += size
+	r.cur.pos += size
 	r.charCount--
 	if ch != '\n' {
-		r.col++
+		r.cur.col++
 	} else {
-		r.line++
-		r.col = 1
+		r.cur.line++
+		r.cur.col = 1
 	}
 	return
 }
 
 // ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
+func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 	if expr[0] != '^' {
 		panic("Regexp match should start with ^")
 	}
@@ -83,27 +108,27 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos int) {
 		r.readWhitespaces()
 	}
 
-	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.i:])
+	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.cur.pos:])
 	if loc == nil {
-		return nil, -1
+		return nil, Position{-1, -1, -1}
 	}
-	pos = r.i
+	pos = r.cur
 	matches = make([]string, len(loc)/2)
-	matches[0] = string(r.b[r.i : r.i+loc[1]])
+	matches[0] = string(r.b[r.cur.pos : r.cur.pos+loc[1]])
 	if len(loc) > 2 {
 		for i := 1; i < len(loc)/2; i++ {
-			matches[i] = string(r.b[r.i+loc[i*2] : r.i+loc[i*2+1]])
+			matches[i] = string(r.b[r.cur.pos+loc[i*2] : r.cur.pos+loc[i*2+1]])
 		}
 	}
 
-	r.i += loc[1]
+	r.cur.pos += loc[1]
 	for _, ch := range matches[0] {
 		r.charCount--
 		if ch != '\n' {
-			r.col += len(string(ch))
+			r.cur.col += len(string(ch))
 		} else {
-			r.line++
-			r.col = 1
+			r.cur.line++
+			r.cur.col = 1
 		}
 	}
 
@@ -115,46 +140,36 @@ func (r *Reader) CharsRemaining() int {
 	return r.charCount
 }
 
-// Position returns the current byte index
-func (r *Reader) Position() int {
-	return r.i
-}
-
-// Line returns the current line position
-func (r *Reader) Line() int {
-	return r.line
-}
-
-// Column returns the current column position
-func (r *Reader) Column() int {
-	return r.col
+// Cursor returns with the cursor's position
+func (r *Reader) Cursor() Position {
+	return r.cur
 }
 
 // IsEOF returns true if we reached the end of the buffer
 func (r *Reader) IsEOF() bool {
-	return r.i >= len(r.b)
+	return r.cur.pos >= len(r.b)
 }
 
 func (r *Reader) String() string {
-	return fmt.Sprintf("Reader{pos: %d, %d chars left}\n", r.i, r.CharsRemaining())
+	return fmt.Sprintf("Reader{%s}\n", r.cur)
 }
 
 func (r *Reader) readWhitespaces() {
-	loc := r.getPattern("^[ \n\r\t]+").FindIndex(r.b[r.i:])
+	loc := r.getPattern("^[ \n\r\t]+").FindIndex(r.b[r.cur.pos:])
 	if loc == nil {
 		return
 	}
 
-	for _, ch := range r.b[r.i : r.i+loc[1]] {
+	for _, ch := range r.b[r.cur.pos : r.cur.pos+loc[1]] {
 		r.charCount--
 		if ch != '\n' {
-			r.col++
+			r.cur.col++
 		} else {
-			r.line++
-			r.col = 1
+			r.cur.line++
+			r.cur.col = 1
 		}
 	}
-	r.i += loc[1]
+	r.cur.pos += loc[1]
 }
 
 func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {

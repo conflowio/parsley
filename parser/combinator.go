@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"go/token"
+
 	"github.com/opsidian/parsec/ast"
 	"github.com/opsidian/parsec/reader"
 )
@@ -12,20 +14,21 @@ func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
 			return nil
 		}
 
-		results, found := h.GetResults(name, r.Position())
+		results, found := h.GetResults(name, r.Cursor().Pos())
 		if found {
 			return
 		}
 
-		if pos, ok := h.GetLastPosition(name); ok && pos == r.Position() {
+		if h.GetCalls(name, r.Cursor().Pos()) > r.CharsRemaining() {
 			return nil
 		}
-		h.Push(name, r.Position())
-		defer h.Pop(name)
+
+		h.Push(name, r.Cursor().Pos())
+		defer h.Pop(name, r.Cursor().Pos())
 
 		nodes := make([]ast.Node, len(parsers))
 		andRec(h, nodeBuilder, &results, 0, nodes, r, parsers...)
-		h.RegisterResults(name, r.Position(), results)
+		h.RegisterResults(name, r.Cursor().Pos(), results)
 		return results
 	})
 }
@@ -40,9 +43,10 @@ func andRec(h *History, nodeBuilder ast.NodeBuilder, results *Results, depth int
 		} else {
 			nodesCopy := make([]ast.Node, len(nodes))
 			copy(nodesCopy, nodes)
-			results.Add(nodeBuilder(nodesCopy), result.Reader())
-			// TODO: only check for eof
-			if result.Reader().ReadEOF() {
+			if result.Node().Token() != token.EOF {
+				results.Add(nodeBuilder(nodesCopy), result.Reader())
+			} else {
+				*results = NewResults(Result{nodeBuilder(nodesCopy), result.Reader()})
 				return true
 			}
 		}
@@ -57,21 +61,21 @@ func Or(name string, parsers ...Parser) Func {
 			return
 		}
 
-		results, found := h.GetResults(name, r.Position())
+		results, found := h.GetResults(name, r.Cursor().Pos())
 		if found {
 			return
 		}
 
 		for _, parser := range parsers {
 			for _, result := range parser.Parse(h, r.Clone()) {
-				results = append(results, result)
-				// TODO: this should be just a check, not a read
-				if result.Reader().ReadEOF() {
-					break
+				if result.Node().Token() != token.EOF {
+					results = append(results, result)
+				} else {
+					return NewResults(result)
 				}
 			}
 		}
-		h.RegisterResults(name, r.Position(), results)
+		h.RegisterResults(name, r.Cursor().Pos(), results)
 		return results
 	})
 }

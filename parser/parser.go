@@ -37,7 +37,7 @@ func (r Result) Reader() *reader.Reader {
 }
 
 func (r Result) String() string {
-	return fmt.Sprintf("%s, next: %d", r.node, r.reader.Position())
+	return fmt.Sprintf("%s, cur: %s", r.node, r.reader.Cursor())
 }
 
 // Results is a result array
@@ -51,61 +51,4 @@ func NewResults(results ...Result) Results {
 // Add adds a new result
 func (r *Results) Add(node ast.Node, reader *reader.Reader) {
 	*r = append(*r, Result{node, reader})
-}
-
-// History contains for each parser's last call position
-type History struct {
-	calls     map[string][]int
-	results   map[string]map[int]Results
-	callCount int
-}
-
-// NewHistory creates a new history instance
-func NewHistory() *History {
-	return &History{
-		calls:     make(map[string][]int),
-		callCount: 0,
-		results:   make(map[string]map[int]Results),
-	}
-}
-
-// Push registers a parser call
-func (h *History) Push(parser string, pos int) {
-	if _, ok := h.calls[parser]; !ok {
-		h.calls[parser] = []int{}
-	}
-	h.calls[parser] = append(h.calls[parser], pos)
-	h.callCount++
-}
-
-// Pop removes a previous parser call
-func (h *History) Pop(parser string) {
-	h.calls[parser] = h.calls[parser][0 : len(h.calls[parser])-1]
-}
-
-// GetLastPosition returns with the last call position
-func (h *History) GetLastPosition(parser string) (int, bool) {
-	if calls, ok := h.calls[parser]; ok && len(h.calls[parser]) > 0 {
-		return calls[len(calls)-1], true
-	}
-	return -1, false
-}
-
-// GetCallCount returns with the call count
-func (h *History) GetCallCount() int {
-	return h.callCount
-}
-
-// RegisterResults registers a parser result for a certain position
-func (h *History) RegisterResults(parser string, pos int, results Results) {
-	if _, ok := h.results[parser]; !ok {
-		h.results[parser] = make(map[int]Results)
-	}
-	h.results[parser][pos] = results
-}
-
-// GetResults return with a previously saved result
-func (h *History) GetResults(parser string, pos int) (results Results, ok bool) {
-	results, ok = h.results[parser][pos]
-	return
 }

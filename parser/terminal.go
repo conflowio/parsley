@@ -13,8 +13,8 @@ import (
 // End matches the end of the input
 func End() Func {
 	return Func(func(h *History, r *reader.Reader) Results {
-		if r.ReadEOF() {
-			return NewResults(Result{ast.NewTerminalNode(token.EOF, r.Position(), nil), r})
+		if r.IsEOF() {
+			return NewResults(Result{ast.NewTerminalNode(token.EOF, r.Cursor(), nil), r})
 		}
 		return nil
 	})

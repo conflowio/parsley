@@ -3,6 +3,8 @@ package ast
 import (
 	"fmt"
 	"go/token"
+
+	"github.com/opsidian/parsec/reader"
 )
 
 // Interpreter is a function to evaluate an
@@ -17,12 +19,12 @@ type Node interface {
 // TerminalNode is a leaf node in the AST
 type TerminalNode struct {
 	token token.Token
-	pos   int
+	pos   reader.Position
 	value interface{}
 }
 
 // NewTerminalNode creates a new TerminalNode instance
-func NewTerminalNode(token token.Token, pos int, value interface{}) *TerminalNode {
+func NewTerminalNode(token token.Token, pos reader.Position, value interface{}) *TerminalNode {
 	return &TerminalNode{
 		token: token,
 		pos:   pos,
@@ -42,9 +44,9 @@ func (t *TerminalNode) Value() (interface{}, error) {
 
 func (t *TerminalNode) String() string {
 	if t.value != nil {
-		return fmt.Sprintf("T{%v, %d}", t.value, t.pos)
+		return fmt.Sprintf("T{%v, %s}", t.value, t.pos)
 	} else {
-		return fmt.Sprintf("T{%s, %d}", t.token.String(), t.pos)
+		return fmt.Sprintf("T{%s, %s}", t.token.String(), t.pos)
 	}
 }
 
