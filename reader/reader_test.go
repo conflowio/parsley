@@ -69,6 +69,7 @@ func TestReadRuneShouldReturnWithCharacter(t *testing.T) {
 	assert.Equal(t, '🍕', ch)
 	assert.Equal(t, 4, size)
 	assert.Nil(t, err)
+	assertCursor(t, 4, 1, 2, r)
 }
 
 func TestReadRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
@@ -167,4 +168,19 @@ func TestStringShouldReturnStatusString(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
 	r.ReadRune()
 	assert.Equal(t, "Reader{1:2}\n", r.String())
+}
+
+func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
+	r := reader.New([]byte("🍕"), true)
+	matches, pos := r.ReadMatch("^.*")
+	assert.Equal(t, []string{"🍕"}, matches)
+	assert.Equal(t, reader.NewPosition(0, 1, 1), pos)
+	assertCursor(t, 4, 1, 2, r)
+}
+
+func TestWithCursorShouldSetPositionAndCharCount(t *testing.T) {
+	r := reader.New([]byte("abcd"), true)
+	r2 := r.WithCursor(3, 1, 4)
+	assert.Equal(t, reader.NewPosition(3, 1, 4), r2.Cursor())
+	assert.Equal(t, 1, r2.CharsRemaining())
 }

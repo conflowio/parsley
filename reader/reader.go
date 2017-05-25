@@ -8,6 +8,9 @@ import (
 	"unicode/utf8"
 )
 
+// EOF indicates the end of file
+const EOF = "EOF"
+
 // Position represents a token position
 type Position struct {
 	pos  int
@@ -125,7 +128,7 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 	for _, ch := range matches[0] {
 		r.charCount--
 		if ch != '\n' {
-			r.cur.col += len(string(ch))
+			r.cur.col += 1
 		} else {
 			r.cur.line++
 			r.cur.col = 1
@@ -143,6 +146,14 @@ func (r *Reader) CharsRemaining() int {
 // Cursor returns with the cursor's position
 func (r *Reader) Cursor() Position {
 	return r.cur
+}
+
+// WithCursor clones the readers and sets the cursor to the specified position
+func (r *Reader) WithCursor(pos int, line int, col int) *Reader {
+	r2 := r.Clone()
+	r2.cur = NewPosition(pos, line, col)
+	r2.charCount = utf8.RuneCount(r2.b[r2.cur.Pos():])
+	return r2
 }
 
 // IsEOF returns true if we reached the end of the buffer

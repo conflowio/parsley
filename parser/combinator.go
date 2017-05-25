@@ -1,81 +1,84 @@
 package parser
 
 import (
-	"go/token"
-
 	"github.com/opsidian/parsec/ast"
 	"github.com/opsidian/parsec/reader"
 )
 
-// And combines multiple parsers
-func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
-	return Func(func(h *History, r *reader.Reader) (results Results) {
-		if parsers == nil {
-			return nil
-		}
+// Memoize handles result cache and curtailing left recursion
+func Memoize(name string, parser Func) Func {
+	return Func(func(c *Context, r *reader.Reader) (results *Results) {
+		c.Push(name, r.Cursor().Pos())
+		defer c.Pop(name, r.Cursor().Pos())
 
-		results, found := h.GetResults(name, r.Cursor().Pos())
+		results, found := c.GetResults(name, r.Cursor().Pos())
 		if found {
 			return
 		}
 
-		if h.GetCalls(name, r.Cursor().Pos()) > r.CharsRemaining() {
-			return nil
+		if c.GetCalls(name, r.Cursor().Pos()) > r.CharsRemaining()+1 {
+			return c.NewCurtailedResults(r.Cursor().Pos())
 		}
 
-		h.Push(name, r.Cursor().Pos())
-		defer h.Pop(name, r.Cursor().Pos())
-
-		nodes := make([]ast.Node, len(parsers))
-		andRec(h, nodeBuilder, &results, 0, nodes, r, parsers...)
-		h.RegisterResults(name, r.Cursor().Pos(), results)
-		return results
+		results = parser(c, r)
+		c.RegisterResults(name, r.Cursor().Pos(), results)
+		return
 	})
-}
-
-func andRec(h *History, nodeBuilder ast.NodeBuilder, results *Results, depth int, nodes []ast.Node, r *reader.Reader, parsers ...Parser) bool {
-	for _, result := range parsers[0].Parse(h, r.Clone()) {
-		nodes[depth] = result.Node()
-		if len(parsers) > 1 {
-			if andRec(h, nodeBuilder, results, depth+1, nodes, result.Reader().Clone(), parsers[1:]...) {
-				return true
-			}
-		} else {
-			nodesCopy := make([]ast.Node, len(nodes))
-			copy(nodesCopy, nodes)
-			if result.Node().Token() != token.EOF {
-				results.Add(nodeBuilder(nodesCopy), result.Reader())
-			} else {
-				*results = NewResults(Result{nodeBuilder(nodesCopy), result.Reader()})
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // Or chooses the first matching parser
 func Or(name string, parsers ...Parser) Func {
-	return Func(func(h *History, r *reader.Reader) (results Results) {
-		if parsers == nil {
-			return
-		}
-
-		results, found := h.GetResults(name, r.Cursor().Pos())
-		if found {
-			return
-		}
-
+	if parsers == nil {
+		panic("No parsers were given")
+	}
+	return Memoize(name, Func(func(c *Context, r *reader.Reader) (results *Results) {
+		results = NewResults(nil)
 		for _, parser := range parsers {
-			for _, result := range parser.Parse(h, r.Clone()) {
-				if result.Node().Token() != token.EOF {
-					results = append(results, result)
-				} else {
-					return NewResults(result)
+			c.RegisterCall()
+			if r := parser.Parse(c, r.Clone()); r != nil {
+				results.Merge(r)
+			}
+		}
+		return results
+	}))
+}
+
+// And combines multiple parsers
+func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
+	if parsers == nil {
+		panic("No parsers were given")
+	}
+	return Memoize(name, Func(func(c *Context, r *reader.Reader) (results *Results) {
+		nodes := make([]ast.Node, len(parsers))
+		results = NewResults(nil)
+		andRec(c, nodeBuilder, results, 0, nodes, r, parsers...)
+		return results
+	}))
+}
+
+func andRec(c *Context, nodeBuilder ast.NodeBuilder, results *Results, depth int, nodes []ast.Node, r *reader.Reader, parsers ...Parser) bool {
+	c.RegisterCall()
+	results2 := parsers[0].Parse(c, r.Clone())
+	if results2 != nil {
+		if depth == 0 || len(results2.items) == 0 {
+			results.MergeCurtailReasons(results2)
+		}
+		for _, result := range results2.items {
+			nodes[depth] = result.Node()
+			if len(parsers) > 1 {
+				if andRec(c, nodeBuilder, results, depth+1, nodes, result.Reader().Clone(), parsers[1:]...) {
+					return true
+				}
+			} else {
+				nodesCopy := make([]ast.Node, len(nodes))
+				copy(nodesCopy, nodes)
+				results.Add(NewResult(nodeBuilder(nodesCopy), result.Reader()))
+				if result.Node().Token() == reader.EOF {
+					return true
 				}
 			}
 		}
-		h.RegisterResults(name, r.Cursor().Pos(), results)
-		return results
-	})
+	}
+
+	return false
 }

@@ -1,54 +1,31 @@
 package parser
 
 import (
-	"fmt"
+	"errors"
 
-	"github.com/opsidian/parsec/ast"
 	"github.com/opsidian/parsec/reader"
 )
 
 // Parser defines a parser interface
 type Parser interface {
-	Parse(*History, *reader.Reader) Results
+	Parse(*Context, *reader.Reader) *Results
 }
 
 // Func defines a helper to implement the Parser interface with functions
-type Func func(*History, *reader.Reader) Results
+type Func func(*Context, *reader.Reader) *Results
 
 // Parse parses the next token and returns with an AST node and the updated reader
-func (f Func) Parse(h *History, r *reader.Reader) Results {
-	return f(h, r)
+func (f Func) Parse(c *Context, r *reader.Reader) *Results {
+	return f(c, r)
 }
 
-// Result represents one result of a parser
-type Result struct {
-	node   ast.Node
-	reader *reader.Reader
-}
-
-// Node returns with the node
-func (r Result) Node() ast.Node {
-	return r.node
-}
-
-// Reader returns with the reader
-func (r Result) Reader() *reader.Reader {
-	return r.reader
-}
-
-func (r Result) String() string {
-	return fmt.Sprintf("%s, cur: %s", r.node, r.reader.Cursor())
-}
-
-// Results is a result array
-type Results []Result
-
-// NewResults creates a new results instance
-func NewResults(results ...Result) Results {
-	return Results(results)
-}
-
-// Add adds a new result
-func (r *Results) Add(node ast.Node, reader *reader.Reader) {
-	*r = append(*r, Result{node, reader})
+// Parse parses the given input with the parser function
+func Parse(input []byte, p Func) (interface{}, error) {
+	r := reader.New(input, true)
+	c := NewContext()
+	results := p.Parse(c, r)
+	if len(results.Items()) == 0 {
+		return nil, errors.New("Failed to parse the input")
+	}
+	return results.Items()[0].Node().Value()
 }
