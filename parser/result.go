@@ -35,66 +35,36 @@ func (r Result) String() string {
 	return fmt.Sprintf("%s, cur: %s", r.node, r.reader.Cursor())
 }
 
-// AsList wraps the result as an array
-func (r Result) AsList() *Results {
-	return NewResults(nil, r)
+type ParserResult struct {
+	CurtailingParsers IntSet
+	Results           []Result
 }
 
-// Results contains a result array and reasons for curtailing if empty
-type Results struct {
-	items          []Result
-	curtailReasons map[int]int
+// NewParserResult creates a new parser result
+func NewParserResult(curtailingParsers IntSet, results ...Result) *ParserResult {
+	return &ParserResult{curtailingParsers, results}
 }
 
-// NewResults creates a new results instance
-func NewResults(curtailReasons map[int]int, items ...Result) *Results {
-	if items == nil {
-		items = make([]Result, 0)
+func (p *ParserResult) Append(results ...Result) {
+	for _, result := range results {
+		p.append(result)
 	}
-	r := &Results{
-		items:          items,
-		curtailReasons: nil,
-	}
-	if curtailReasons != nil {
-		r.curtailReasons = make(map[int]int, len(curtailReasons))
-		for k, v := range curtailReasons {
-			r.curtailReasons[k] = v
-		}
-	}
-	return r
 }
 
-// Items returns with the result items
-func (r *Results) Items() []Result {
-	return r.items
-}
-
-// Add adds a new result
-func (r *Results) Add(result Result) {
-	r.items = append(r.items, result)
-}
-
-// Merge merges two result list
-func (r *Results) Merge(r2 *Results) {
-	r.items = append(r.items, r2.items...)
-	r.MergeCurtailReasons(r2)
-}
-
-// MergeCurtailReasons merges the curtail reason maps
-func (r *Results) MergeCurtailReasons(results *Results) {
-	if results == nil || results.curtailReasons == nil {
+func (p *ParserResult) append(result Result) {
+	if p.Results == nil {
+		p.Results = []Result{result}
 		return
 	}
-	if r.curtailReasons == nil {
-		r.curtailReasons = make(map[int]int)
-	}
-	for k, v := range results.curtailReasons {
-		if v > r.curtailReasons[k] {
-			r.curtailReasons[k] = v
+
+	for k, v := range p.Results {
+		if v.Reader().Cursor().Pos() > result.Reader().Cursor().Pos() {
+			p.Results = append(p.Results, Result{})
+			copy(p.Results[k+1:], p.Results[k:])
+			p.Results[k] = result
+			return
 		}
 	}
-}
 
-func (r *Results) String() string {
-	return fmt.Sprintf("Results{%v}", r.items)
+	p.Results = append(p.Results, result)
 }

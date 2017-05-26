@@ -15,61 +15,54 @@ func assertCursor(t *testing.T, pos int, line int, col int, r *reader.Reader) {
 
 func TestEndShouldMatchEmptyReader(t *testing.T) {
 	r := reader.New([]byte{}, true)
-	c := parser.NewContext()
-	res := parser.End()(c, r)
+	res := parser.End()(parser.NewIntMap(), r)
 	expectedNode := ast.NewTerminalNode(reader.EOF, reader.NewPosition(0, 1, 1), nil)
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsList(), res)
+	assert.Equal(t, parser.NewParserResult(nil, parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 0, 1, 1, r)
 }
 
 func TestEndShouldMatchEOF(t *testing.T) {
 	r := reader.New([]byte("a"), true)
 	r.ReadRune()
-	c := parser.NewContext()
-	res := parser.End()(c, r)
+	res := parser.End()(parser.NewIntMap(), r)
 	expectedNode := ast.NewTerminalNode(reader.EOF, reader.NewPosition(1, 1, 2), nil)
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsList(), res)
+	assert.Equal(t, parser.NewParserResult(nil, parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 1, 1, 2, r)
 }
 
 func TestEndShouldNotMatchNotEOF(t *testing.T) {
 	r := reader.New([]byte("a"), true)
-	c := parser.NewContext()
-	res := parser.End()(c, r)
+	res := parser.End()(parser.NewIntMap(), r)
 	assert.Nil(t, res)
 	assertCursor(t, 0, 1, 1, r)
 }
 
 func TestRuneShouldMatchCharacter(t *testing.T) {
 	r := reader.New([]byte("a"), true)
-	c := parser.NewContext()
-	res := parser.Rune('a', "A")(c, r)
+	res := parser.Rune('a', "A")(parser.NewIntMap(), r)
 	expectedNode := ast.NewTerminalNode("A", reader.NewPosition(0, 1, 1), 'a')
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsList(), res)
+	assert.Equal(t, parser.NewParserResult(nil, parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 1, 1, 2, r)
 }
 
 func TestRuneShouldNotUseSpecialChars(t *testing.T) {
 	r := reader.New([]byte("a"), true)
-	c := parser.NewContext()
-	res := parser.Rune('.', ".")(c, r)
+	res := parser.Rune('.', ".")(parser.NewIntMap(), r)
 	assert.Nil(t, res)
 	assertCursor(t, 0, 1, 1, r)
 }
 
 func TestRuneShouldMatchUnicodeCharacter(t *testing.T) {
 	r := reader.New([]byte("🍕"), true)
-	c := parser.NewContext()
-	res := parser.Rune('🍕', "PIZZA")(c, r)
+	res := parser.Rune('🍕', "PIZZA")(parser.NewIntMap(), r)
 	expectedNode := ast.NewTerminalNode("PIZZA", reader.NewPosition(0, 1, 1), '🍕')
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsList(), res)
+	assert.Equal(t, parser.NewParserResult(nil, parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 4, 1, 2, r)
 }
 
 func TestRuneShouldNotMatchCharacter(t *testing.T) {
 	r := reader.New([]byte("a"), true)
-	c := parser.NewContext()
-	res := parser.Rune('b', "B")(c, r)
+	res := parser.Rune('b', "B")(parser.NewIntMap(), r)
 	assert.Nil(t, res)
 	assertCursor(t, 0, 1, 1, r)
 }

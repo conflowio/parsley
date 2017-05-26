@@ -9,16 +9,16 @@ import (
 
 // Empty always matches and returns with an empty result
 func Empty() Func {
-	return Func(func(c *Context, r *reader.Reader) *Results {
-		return NewResult(nil, r).AsList()
+	return Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
+		return NewParserResult(nil, NewResult(nil, r))
 	})
 }
 
 // End matches the end of the input
 func End() Func {
-	return Func(func(c *Context, r *reader.Reader) *Results {
+	return Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
 		if r.IsEOF() {
-			return NewResult(ast.NewTerminalNode(reader.EOF, r.Cursor(), nil), r).AsList()
+			return NewParserResult(nil, NewResult(ast.NewTerminalNode(reader.EOF, r.Cursor(), nil), r))
 		}
 		return nil
 	})
@@ -26,9 +26,9 @@ func End() Func {
 
 // Rune matches one specific character
 func Rune(char rune, token string) Func {
-	return Func(func(c *Context, r *reader.Reader) *Results {
+	return Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
 		if matches, pos := r.ReadMatch("^" + regexp.QuoteMeta(string(char))); matches != nil {
-			return NewResult(ast.NewTerminalNode(token, pos, char), r).AsList()
+			return NewParserResult(nil, NewResult(ast.NewTerminalNode(token, pos, char), r))
 		}
 		return nil
 	})

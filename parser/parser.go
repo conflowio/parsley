@@ -8,24 +8,24 @@ import (
 
 // Parser defines a parser interface
 type Parser interface {
-	Parse(*Context, *reader.Reader) *Results
+	Parse(leftRecCtx IntMap, r *reader.Reader) *ParserResult
 }
 
 // Func defines a helper to implement the Parser interface with functions
-type Func func(*Context, *reader.Reader) *Results
+type Func func(leftRecCtx IntMap, r *reader.Reader) *ParserResult
 
 // Parse parses the next token and returns with an AST node and the updated reader
-func (f Func) Parse(c *Context, r *reader.Reader) *Results {
-	return f(c, r)
+func (f Func) Parse(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
+	return f(leftRecCtx, r)
 }
 
 // Parse parses the given input with the parser function
 func Parse(input []byte, p Func) (interface{}, error) {
 	r := reader.New(input, true)
-	c := NewContext()
-	results := p.Parse(c, r)
-	if len(results.Items()) == 0 {
+	leftRecCtx := NewIntMap()
+	parserResult := p.Parse(leftRecCtx, r)
+	if len(parserResult.Results) == 0 {
 		return nil, errors.New("Failed to parse the input")
 	}
-	return results.Items()[0].Node().Value()
+	return parserResult.Results[0].Node().Value()
 }

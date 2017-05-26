@@ -15,52 +15,54 @@ import (
 func TestDirectLeftRecursion(t *testing.T) {
 	input := "abbbbbbbbbbbbbbbbbbbb"
 	r := reader.New([]byte(input), true)
+	c := parser.NewContext()
 	var a parser.Func
 
-	a = parser.Or("A",
-		parser.And("AB", stringBuilder(),
+	a = parser.Or("A", c,
+		parser.And("AB", c, stringBuilder(),
 			&a,
 			parser.Rune('b', "CHAR"),
 		),
 		parser.Rune('a', "CHAR"),
 	)
-	all := parser.And("ALL", ast.SingleNodeBuilder(0), &a, parser.End())
-	c := parser.NewContext()
-	results := all.Parse(c, r)
-	assert.Equal(t, 1, len(results.Items()))
-	result, err := results.Items()[0].Node().Value()
+	all := parser.And("ALL", c, ast.SingleNodeBuilder(0), &a, parser.End())
+	results := all.Parse(parser.NewIntMap(), r)
+	assert.Equal(t, 1, len(results.Results))
+	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
-	assert.Equal(t, 300, c.GetSumCallCount())
+	assert.Equal(t, 344, c.GetSumCallCount())
 }
 
 func TestIndirectLeftRecursion(t *testing.T) {
-	input := []byte("1 + 2 + 3")
+	input := []byte("1 + 2 + 3 + 4")
 	r := reader.New(input, true)
+	c := parser.NewContext()
 	var add parser.Func
 
-	value := parser.Or(
-		"VALUE",
+	value := parser.Or("VALUE", c,
 		intLiteral(),
 		&add,
 	)
 
-	add = parser.And(
-		"ADD",
-		ast.BinaryOperatorBuilder("ADD", func(children []interface{}) (interface{}, error) {
-			return children[0].(int) + children[1].(int), nil
-		}),
+	add = parser.And("ADD", c,
+		ast.BinaryOperatorBuilder(
+			"ADD",
+			func(children []interface{}) (interface{}, error) {
+				return children[0].(int) + children[1].(int), nil
+			},
+		),
 		value,
 		parser.Rune('+', "ADD"),
 		value,
 	)
-	p := parser.And("ALL", ast.SingleNodeBuilder(0), value, parser.End())
-	c := parser.NewContext()
-	results := p.Parse(c, r)
-	result, err := results.Items()[0].Node().Value()
+	p := parser.And("ALL", c, ast.SingleNodeBuilder(0), value, parser.End())
+	results := p.Parse(parser.NewIntMap(), r)
+	require.Equal(t, 1, len(results.Results), "Parser should be successful")
+	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
-	assert.Equal(t, 6, result)
-	assert.Equal(t, 1297, c.GetSumCallCount())
+	assert.Equal(t, 10, result)
+	assert.Equal(t, 373, c.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {
@@ -79,13 +81,13 @@ func stringBuilder() ast.NodeBuilder {
 }
 
 func intLiteral() parser.Func {
-	return parser.Func(func(c *parser.Context, r *reader.Reader) *parser.Results {
+	return parser.Func(func(ctx parser.IntMap, r *reader.Reader) *parser.ParserResult {
 		if matches, pos := r.ReadMatch("^[\\-+]?[1-9][0-9]*"); matches != nil {
 			intValue, err := strconv.Atoi(matches[0])
 			if err != nil {
 				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
 			}
-			return parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r).AsList()
+			return parser.NewParserResult(nil, parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r))
 		}
 		return nil
 	})

@@ -6,73 +6,84 @@ import (
 )
 
 // Memoize handles result cache and curtailing left recursion
-func Memoize(name string, parser Func) Func {
-	return Func(func(c *Context, r *reader.Reader) (results *Results) {
-		c.Push(name, r.Cursor().Pos())
-		defer c.Pop(name, r.Cursor().Pos())
-
-		results, found := c.GetResults(name, r.Cursor().Pos())
+func Memoize(name string, c *Context, parser Func) Func {
+	parserIndex := c.GetParserIndex(name)
+	return Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
+		result, found := c.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
-			return
+			return result
 		}
 
-		if c.GetCalls(name, r.Cursor().Pos()) > r.CharsRemaining()+1 {
-			return c.NewCurtailedResults(r.Cursor().Pos())
+		if leftRecCtx[parserIndex] > r.CharsRemaining()+1 {
+			return NewParserResult(NewIntSet().Append(parserIndex))
 		}
 
-		results = parser(c, r)
-		c.RegisterResults(name, r.Cursor().Pos(), results)
-		return
+		result = parser(leftRecCtx.Add(parserIndex), r)
+
+		c.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx.Filter(result.CurtailingParsers))
+
+		return result
 	})
 }
 
 // Or chooses the first matching parser
-func Or(name string, parsers ...Parser) Func {
+func Or(name string, c *Context, parsers ...Parser) Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return Memoize(name, Func(func(c *Context, r *reader.Reader) (results *Results) {
-		results = NewResults(nil)
+	return Memoize(name, c, Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
+		parserResult := NewParserResult(NewIntSet())
 		for _, parser := range parsers {
 			c.RegisterCall()
-			if r := parser.Parse(c, r.Clone()); r != nil {
-				results.Merge(r)
-			}
+			r := parser.Parse(leftRecCtx, r.Clone())
+			parserResult.Append(r.Results...)
+			parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(r.CurtailingParsers)
 		}
-		return results
+		return parserResult
 	}))
 }
 
 // And combines multiple parsers
-func And(name string, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
+func And(name string, c *Context, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return Memoize(name, Func(func(c *Context, r *reader.Reader) (results *Results) {
+	return Memoize(name, c, Func(func(leftRecCtx IntMap, r *reader.Reader) *ParserResult {
 		nodes := make([]ast.Node, len(parsers))
-		results = NewResults(nil)
-		andRec(c, nodeBuilder, results, 0, nodes, r, parsers...)
-		return results
+		result := NewParserResult(NewIntSet())
+		andRec(c, leftRecCtx, nodeBuilder, result, 0, nodes, r, true, parsers...)
+		return result
 	}))
 }
 
-func andRec(c *Context, nodeBuilder ast.NodeBuilder, results *Results, depth int, nodes []ast.Node, r *reader.Reader, parsers ...Parser) bool {
+func andRec(c *Context, leftRecCtx IntMap, nodeBuilder ast.NodeBuilder, parserResult *ParserResult, depth int, nodes []ast.Node, r *reader.Reader, mergeCurtailingParsers bool, parsers ...Parser) bool {
 	c.RegisterCall()
-	results2 := parsers[0].Parse(c, r.Clone())
-	if results2 != nil {
-		if depth == 0 || len(results2.items) == 0 {
-			results.MergeCurtailReasons(results2)
+	nextParserResult := parsers[0].Parse(leftRecCtx, r.Clone())
+
+	if nextParserResult != nil {
+		if mergeCurtailingParsers {
+			parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(nextParserResult.CurtailingParsers)
 		}
-		for _, result := range results2.items {
+
+		for i, result := range nextParserResult.Results {
 			nodes[depth] = result.Node()
 			if len(parsers) > 1 {
-				if andRec(c, nodeBuilder, results, depth+1, nodes, result.Reader().Clone(), parsers[1:]...) {
+				var newLeftRecCtx IntMap
+				var newMergeCurtailingParsers bool
+				if i == 0 && result.Reader().Cursor().Pos() == r.Cursor().Pos() {
+					newLeftRecCtx = leftRecCtx
+					newMergeCurtailingParsers = true
+				} else {
+					newLeftRecCtx = NewIntMap()
+					newMergeCurtailingParsers = false
+				}
+				if andRec(c, newLeftRecCtx, nodeBuilder, parserResult, depth+1, nodes, result.Reader().Clone(), newMergeCurtailingParsers, parsers[1:]...) {
 					return true
 				}
 			} else {
 				nodesCopy := make([]ast.Node, len(nodes))
 				copy(nodesCopy, nodes)
-				results.Add(NewResult(nodeBuilder(nodesCopy), result.Reader()))
+				parserResult.Append(NewResult(nodeBuilder(nodesCopy), result.Reader()))
 				if result.Node().Token() == reader.EOF {
 					return true
 				}
