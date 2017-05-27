@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/opsidian/parsec/ast"
+	"github.com/opsidian/parsec/data"
 	"github.com/opsidian/parsec/reader"
 )
 
@@ -35,16 +36,18 @@ func (r Result) String() string {
 	return fmt.Sprintf("%s, cur: %s", r.node, r.reader.Cursor())
 }
 
+// ParserResult is the result of a parse call
 type ParserResult struct {
-	CurtailingParsers IntSet
+	CurtailingParsers data.IntSet
 	Results           []Result
 }
 
 // NewParserResult creates a new parser result
-func NewParserResult(curtailingParsers IntSet, results ...Result) *ParserResult {
+func NewParserResult(curtailingParsers data.IntSet, results ...Result) *ParserResult {
 	return &ParserResult{curtailingParsers, results}
 }
 
+// Append adds a result to the parse result
 func (p *ParserResult) Append(results ...Result) {
 	for _, result := range results {
 		p.append(result)

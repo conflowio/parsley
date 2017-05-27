@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsec/ast"
+	"github.com/opsidian/parsec/data"
 	"github.com/opsidian/parsec/parser"
 	"github.com/opsidian/parsec/reader"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 		parser.Rune('a', "CHAR"),
 	)
 	all := parser.And("ALL", c, ast.SingleNodeBuilder(0), &a, parser.End())
-	results := all.Parse(parser.NewIntMap(), r)
+	results := all.Parse(data.NewIntMap(), r)
 	assert.Equal(t, 1, len(results.Results))
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
@@ -57,7 +58,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		value,
 	)
 	p := parser.And("ALL", c, ast.SingleNodeBuilder(0), value, parser.End())
-	results := p.Parse(parser.NewIntMap(), r)
+	results := p.Parse(data.NewIntMap(), r)
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
@@ -81,13 +82,13 @@ func stringBuilder() ast.NodeBuilder {
 }
 
 func intLiteral() parser.Func {
-	return parser.Func(func(ctx parser.IntMap, r *reader.Reader) *parser.ParserResult {
+	return parser.Func(func(ctx data.IntMap, r *reader.Reader) *parser.ParserResult {
 		if matches, pos := r.ReadMatch("^[\\-+]?[1-9][0-9]*"); matches != nil {
 			intValue, err := strconv.Atoi(matches[0])
 			if err != nil {
 				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
 			}
-			return parser.NewParserResult(nil, parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r))
+			return parser.NewParserResult(data.NewIntSet(), parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r))
 		}
 		return nil
 	})
