@@ -83,6 +83,13 @@ func Many(name string, c *Context, nodeBuilder ast.NodeBuilder, p Parser) Func {
 	}))
 }
 
+// ManySep matches the given value parser one or more times separated by the separator parser
+func ManySep(name string, token string, c *Context, valueP Parser, sepP Parser, interpreter ast.Interpreter) Func {
+	sepValue := And(name+"_SV", c, ast.SingleNodeBuilder(1), sepP, valueP)
+	sepValueMany := And(name+"_SV*", c, ast.AllNodesBuilder(token, interpreter), sepValue)
+	return And(name, c, ast.AllNodesBuilder(token, interpreter), valueP, sepValueMany)
+}
+
 // RecursiveParser is a recursive and-type parser
 type RecursiveParser struct {
 	name         string

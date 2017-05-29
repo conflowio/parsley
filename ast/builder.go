@@ -30,3 +30,14 @@ func SingleNodeBuilder(i int) NodeBuilder {
 		return nodes[i]
 	}
 }
+
+// AllNodesBuilder returns with a function for including all nodes for interpretation
+func AllNodesBuilder(token string, interpreter Interpreter) NodeBuilder {
+	return func(nodes []Node) Node {
+		return NewNonTerminalNode(
+			token,
+			nodes,
+			interpreter,
+		)
+	}
+}
