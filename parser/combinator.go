@@ -10,15 +10,12 @@ import (
 func Memoize(name string, c *Context, p Parser) Func {
 	parserIndex := c.GetParserIndex(name)
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		c.Log("MEM", name, parserIndex, leftRecCtx, r)
-
 		result, found := c.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
 			return result
 		}
 
 		if leftRecCtx.Get(parserIndex) > r.CharsRemaining()+1 {
-			c.Log("CURTAIL", name)
 			return NewParserResult(data.NewIntSet().Insert(parserIndex))
 		}
 
@@ -28,8 +25,6 @@ func Memoize(name string, c *Context, p Parser) Func {
 		} else {
 			leftRecCtx = data.NewIntMap()
 		}
-
-		c.Log("SAVE", name, r, result, leftRecCtx)
 
 		c.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
 
@@ -47,7 +42,6 @@ func Or(name string, c *Context, parsers ...Parser) Func {
 		for _, parser := range parsers {
 			c.RegisterCall()
 			r := parser.Parse(leftRecCtx, r.Clone())
-			c.FinishCall()
 			if r != nil {
 				parserResult.Append(r.Results...)
 				parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(r.CurtailingParsers)
@@ -126,7 +120,6 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 	if nextParser != nil {
 		rp.c.RegisterCall()
 		parserResult = nextParser.Parse(leftRecCtx, r.Clone())
-		rp.c.FinishCall()
 	}
 
 	if parserResult != nil {
@@ -154,7 +147,6 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 			nodesCopy := make([]ast.Node, depth)
 			copy(nodesCopy[0:depth], rp.nodes[0:depth])
 			newRes := NewResult(rp.nodeBuilder(nodesCopy), r)
-			rp.c.Log(rp.name, "APPEND", newRes, rp.result)
 			rp.result.Append(newRes)
 			if rp.nodes[depth-1].Token() == reader.EOF {
 				return true
