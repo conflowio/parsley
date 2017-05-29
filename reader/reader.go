@@ -162,7 +162,7 @@ func (r *Reader) IsEOF() bool {
 }
 
 func (r *Reader) String() string {
-	return fmt.Sprintf("Reader{%s}\n", r.cur)
+	return fmt.Sprintf("R{%s}", r.cur)
 }
 
 func (r *Reader) readWhitespaces() {

@@ -167,7 +167,7 @@ func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {
 func TestStringShouldReturnStatusString(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
 	r.ReadRune()
-	assert.Equal(t, "Reader{1:2}\n", r.String())
+	assert.Equal(t, "R{1:2}\n", r.String())
 }
 
 func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {

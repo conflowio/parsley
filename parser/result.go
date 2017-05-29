@@ -33,7 +33,7 @@ func (r Result) Reader() *reader.Reader {
 }
 
 func (r Result) String() string {
-	return fmt.Sprintf("%s, cur: %s", r.node, r.reader.Cursor())
+	return fmt.Sprintf("RES{%s, cur: %s}", r.node, r.reader.Cursor())
 }
 
 // ParserResult is the result of a parse call
@@ -61,6 +61,9 @@ func (p *ParserResult) append(result Result) {
 	}
 
 	for k, v := range p.Results {
+		if v.Reader().Cursor().Pos() == result.Reader().Cursor().Pos() {
+			return
+		}
 		if v.Reader().Cursor().Pos() > result.Reader().Cursor().Pos() {
 			p.Results = append(p.Results, Result{})
 			copy(p.Results[k+1:], p.Results[k:])

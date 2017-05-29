@@ -97,5 +97,5 @@ func (n *NonTerminalNode) Pos() reader.Position {
 }
 
 func (n *NonTerminalNode) String() string {
-	return fmt.Sprintf("N{%s, %s}", n.token, n.children)
+	return fmt.Sprintf("NT{%s, %s}", n.token, n.children)
 }

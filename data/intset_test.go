@@ -12,6 +12,11 @@ func TestNewIntSetShouldCreateAnEmptySet(t *testing.T) {
 	assert.Equal(t, []int{}, i.data)
 }
 
+func TestNewIntSetShouldInsertValues(t *testing.T) {
+	i := NewIntSet(3, 2, 2, 1, 0)
+	assert.Equal(t, []int{0, 1, 2, 3}, i.data)
+}
+
 func TestLenShouldReturnWithSetLength(t *testing.T) {
 	assert.Equal(t, 0, IntSet{[]int{}}.Len())
 	assert.Equal(t, 1, IntSet{[]int{1}}.Len())
@@ -27,6 +32,7 @@ func TestInsert(t *testing.T) {
 	}
 	testCases := []TC{
 		TC{"Insert to empty list", []int{}, 1, []int{1}},
+		TC{"Insert zero", []int{}, 0, []int{0}},
 		TC{"Existing item should not be duplicated", []int{1}, 1, []int{1}},
 		TC{"Insert to the end of the list", []int{1}, 2, []int{1, 2}},
 		TC{"Insert to the beginning of the list", []int{2}, 1, []int{1, 2}},

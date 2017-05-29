@@ -25,9 +25,11 @@ func (i IntMap) Get(key int) int {
 
 // Keys returns with the map keys
 func (i IntMap) Keys() []int {
-	keys := make([]int, 0, len(i.data))
+	n := 0
+	keys := make([]int, len(i.data))
 	for k := range i.data {
-		keys = append(keys, k)
+		keys[n] = k
+		n++
 	}
 	return keys
 }

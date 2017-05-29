@@ -7,21 +7,31 @@ import (
 )
 
 // Memoize handles result cache and curtailing left recursion
-func Memoize(name string, c *Context, parser Func) Func {
+func Memoize(name string, c *Context, p Parser) Func {
 	parserIndex := c.GetParserIndex(name)
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+		c.Log("MEM", name, parserIndex, leftRecCtx, r)
+
 		result, found := c.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
 			return result
 		}
 
 		if leftRecCtx.Get(parserIndex) > r.CharsRemaining()+1 {
+			c.Log("CURTAIL", name)
 			return NewParserResult(data.NewIntSet().Insert(parserIndex))
 		}
 
-		result = parser(leftRecCtx.Inc(parserIndex), r)
+		result = p.Parse(leftRecCtx.Inc(parserIndex), r)
+		if result != nil {
+			leftRecCtx = leftRecCtx.Filter(result.CurtailingParsers)
+		} else {
+			leftRecCtx = data.NewIntMap()
+		}
 
-		c.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx.Filter(result.CurtailingParsers))
+		c.Log("SAVE", name, r, result, leftRecCtx)
+
+		c.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
 
 		return result
 	})
@@ -37,11 +47,23 @@ func Or(name string, c *Context, parsers ...Parser) Func {
 		for _, parser := range parsers {
 			c.RegisterCall()
 			r := parser.Parse(leftRecCtx, r.Clone())
-			parserResult.Append(r.Results...)
-			parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(r.CurtailingParsers)
+			c.FinishCall()
+			if r != nil {
+				parserResult.Append(r.Results...)
+				parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(r.CurtailingParsers)
+			}
 		}
 		return parserResult
 	}))
+}
+
+func parserListLookUp(parsers []Parser) func(i int) Parser {
+	return func(i int) Parser {
+		if i < len(parsers) {
+			return parsers[i]
+		}
+		return nil
+	}
 }
 
 // And combines multiple parsers
@@ -50,47 +72,87 @@ func And(name string, c *Context, nodeBuilder ast.NodeBuilder, parsers ...Parser
 		panic("No parsers were given")
 	}
 	return Memoize(name, c, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		nodes := make([]ast.Node, len(parsers))
-		result := NewParserResult(data.NewIntSet())
-		andRec(c, leftRecCtx, nodeBuilder, result, 0, nodes, r, true, parsers...)
-		return result
+		return NewRecursiveParser(name, c, nodeBuilder, false, parserListLookUp(parsers)).Parse(leftRecCtx, r)
 	}))
 }
 
-func andRec(c *Context, leftRecCtx data.IntMap, nodeBuilder ast.NodeBuilder, parserResult *ParserResult, depth int, nodes []ast.Node, r *reader.Reader, mergeCurtailingParsers bool, parsers ...Parser) bool {
-	c.RegisterCall()
-	nextParserResult := parsers[0].Parse(leftRecCtx, r.Clone())
+// Many matches the same expression one or more times
+func Many(name string, c *Context, nodeBuilder ast.NodeBuilder, p Parser) Func {
+	return Memoize(name, c, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+		return NewRecursiveParser(name, c, nodeBuilder, true, func(i int) Parser { return p }).Parse(leftRecCtx, r)
+	}))
+}
 
-	if nextParserResult != nil {
+// RecursiveParser is a recursive and-type parser
+type RecursiveParser struct {
+	name         string
+	c            *Context
+	nodeBuilder  ast.NodeBuilder
+	parserLookUp func(i int) Parser
+	result       *ParserResult
+	nodes        []ast.Node
+	infinite     bool
+}
+
+// NewRecursiveParser creates a new recursive parser
+func NewRecursiveParser(name string, c *Context, nodeBuilder ast.NodeBuilder, infinite bool, parserLookUp func(i int) Parser) RecursiveParser {
+	return RecursiveParser{
+		name:         name,
+		c:            c,
+		nodeBuilder:  nodeBuilder,
+		infinite:     infinite,
+		parserLookUp: parserLookUp,
+		result:       NewParserResult(data.NewIntSet()),
+		nodes:        []ast.Node{},
+	}
+}
+
+// Parse runs the recursive parser
+func (rp RecursiveParser) Parse(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+	rp.runNextParser(0, leftRecCtx, r, true)
+	return rp.result
+}
+
+func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *reader.Reader, mergeCurtailingParsers bool) bool {
+	var parserResult *ParserResult
+	nextParser := rp.parserLookUp(depth)
+	if nextParser != nil {
+		rp.c.RegisterCall()
+		parserResult = nextParser.Parse(leftRecCtx, r.Clone())
+		rp.c.FinishCall()
+	}
+
+	if parserResult != nil {
 		if mergeCurtailingParsers {
-			parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(nextParserResult.CurtailingParsers)
+			rp.result.CurtailingParsers = rp.result.CurtailingParsers.Union(parserResult.CurtailingParsers)
 		}
 
-		for i, result := range nextParserResult.Results {
-			nodes[depth] = result.Node()
-			if len(parsers) > 1 {
-				var newLeftRecCtx data.IntMap
-				var newMergeCurtailingParsers bool
-				if i == 0 && result.Reader().Cursor().Pos() == r.Cursor().Pos() {
-					newLeftRecCtx = leftRecCtx
-					newMergeCurtailingParsers = true
-				} else {
-					newLeftRecCtx = data.NewIntMap()
-					newMergeCurtailingParsers = false
-				}
-				if andRec(c, newLeftRecCtx, nodeBuilder, parserResult, depth+1, nodes, result.Reader().Clone(), newMergeCurtailingParsers, parsers[1:]...) {
-					return true
-				}
+		for i, result := range parserResult.Results {
+			if len(rp.nodes) < depth+1 {
+				rp.nodes = append(rp.nodes, result.Node())
 			} else {
-				nodesCopy := make([]ast.Node, len(nodes))
-				copy(nodesCopy, nodes)
-				parserResult.Append(NewResult(nodeBuilder(nodesCopy), result.Reader()))
-				if result.Node().Token() == reader.EOF {
-					return true
-				}
+				rp.nodes[depth] = result.Node()
+			}
+			if i > 0 || result.Reader().Cursor().Pos() > r.Cursor().Pos() {
+				leftRecCtx = data.NewIntMap()
+				mergeCurtailingParsers = false
+			}
+			if rp.runNextParser(depth+1, leftRecCtx, result.Reader().Clone(), mergeCurtailingParsers) {
+				return true
 			}
 		}
 	}
-
+	if parserResult == nil || parserResult.Results == nil {
+		if (rp.infinite && depth > 0) || nextParser == nil {
+			nodesCopy := make([]ast.Node, depth)
+			copy(nodesCopy[0:depth], rp.nodes[0:depth])
+			newRes := NewResult(rp.nodeBuilder(nodesCopy), r)
+			rp.c.Log(rp.name, "APPEND", newRes, rp.result)
+			rp.result.Append(newRes)
+			if rp.nodes[depth-1].Token() == reader.EOF {
+				return true
+			}
+		}
+	}
 	return false
 }

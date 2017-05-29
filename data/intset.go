@@ -10,8 +10,12 @@ type IntSet struct {
 }
 
 // NewIntSet creates a new integer set
-func NewIntSet() IntSet {
-	return IntSet{[]int{}}
+func NewIntSet(values ...int) IntSet {
+	i := IntSet{make([]int, 0, len(values))}
+	for _, val := range values {
+		i.insertValue(val)
+	}
+	return i
 }
 
 // Len returns with the length of the set
@@ -24,21 +28,28 @@ func (i IntSet) Insert(val int) IntSet {
 	if len(i.data) == 0 {
 		return IntSet{[]int{val}}
 	}
+	i2 := i
+	i2.insertValue(val)
+	return i2
+}
+
+func (i *IntSet) insertValue(val int) {
 	index := sort.SearchInts(i.data, val)
 	if index < len(i.data) && i.data[index] == val {
-		return i
+		return
 	}
-
-	i2 := IntSet{make([]int, len(i.data)+1)}
-	copy(i2.data[:index], i.data[:index])
-	copy(i2.data[index+1:], i.data[index:])
-	i2.data[index] = val
-
-	return i2
+	i.data = append(i.data, 0)
+	copy(i.data[index+1:], i.data[index:])
+	i.data[index] = val
 }
 
 // Union returns with the union of the two set
 func (i IntSet) Union(i2 IntSet) IntSet {
+	if len(i2.data) == 0 {
+		return i
+	} else if len(i.data) == 0 {
+		return i2
+	}
 	i3 := IntSet{make([]int, 0, len(i.data)+len(i2.data))}
 	var n1, n2 int
 	for n1 < len(i.data) || n2 < len(i2.data) {

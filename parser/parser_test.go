@@ -14,7 +14,7 @@ import (
 )
 
 func TestDirectLeftRecursion(t *testing.T) {
-	input := "abbbbbbbbbbbbbbbbbbbb"
+	input := "abbbbbbbbbbbbbbbbbbb"
 	r := reader.New([]byte(input), true)
 	c := parser.NewContext()
 	var a parser.Func
@@ -32,11 +32,11 @@ func TestDirectLeftRecursion(t *testing.T) {
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
-	assert.Equal(t, 344, c.GetSumCallCount())
+	assert.Equal(t, 318, c.GetSumCallCount())
 }
 
 func TestIndirectLeftRecursion(t *testing.T) {
-	input := []byte("1 + 2 + 3 + 4")
+	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10")
 	r := reader.New(input, true)
 	c := parser.NewContext()
 	var add parser.Func
@@ -62,8 +62,8 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
-	assert.Equal(t, 10, result)
-	assert.Equal(t, 373, c.GetSumCallCount())
+	assert.Equal(t, 55, result)
+	assert.Equal(t, 3459, c.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {
