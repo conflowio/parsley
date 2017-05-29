@@ -3,7 +3,7 @@ package ast
 import (
 	"fmt"
 
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/reader"
 )
 
 // Node represents an AST node

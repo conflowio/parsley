@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/opsidian/parsec/ast"
-	"github.com/opsidian/parsec/data"
-	"github.com/opsidian/parsec/parser"
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/reader"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

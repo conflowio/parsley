@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 
-	"github.com/opsidian/parsec/ast"
-	"github.com/opsidian/parsec/data"
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/reader"
 )
 
 // Result represents one result of a parser

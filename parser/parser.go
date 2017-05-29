@@ -3,8 +3,8 @@ package parser
 import (
 	"errors"
 
-	"github.com/opsidian/parsec/data"
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/reader"
 )
 
 // Parser defines a parser interface

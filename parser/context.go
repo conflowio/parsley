@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/opsidian/parsec/data"
+	"github.com/opsidian/parsley/data"
 )
 
 type storedResult struct {

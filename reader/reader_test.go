@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/reader"
 	"github.com/stretchr/testify/assert"
 )
 

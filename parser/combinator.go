@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"github.com/opsidian/parsec/ast"
-	"github.com/opsidian/parsec/data"
-	"github.com/opsidian/parsec/reader"
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/reader"
 )
 
 // Memoize handles result cache and curtailing left recursion
