@@ -8,9 +8,6 @@ import (
 	"unicode/utf8"
 )
 
-// EOF indicates the end of file
-const EOF = "EOF"
-
 // Position represents a token position
 type Position struct {
 	pos  int

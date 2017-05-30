@@ -89,6 +89,23 @@ func TestMemoizeShouldCurtailResult(t *testing.T) {
 	assert.Equal(t, expected, results)
 }
 
+func TestMaybeShouldReturnParserResultAndEmptyResult(t *testing.T) {
+	r := reader.New([]byte("ab"), true)
+
+	var r1 parser.Result
+
+	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
+		pos := r.Cursor()
+		ch, _, _ := r.ReadRune()
+		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
+		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
+	})
+	r2 := parser.NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r)
+
+	results := parser.Maybe(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), r2, r1), results)
+}
+
 func TestOrShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
 	ctx := parser.EmptyLeftRecCtx()
@@ -146,7 +163,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 	curtailingParsers := data.NewIntSet(1, 2)
 	assert.EqualValues(t, parser.NewParserResult(curtailingParsers, r1, r2), results)
 
-	assert.Equal(t, 5, parser.Stat.GetSumCallCount())
+	assert.Equal(t, 4, parser.Stat.GetSumCallCount())
 }
 
 func TestOrMayReturnEmptyResult(t *testing.T) {
@@ -183,7 +200,7 @@ func TestOrShouldCloneReadersForAllParsers(t *testing.T) {
 	})
 
 	parser.Or(p1, p2).Parse(ctx, r)
-	assert.Equal(t, 3, parser.Stat.GetSumCallCount())
+	assert.Equal(t, 2, parser.Stat.GetSumCallCount())
 }
 
 func TestAndShouldPanicIfNoParserWasGiven(t *testing.T) {
@@ -246,7 +263,7 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 		parser.NewResult(ast.NewTerminalNode("STRING", reader.NewPosition(0, 1, 1), "abcd"), r.WithCursor(4, 1, 5)),
 	), results)
 
-	assert.EqualValues(t, 4, parser.Stat.GetSumCallCount())
+	assert.EqualValues(t, 3, parser.Stat.GetSumCallCount())
 }
 
 func TestAndShouldHandleNilResults(t *testing.T) {
@@ -298,7 +315,7 @@ func TestAndShouldStopIfEOFReached(t *testing.T) {
 		r1 := r.Clone()
 		ch, _, _ := r1.ReadRune()
 		return parser.NewParserResult(parser.NoCurtailingParsers(),
-			parser.NewResult(ast.NewTerminalNode(reader.EOF, pos, nil), r),
+			parser.NewResult(ast.NewTerminalNode(ast.EOF, pos, nil), r),
 			parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r1),
 		)
 	})

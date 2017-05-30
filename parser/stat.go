@@ -1,7 +1,7 @@
 package parser
 
 // Stat is the global statistics object
-var Stat = Statistics{sumCallCount: 1}
+var Stat = Statistics{}
 
 // Statistics contains parsing statistics
 type Statistics struct {
@@ -20,5 +20,5 @@ func (s *Statistics) GetSumCallCount() int {
 
 // Reset resets the statistic counters
 func (s *Statistics) Reset() {
-	s.sumCallCount = 1
+	s.sumCallCount = 0
 }

@@ -32,6 +32,7 @@ func Memoize(name string, h *History, p Parser) Func {
 	})
 }
 
+// Maybe matches the given parser or returns with a result containing an "empty" node
 func Maybe(parser Parser) Parser {
 	return Or(parser, Empty())
 }
@@ -148,7 +149,7 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 			copy(nodesCopy[0:depth], rp.nodes[0:depth])
 			newRes := NewResult(rp.nodeBuilder.BuildNode(nodesCopy), r)
 			rp.result.Append(newRes)
-			if rp.nodes[depth-1].Token() == reader.EOF {
+			if rp.nodes[depth-1].Token() == ast.EOF {
 				return true
 			}
 		}

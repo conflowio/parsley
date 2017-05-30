@@ -6,6 +6,12 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
+// EMPTY is the EMPTY token
+const EMPTY = "EMPTY"
+
+// EOF is the end of file token
+const EOF = "EOF"
+
 // Node represents an AST node
 type Node interface {
 	Token() string
@@ -83,13 +89,20 @@ func (n NonTerminalNode) Token() string {
 
 // Value returns with the value of the node
 func (n NonTerminalNode) Value() (interface{}, error) {
-	values := make([]interface{}, len(n.children))
-	for i, child := range n.children {
-		value, err := child.Value()
-		if err != nil {
-			return nil, err
+	values := make([]interface{}, 0, len(n.children))
+	for _, child := range n.children {
+		if child != nil {
+			if child.Token() == EMPTY {
+				continue
+			}
+			value, err := child.Value()
+			if err != nil {
+				return nil, err
+			}
+			values = append(values, value)
+		} else {
+			values = append(values, nil)
 		}
-		values[i] = value
 	}
 	return n.interpreter.Eval(values)
 }

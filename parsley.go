@@ -12,6 +12,7 @@ import (
 func Parse(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node, error) {
 	parser.Stat.Reset()
 	r := reader.New(input, ignoreWhitespaces)
+	parser.Stat.RegisterCall()
 	parserResult := s.Parse(parser.EmptyLeftRecCtx(), r)
 	if len(parserResult.Results) == 0 {
 		return nil, errors.New("Failed to parse the input")

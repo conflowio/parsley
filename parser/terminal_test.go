@@ -13,10 +13,18 @@ func assertCursor(t *testing.T, pos int, line int, col int, r *reader.Reader) {
 	assert.Equal(t, reader.NewPosition(pos, line, col), r.Cursor())
 }
 
+func TestEmptyWillAlwaysReturnWithResult(t *testing.T) {
+	r := reader.New([]byte{}, true)
+	res := parser.Empty()(parser.EmptyLeftRecCtx(), r)
+	expectedNode := ast.NewTerminalNode(ast.EMPTY, reader.NewPosition(0, 1, 1), nil)
+	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r)), res)
+	assertCursor(t, 0, 1, 1, r)
+}
+
 func TestEndShouldMatchEmptyReader(t *testing.T) {
 	r := reader.New([]byte{}, true)
 	res := parser.End()(parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode(reader.EOF, reader.NewPosition(0, 1, 1), nil)
+	expectedNode := ast.NewTerminalNode(ast.EOF, reader.NewPosition(0, 1, 1), nil)
 	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 0, 1, 1, r)
 }
@@ -25,7 +33,7 @@ func TestEndShouldMatchEOF(t *testing.T) {
 	r := reader.New([]byte("a"), true)
 	r.ReadRune()
 	res := parser.End()(parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode(reader.EOF, reader.NewPosition(1, 1, 2), nil)
+	expectedNode := ast.NewTerminalNode(ast.EOF, reader.NewPosition(1, 1, 2), nil)
 	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r)), res)
 	assertCursor(t, 1, 1, 2, r)
 }

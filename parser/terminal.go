@@ -8,10 +8,10 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// Empty always matches and returns with an empty result
+// Empty always matches and returns with an empty node result
 func Empty() Func {
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode("EMPTY", r.Cursor(), nil), r))
+		return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r))
 	})
 }
 
@@ -19,7 +19,7 @@ func Empty() Func {
 func End() Func {
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 		if r.IsEOF() {
-			return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode(reader.EOF, r.Cursor(), nil), r))
+			return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode(ast.EOF, r.Cursor(), nil), r))
 		}
 		return nil
 	})
