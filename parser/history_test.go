@@ -10,14 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegisterCallShouldIncreaseSumCallCount(t *testing.T) {
-	h := parser.NewHistory()
-	h.RegisterCall()
-	assert.Equal(t, h.GetSumCallCount(), 2)
-	h.RegisterCall()
-	assert.Equal(t, h.GetSumCallCount(), 3)
-}
-
 func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 	h := parser.NewHistory()
 	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
@@ -58,11 +50,6 @@ func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
 	results, ok = h.GetResults(h.GetParserIndex("p2"), 2, data.NewIntMap(nil))
 	assert.Nil(t, results)
 	assert.True(t, ok)
-}
-
-func TestGetSumCallCountShouldStartAtOne(t *testing.T) {
-	h := parser.NewHistory()
-	assert.Equal(t, h.GetSumCallCount(), 1)
 }
 
 func TestGetResultsShouldNotReturnCurtailedResult(t *testing.T) {

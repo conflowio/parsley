@@ -14,39 +14,41 @@ import (
 )
 
 func TestDirectLeftRecursion(t *testing.T) {
+	parser.Stat.Reset()
 	input := "abbbbbbbbbbbbbbbbbbb"
 	r := reader.New([]byte(input), true)
 	h := parser.NewHistory()
 	var a parser.Func
 
-	a = parser.Memoize("A", h, parser.Or(h,
-		parser.And(h, stringBuilder(),
+	a = parser.Memoize("A", h, parser.Or(
+		parser.And(stringBuilder(),
 			&a,
 			parser.Rune('b', "CHAR"),
 		),
 		parser.Rune('a', "CHAR"),
 	))
-	all := parser.And(h, ast.SingleNodeBuilder(0), &a, parser.End())
+	all := parser.And(ast.SingleNodeBuilder(0), &a, parser.End())
 	results := all.Parse(data.NewIntMap(nil), r)
 	assert.Equal(t, 1, len(results.Results))
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
-	assert.Equal(t, 318, h.GetSumCallCount())
+	assert.Equal(t, 318, parser.Stat.GetSumCallCount())
 }
 
 func TestIndirectLeftRecursion(t *testing.T) {
+	parser.Stat.Reset()
 	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10")
 	r := reader.New(input, true)
 	h := parser.NewHistory()
 	var add parser.Func
 
-	value := parser.Memoize("VALUE", h, parser.Or(h,
+	value := parser.Memoize("VALUE", h, parser.Or(
 		intLiteral(),
 		&add,
 	))
 
-	add = parser.Memoize("ADD", h, parser.And(h,
+	add = parser.Memoize("ADD", h, parser.And(
 		ast.BinaryOperatorBuilder(
 			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 				return children[0].(int) + children[1].(int), nil
@@ -56,22 +58,23 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		parser.Rune('+', "ADD"),
 		value,
 	))
-	p := parser.And(h, ast.SingleNodeBuilder(0), value, parser.End())
+	p := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
 	results := p.Parse(data.NewIntMap(nil), r)
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
-	assert.Equal(t, 3459, h.GetSumCallCount())
+	assert.Equal(t, 3459, parser.Stat.GetSumCallCount())
 }
 
 func TestMany(t *testing.T) {
+	parser.Stat.Reset()
 	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10")
 	r := reader.New(input, true)
 	h := parser.NewHistory()
 	var add parser.Func
 
-	value := parser.Memoize("VALUE", h, parser.Or(h,
+	value := parser.Memoize("VALUE", h, parser.Or(
 		intLiteral(),
 		&add,
 	))
@@ -87,13 +90,13 @@ func TestMany(t *testing.T) {
 		}),
 	))
 
-	p := parser.And(h, ast.SingleNodeBuilder(0), value, parser.End())
+	p := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
 	results := p.Parse(data.NewIntMap(nil), r)
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
-	assert.Equal(t, 1226, h.GetSumCallCount())
+	assert.Equal(t, 1226, parser.Stat.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {

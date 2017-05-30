@@ -11,19 +11,17 @@ type storedResult struct {
 
 // History records information about parser calls
 type History struct {
-	parserCount  int
-	sumCallCount int
-	parsers      map[string]int
-	results      map[int]map[int]storedResult
+	parserCount int
+	parsers     map[string]int
+	results     map[int]map[int]storedResult
 }
 
 // NewHistory creates a history instance
 func NewHistory() *History {
 	return &History{
-		parserCount:  0,
-		parsers:      make(map[string]int),
-		results:      make(map[int]map[int]storedResult),
-		sumCallCount: 1,
+		parserCount: 0,
+		parsers:     make(map[string]int),
+		results:     make(map[int]map[int]storedResult),
 	}
 }
 
@@ -36,16 +34,6 @@ func (h *History) GetParserIndex(parser string) (parserIndex int) {
 		h.parserCount++
 	}
 	return
-}
-
-// RegisterCall registers a call
-func (h *History) RegisterCall() {
-	h.sumCallCount++
-}
-
-// GetSumCallCount returns with the sum call count
-func (h *History) GetSumCallCount() int {
-	return h.sumCallCount
 }
 
 // RegisterResults registers a parser result for a certain position
