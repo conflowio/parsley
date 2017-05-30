@@ -5,8 +5,8 @@ import (
 )
 
 type storedResult struct {
-	parserResult   *ParserResult
-	leftRecContext data.IntMap
+	parserResult *ParserResult
+	leftRecCtx   data.IntMap
 }
 
 // History records information about parser calls
@@ -37,11 +37,11 @@ func (h *History) GetParserIndex(parser string) (parserIndex int) {
 }
 
 // RegisterResults registers a parser result for a certain position
-func (h *History) RegisterResults(parserIndex int, pos int, parserResult *ParserResult, leftRecContext data.IntMap) {
+func (h *History) RegisterResults(parserIndex int, pos int, parserResult *ParserResult, leftRecCtx data.IntMap) {
 	if _, ok := h.results[parserIndex]; !ok {
 		h.results[parserIndex] = make(map[int]storedResult)
 	}
-	h.results[parserIndex][pos] = storedResult{parserResult, leftRecContext}
+	h.results[parserIndex][pos] = storedResult{parserResult, leftRecCtx}
 }
 
 // GetResults return with a previously saved result
@@ -51,8 +51,8 @@ func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (
 		return nil, false
 	}
 
-	for key := range storedResult.leftRecContext.Keys() {
-		if storedResult.leftRecContext.Get(key) > leftRecCtx.Get(key) {
+	for key := range storedResult.leftRecCtx.Keys() {
+		if storedResult.leftRecCtx.Get(key) > leftRecCtx.Get(key) {
 			return nil, false
 		}
 	}

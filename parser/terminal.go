@@ -11,7 +11,7 @@ import (
 // Empty always matches and returns with an empty result
 func Empty() Func {
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		return NewParserResult(data.NewIntSet(), NewResult(nil, r))
+		return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode("EMPTY", r.Cursor(), nil), r))
 	})
 }
 
@@ -19,7 +19,7 @@ func Empty() Func {
 func End() Func {
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 		if r.IsEOF() {
-			return NewParserResult(data.NewIntSet(), NewResult(ast.NewTerminalNode(reader.EOF, r.Cursor(), nil), r))
+			return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode(reader.EOF, r.Cursor(), nil), r))
 		}
 		return nil
 	})
@@ -29,7 +29,7 @@ func End() Func {
 func Rune(char rune, token string) Func {
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 		if matches, pos := r.ReadMatch("^" + regexp.QuoteMeta(string(char))); matches != nil {
-			return NewParserResult(data.NewIntSet(), NewResult(ast.NewTerminalNode(token, pos, char), r))
+			return NewParserResult(NoCurtailingParsers(), NewResult(ast.NewTerminalNode(token, pos, char), r))
 		}
 		return nil
 	})

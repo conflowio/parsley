@@ -13,25 +13,25 @@ import (
 func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 	h := parser.NewHistory()
 	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
-	results := parser.NewParserResult(data.NewIntSet(), parser.NewResult(node, nil))
-	h.RegisterResults(h.GetParserIndex("p1"), 2, results, data.NewIntMap(nil))
+	results := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, nil))
+	h.RegisterResults(h.GetParserIndex("p1"), 2, results, parser.EmptyLeftRecCtx())
 
-	actual, ok := h.GetResults(h.GetParserIndex("p1"), 2, data.NewIntMap(nil))
+	actual, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
 	assert.Equal(t, results, actual)
 	assert.True(t, ok)
 }
 
 func TestRegisterResultShouldReturnNilResult(t *testing.T) {
 	h := parser.NewHistory()
-	h.RegisterResults(h.GetParserIndex("p1"), 2, nil, data.NewIntMap(nil))
-	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, data.NewIntMap(nil))
+	h.RegisterResults(h.GetParserIndex("p1"), 2, nil, parser.EmptyLeftRecCtx())
+	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
 	assert.Nil(t, results)
 	assert.True(t, ok)
 }
 
 func TestRegisterResultShouldReturnFalseWhenNoResultWasRegistered(t *testing.T) {
 	h := parser.NewHistory()
-	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, data.NewIntMap(nil))
+	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
 	assert.Nil(t, results)
 	assert.False(t, ok)
 }
@@ -39,15 +39,15 @@ func TestRegisterResultShouldReturnFalseWhenNoResultWasRegistered(t *testing.T) 
 func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
 	h := parser.NewHistory()
 	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
-	results := parser.NewParserResult(data.NewIntSet(), parser.NewResult(node, nil))
-	h.RegisterResults(h.GetParserIndex("p1"), 1, results, data.NewIntMap(nil))
-	h.RegisterResults(h.GetParserIndex("p2"), 2, nil, data.NewIntMap(nil))
+	results := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, nil))
+	h.RegisterResults(h.GetParserIndex("p1"), 1, results, parser.EmptyLeftRecCtx())
+	h.RegisterResults(h.GetParserIndex("p2"), 2, nil, parser.EmptyLeftRecCtx())
 
-	actual, ok := h.GetResults(h.GetParserIndex("p1"), 1, data.NewIntMap(nil))
+	actual, ok := h.GetResults(h.GetParserIndex("p1"), 1, parser.EmptyLeftRecCtx())
 	assert.Equal(t, results, actual)
 	assert.True(t, ok)
 
-	results, ok = h.GetResults(h.GetParserIndex("p2"), 2, data.NewIntMap(nil))
+	results, ok = h.GetResults(h.GetParserIndex("p2"), 2, parser.EmptyLeftRecCtx())
 	assert.Nil(t, results)
 	assert.True(t, ok)
 }

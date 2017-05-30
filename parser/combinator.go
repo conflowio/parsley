@@ -16,14 +16,14 @@ func Memoize(name string, h *History, p Parser) Func {
 		}
 
 		if leftRecCtx.Get(parserIndex) > r.CharsRemaining()+1 {
-			return NewParserResult(data.NewIntSet().Insert(parserIndex))
+			return NewParserResult(data.NewIntSet(parserIndex))
 		}
 
 		result = p.Parse(leftRecCtx.Inc(parserIndex), r)
 		if result != nil {
 			leftRecCtx = leftRecCtx.Filter(result.CurtailingParsers)
 		} else {
-			leftRecCtx = data.NewIntMap(nil)
+			leftRecCtx = EmptyLeftRecCtx()
 		}
 
 		h.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
@@ -32,13 +32,17 @@ func Memoize(name string, h *History, p Parser) Func {
 	})
 }
 
+func Maybe(parser Parser) Parser {
+	return Or(parser, Empty())
+}
+
 // Or chooses the first matching parser
 func Or(parsers ...Parser) Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		parserResult := NewParserResult(data.NewIntSet())
+		parserResult := NewParserResult(NoCurtailingParsers())
 		for _, parser := range parsers {
 			Stat.RegisterCall()
 			r := parser.Parse(leftRecCtx, r.Clone())
@@ -99,7 +103,7 @@ func NewRecursiveParser(nodeBuilder ast.NodeBuilder, infinite bool, parserLookUp
 		nodeBuilder:  nodeBuilder,
 		infinite:     infinite,
 		parserLookUp: parserLookUp,
-		result:       NewParserResult(data.NewIntSet()),
+		result:       NewParserResult(NoCurtailingParsers()),
 		nodes:        []ast.Node{},
 	}
 }
@@ -130,7 +134,7 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 				rp.nodes[depth] = result.Node()
 			}
 			if i > 0 || result.Reader().Cursor().Pos() > r.Cursor().Pos() {
-				leftRecCtx = data.NewIntMap(nil)
+				leftRecCtx = EmptyLeftRecCtx()
 				mergeCurtailingParsers = false
 			}
 			if rp.runNextParser(depth+1, leftRecCtx, result.Reader().Clone(), mergeCurtailingParsers) {

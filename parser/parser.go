@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"errors"
-
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/reader"
 )
@@ -20,12 +18,7 @@ func (f Func) Parse(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 	return f(leftRecCtx, r)
 }
 
-// Parse parses the given input with the parser function
-func Parse(input []byte, p Func) (interface{}, error) {
-	r := reader.New(input, true)
-	parserResult := p.Parse(data.NewIntMap(nil), r)
-	if len(parserResult.Results) == 0 {
-		return nil, errors.New("Failed to parse the input")
-	}
-	return parserResult.Results[0].Node().Value()
+// EmptyLeftRecCtx creates an empty left recursion context
+func EmptyLeftRecCtx() data.IntMap {
+	return data.NewIntMap(nil)
 }

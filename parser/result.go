@@ -61,6 +61,7 @@ func (p *ParserResult) append(result Result) {
 	}
 
 	for k, v := range p.Results {
+		// If we already have a result up to the same position then we ignore it
 		if v.Reader().Cursor().Pos() == result.Reader().Cursor().Pos() {
 			return
 		}
@@ -73,4 +74,9 @@ func (p *ParserResult) append(result Result) {
 	}
 
 	p.Results = append(p.Results, result)
+}
+
+// NoCurtailingParsers returns with an empty int set
+func NoCurtailingParsers() data.IntSet {
+	return data.NewIntSet()
 }

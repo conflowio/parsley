@@ -3,6 +3,7 @@ package parser
 // Stat is the global statistics object
 var Stat = Statistics{sumCallCount: 1}
 
+// Statistics contains parsing statistics
 type Statistics struct {
 	sumCallCount int
 }

@@ -10,28 +10,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMemoizeShouldIncreaseLeftRecContext(t *testing.T) {
+func TestMemoizeShouldIncreaseleftRecCtx(t *testing.T) {
 	r := reader.New([]byte("aa"), true)
 	r.ReadRune()
 	h := parser.NewHistory()
-	leftRecContext := data.NewIntMap(nil)
+	leftRecCtx := parser.EmptyLeftRecCtx()
 	parserIndex := h.GetParserIndex("p1")
-	assert.Equal(t, leftRecContext.Get(parserIndex), 0)
+	assert.Equal(t, leftRecCtx.Get(parserIndex), 0)
 
-	p := parser.Func(func(leftRecContext data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		assert.Equal(t, leftRecContext.Get(parserIndex), 1)
+	p := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
+		assert.Equal(t, leftRecCtx.Get(parserIndex), 1)
 		return nil
 	})
-	parser.Memoize("p1", h, p).Parse(leftRecContext, r)
+	parser.Memoize("p1", h, p).Parse(leftRecCtx, r)
 }
 
 func TestMemoizeShouldReturnParserResult(t *testing.T) {
 	r := reader.New([]byte("a"), true)
 	h := parser.NewHistory()
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	node := ast.NewTerminalNode("a", reader.NewPosition(0, 1, 2), "a")
-	expected := parser.NewParserResult(data.NewIntSet(), parser.NewResult(node, r))
+	expected := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, r))
 
 	p := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		return expected
@@ -43,10 +43,10 @@ func TestMemoizeShouldReturnParserResult(t *testing.T) {
 func TestMemoizeShouldRememberResult(t *testing.T) {
 	r := reader.New([]byte("a"), true)
 	h := parser.NewHistory()
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
-	expected := parser.NewParserResult(data.NewIntSet(), parser.NewResult(node, r))
+	expected := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, r))
 
 	called := false
 	p := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
@@ -72,7 +72,7 @@ func TestMemoizeShouldRememberResult(t *testing.T) {
 func TestMemoizeShouldCurtailResult(t *testing.T) {
 	r := reader.New([]byte("a"), true)
 	h := parser.NewHistory()
-	ctx := data.NewIntMap(nil).
+	ctx := parser.EmptyLeftRecCtx().
 		Inc(h.GetParserIndex("p1")).
 		Inc(h.GetParserIndex("p1")).
 		Inc(h.GetParserIndex("p1")).
@@ -83,7 +83,7 @@ func TestMemoizeShouldCurtailResult(t *testing.T) {
 		called = true
 		return nil
 	})
-	expected := parser.NewParserResult(data.NewIntSet().Insert(h.GetParserIndex("p1")))
+	expected := parser.NewParserResult(data.NewIntSet(h.GetParserIndex("p1")))
 	results := parser.Memoize("p1", h, p).Parse(ctx, r)
 	assert.False(t, called, "The call tree should have been curtailed")
 	assert.Equal(t, expected, results)
@@ -91,13 +91,13 @@ func TestMemoizeShouldCurtailResult(t *testing.T) {
 
 func TestOrShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 	assert.Panics(t, func() { parser.Or().Parse(ctx, r) })
 }
 
 func TestOrShouldHandleOnlyOneParser(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	var r1 parser.Result
 
@@ -105,17 +105,17 @@ func TestOrShouldHandleOnlyOneParser(t *testing.T) {
 		pos := r.Cursor()
 		ch, _, _ := r.ReadRune()
 		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
-		return parser.NewParserResult(data.NewIntSet(), r1)
+		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
 	})
 
 	results := parser.Or(p1).Parse(ctx, r)
-	assert.Equal(t, parser.NewParserResult(data.NewIntSet(), r1), results)
+	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), r1), results)
 }
 
 func TestOrShouldMergeResults(t *testing.T) {
 	parser.Stat.Reset()
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	var r1, r2 parser.Result
 
@@ -123,7 +123,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 		pos := r.Cursor()
 		ch, _, _ := r.ReadRune()
 		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
-		return parser.NewParserResult(data.NewIntSet(), r1)
+		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
 	})
 
 	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
@@ -131,11 +131,11 @@ func TestOrShouldMergeResults(t *testing.T) {
 		ch1, _, _ := r.ReadRune()
 		ch2, _, _ := r.ReadRune()
 		r2 = parser.NewResult(ast.NewTerminalNode("STRING", pos, string([]rune{ch1, ch2})), r)
-		return parser.NewParserResult(data.NewIntSet().Insert(1), r2)
+		return parser.NewParserResult(data.NewIntSet(1), r2)
 	})
 
 	p3 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		return parser.NewParserResult(data.NewIntSet().Insert(2))
+		return parser.NewParserResult(data.NewIntSet(2))
 	})
 
 	p4 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
@@ -143,7 +143,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 	})
 
 	results := parser.Or(p1, p2, p3, p4).Parse(ctx, r)
-	curtailingParsers := data.NewIntSet().Insert(1).Insert(2)
+	curtailingParsers := data.NewIntSet(1, 2)
 	assert.EqualValues(t, parser.NewParserResult(curtailingParsers, r1, r2), results)
 
 	assert.Equal(t, 5, parser.Stat.GetSumCallCount())
@@ -151,7 +151,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 
 func TestOrMayReturnEmptyResult(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		return nil
@@ -162,13 +162,13 @@ func TestOrMayReturnEmptyResult(t *testing.T) {
 	})
 
 	results := parser.Or(p1, p2).Parse(ctx, r)
-	assert.Equal(t, parser.NewParserResult(data.NewIntSet()), results)
+	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers()), results)
 }
 
 func TestOrShouldCloneReadersForAllParsers(t *testing.T) {
 	parser.Stat.Reset()
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		assert.Equal(t, reader.NewPosition(0, 1, 1), r.Cursor())
@@ -188,16 +188,16 @@ func TestOrShouldCloneReadersForAllParsers(t *testing.T) {
 
 func TestAndShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 	assert.Panics(t, func() { parser.And(nil).Parse(ctx, r) })
 }
 
 func TestAndShouldHandleOnlyOneParser(t *testing.T) {
 	r := reader.New([]byte("ab"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	var r1 parser.Result
-	curtailingParsers := data.NewIntSet().Insert(1)
+	curtailingParsers := data.NewIntSet(1)
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		pos := r.Cursor()
@@ -215,7 +215,7 @@ func TestAndShouldHandleOnlyOneParser(t *testing.T) {
 func TestAndShouldCombineParserResults(t *testing.T) {
 	parser.Stat.Reset()
 	r := reader.New([]byte("abcd"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	// This function simulates a complex parser which returns two different results
 	p := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
@@ -226,7 +226,7 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 		r2 := r1.Clone()
 		ch2, _, _ := r2.ReadRune()
 		res2 := parser.NewResult(ast.NewTerminalNode("STRING", pos, string([]rune{ch1, ch2})), r2)
-		return parser.NewParserResult(data.NewIntSet(), res1, res2)
+		return parser.NewParserResult(parser.NoCurtailingParsers(), res1, res2)
 	})
 
 	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
@@ -240,7 +240,7 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 
 	results := parser.And(nodeBuilder, p, p).Parse(ctx, r)
 	assert.EqualValues(t, parser.NewParserResult(
-		data.NewIntSet(),
+		parser.NoCurtailingParsers(),
 		parser.NewResult(ast.NewTerminalNode("STRING", reader.NewPosition(0, 1, 1), "ab"), r.WithCursor(2, 1, 3)),
 		parser.NewResult(ast.NewTerminalNode("STRING", reader.NewPosition(0, 1, 1), "abc"), r.WithCursor(3, 1, 4)),
 		parser.NewResult(ast.NewTerminalNode("STRING", reader.NewPosition(0, 1, 1), "abcd"), r.WithCursor(4, 1, 5)),
@@ -251,12 +251,12 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 
 func TestAndShouldHandleNilResults(t *testing.T) {
 	r := reader.New([]byte("abcd"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		pos := r.Cursor()
 		ch, _, _ := r.ReadRune()
-		return parser.NewParserResult(data.NewIntSet(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r))
+		return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r))
 	})
 
 	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
@@ -264,12 +264,12 @@ func TestAndShouldHandleNilResults(t *testing.T) {
 	})
 
 	results := parser.And(nil, p1, p2).Parse(ctx, r)
-	assert.EqualValues(t, parser.NewParserResult(data.NewIntSet()), results)
+	assert.EqualValues(t, parser.NewParserResult(parser.NoCurtailingParsers()), results)
 }
 
 func TestAndShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := reader.New([]byte("abcd"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		return parser.NewParserResult(data.NewIntSet(0, 1), parser.NewResult(nil, r))
@@ -285,19 +285,19 @@ func TestAndShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 
 func TestAndShouldStopIfEOFReached(t *testing.T) {
 	r := reader.New([]byte("abcd"), true)
-	ctx := data.NewIntMap(nil)
+	ctx := parser.EmptyLeftRecCtx()
 
 	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		pos := r.Cursor()
 		ch, _, _ := r.ReadRune()
-		return parser.NewParserResult(data.NewIntSet(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r))
+		return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r))
 	})
 
 	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
 		pos := r.Cursor()
 		r1 := r.Clone()
 		ch, _, _ := r1.ReadRune()
-		return parser.NewParserResult(data.NewIntSet(),
+		return parser.NewParserResult(parser.NoCurtailingParsers(),
 			parser.NewResult(ast.NewTerminalNode(reader.EOF, pos, nil), r),
 			parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r1),
 		)
@@ -309,7 +309,7 @@ func TestAndShouldStopIfEOFReached(t *testing.T) {
 
 	results := parser.And(nodeBuilder, p1, p2).Parse(ctx, r)
 	assert.EqualValues(t, parser.NewParserResult(
-		data.NewIntSet(),
+		parser.NoCurtailingParsers(),
 		parser.NewResult(ast.NewTerminalNode("CHAR", reader.NewPosition(0, 1, 1), 'a'), r.WithCursor(1, 1, 2)),
 	), results)
 }
