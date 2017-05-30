@@ -128,7 +128,7 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 	for _, ch := range matches[0] {
 		r.charCount--
 		if ch != '\n' {
-			r.cur.col += 1
+			r.cur.col++
 		} else {
 			r.cur.line++
 			r.cur.col = 1

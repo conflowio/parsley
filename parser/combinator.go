@@ -146,7 +146,7 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 		if (rp.infinite && depth > 0) || nextParser == nil {
 			nodesCopy := make([]ast.Node, depth)
 			copy(nodesCopy[0:depth], rp.nodes[0:depth])
-			newRes := NewResult(rp.nodeBuilder(nodesCopy), r)
+			newRes := NewResult(rp.nodeBuilder.BuildNode(nodesCopy), r)
 			rp.result.Append(newRes)
 			if rp.nodes[depth-1].Token() == reader.EOF {
 				return true

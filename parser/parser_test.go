@@ -48,10 +48,9 @@ func TestIndirectLeftRecursion(t *testing.T) {
 
 	add = parser.And("ADD", c,
 		ast.BinaryOperatorBuilder(
-			"ADD",
-			func(children []interface{}) (interface{}, error) {
+			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 				return children[0].(int) + children[1].(int), nil
-			},
+			}),
 		),
 		value,
 		parser.Rune('+', "ADD"),
@@ -79,13 +78,13 @@ func TestMany(t *testing.T) {
 
 	add = parser.ManySep(
 		"ADD", "+", c, value, parser.Rune('+', "+"),
-		func(children []interface{}) (interface{}, error) {
+		ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 			sum := 0
 			for _, v := range children {
 				sum += v.(int)
 			}
 			return sum, nil
-		},
+		}),
 	)
 
 	p := parser.And("ALL", c, ast.SingleNodeBuilder(0), value, parser.End())
@@ -98,7 +97,7 @@ func TestMany(t *testing.T) {
 }
 
 func stringBuilder() ast.NodeBuilder {
-	return func(nodes []ast.Node) ast.Node {
+	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		s := ""
 		for _, node := range nodes {
 			val, _ := node.Value()
@@ -109,7 +108,7 @@ func stringBuilder() ast.NodeBuilder {
 			}
 		}
 		return ast.NewTerminalNode("STRING", nodes[0].Pos(), s)
-	}
+	})
 }
 
 func intLiteral() parser.Func {

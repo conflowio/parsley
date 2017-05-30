@@ -211,7 +211,7 @@ func TestAndShouldHandleOnlyOneParser(t *testing.T) {
 		return parser.NewParserResult(curtailingParsers, r1)
 	})
 
-	nodeBuilder := func(nodes []ast.Node) ast.Node { return nodes[0] }
+	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node { return nodes[0] })
 
 	results := parser.And("o1", c, nodeBuilder, p1).Parse(ctx, r)
 	assert.Equal(t, parser.NewParserResult(curtailingParsers, r1), results)
@@ -234,14 +234,14 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 		return parser.NewParserResult(data.NewIntSet(), res1, res2)
 	})
 
-	nodeBuilder := func(nodes []ast.Node) ast.Node {
+	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value()
 			res += val.(string)
 		}
 		return ast.NewTerminalNode("STRING", nodes[0].Pos(), res)
-	}
+	})
 
 	results := parser.And("o1", c, nodeBuilder, p, p).Parse(ctx, r)
 	assert.EqualValues(t, parser.NewParserResult(
@@ -311,9 +311,9 @@ func TestAndShouldStopIfEOFReached(t *testing.T) {
 		)
 	})
 
-	nodeBuilder := func(nodes []ast.Node) ast.Node {
+	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		return nodes[0]
-	}
+	})
 
 	results := parser.And("o1", c, nodeBuilder, p1, p2).Parse(ctx, r)
 	assert.EqualValues(t, parser.NewParserResult(

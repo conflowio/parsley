@@ -6,6 +6,19 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
+// Interpreter defines an interface to evaluate an AST node
+type Interpreter interface {
+	Eval([]interface{}) (interface{}, error)
+}
+
+// InterpreterFunc defines a helper to implement the Interpreter interface with functions
+type InterpreterFunc func([]interface{}) (interface{}, error)
+
+// Eval evaluates the given values and returns with a single result
+func (f InterpreterFunc) Eval(values []interface{}) (interface{}, error) {
+	return f(values)
+}
+
 // Node represents an AST node
 type Node interface {
 	Token() string
@@ -21,8 +34,8 @@ type TerminalNode struct {
 }
 
 // NewTerminalNode creates a new TerminalNode instance
-func NewTerminalNode(token string, pos reader.Position, value interface{}) *TerminalNode {
-	return &TerminalNode{
+func NewTerminalNode(token string, pos reader.Position, value interface{}) TerminalNode {
+	return TerminalNode{
 		token: token,
 		pos:   pos,
 		value: value,
@@ -30,30 +43,27 @@ func NewTerminalNode(token string, pos reader.Position, value interface{}) *Term
 }
 
 // Token returns with the node token
-func (t *TerminalNode) Token() string {
+func (t TerminalNode) Token() string {
 	return t.token
 }
 
 // Value returns with the value of the node
-func (t *TerminalNode) Value() (interface{}, error) {
+func (t TerminalNode) Value() (interface{}, error) {
 	return t.value, nil
 }
 
 // Pos returns the position
-func (t *TerminalNode) Pos() reader.Position {
+func (t TerminalNode) Pos() reader.Position {
 	return t.pos
 }
 
-func (t *TerminalNode) String() string {
+func (t TerminalNode) String() string {
 	if t.value != nil {
 		return fmt.Sprintf("T{%v, %s}", t.value, t.pos)
 	} else {
 		return fmt.Sprintf("T{%s, %s}", t.token, t.pos)
 	}
 }
-
-// Interpreter is a function to evaluate an AST node
-type Interpreter func(children []interface{}) (interface{}, error)
 
 // NonTerminalNode represents a non-leaf node in the AST
 type NonTerminalNode struct {
@@ -64,8 +74,14 @@ type NonTerminalNode struct {
 }
 
 // NewNonTerminalNode creates a new NonTerminalNode instance
-func NewNonTerminalNode(token string, children []Node, interpreter Interpreter) *NonTerminalNode {
-	return &NonTerminalNode{
+func NewNonTerminalNode(token string, children []Node, interpreter Interpreter) NonTerminalNode {
+	if len(children) == 0 {
+		panic("A non-terminal node needs to have at least one child node")
+	}
+	if interpreter == nil {
+		panic("Interpreter can not be nil")
+	}
+	return NonTerminalNode{
 		token:       token,
 		children:    children,
 		interpreter: interpreter,
@@ -74,12 +90,12 @@ func NewNonTerminalNode(token string, children []Node, interpreter Interpreter) 
 }
 
 // Token returns with the node token
-func (n *NonTerminalNode) Token() string {
+func (n NonTerminalNode) Token() string {
 	return n.token
 }
 
 // Value returns with the value of the node
-func (n *NonTerminalNode) Value() (interface{}, error) {
+func (n NonTerminalNode) Value() (interface{}, error) {
 	values := make([]interface{}, len(n.children))
 	for i, child := range n.children {
 		value, err := child.Value()
@@ -88,14 +104,14 @@ func (n *NonTerminalNode) Value() (interface{}, error) {
 		}
 		values[i] = value
 	}
-	return n.interpreter(values)
+	return n.interpreter.Eval(values)
 }
 
 // Pos returns the position
-func (n *NonTerminalNode) Pos() reader.Position {
+func (n NonTerminalNode) Pos() reader.Position {
 	return n.pos
 }
 
-func (n *NonTerminalNode) String() string {
+func (n NonTerminalNode) String() string {
 	return fmt.Sprintf("NT{%s, %s}", n.token, n.children)
 }

@@ -31,7 +31,7 @@ func TestInc(t *testing.T) {
 		}
 		i2 := IntMap{tc.i1}.Inc(tc.val)
 		assert.Equal(t, i1c, tc.i1, fmt.Sprintf("Map is not immutable: %s", tc.name))
-		assert.Equal(t, IntMap{tc.i2}, i2, fmt.Sprintf("Failed: %s", tc.name))
+		assertMapsAreEqual(t, IntMap{tc.i2}, i2, fmt.Sprintf("Failed: %s", tc.name))
 	}
 }
 
@@ -55,7 +55,7 @@ func TestFilter(t *testing.T) {
 		}
 		i2 := IntMap{tc.i1}.Filter(IntSet{tc.keys})
 		assert.Equal(t, i1c, tc.i1, fmt.Sprintf("Map is not immutable: %s", tc.name))
-		assert.Equal(t, IntMap{tc.i2}, i2, fmt.Sprintf("Failed: %s", tc.name))
+		assertMapsAreEqual(t, IntMap{tc.i2}, i2, fmt.Sprintf("Failed: %s", tc.name))
 	}
 }
 
@@ -88,8 +88,8 @@ func TestEachShouldCallFunctionForAllMapItems(t *testing.T) {
 	}
 	i := IntMap{map[int]int{1: 2, 3: 4}}
 	i.Each(f)
-	assert.Equal(t, []int{1, 3}, calledKeys)
-	assert.Equal(t, []int{2, 4}, calledValues)
+	assertSlicesAreEqual(t, []int{1, 3}, calledKeys)
+	assertSlicesAreEqual(t, []int{2, 4}, calledValues)
 }
 
 func TestKeys(t *testing.T) {
@@ -103,6 +103,19 @@ func TestKeys(t *testing.T) {
 		TC{"Non-empty map", map[int]int{1: 2, 3: 4}, []int{1, 3}},
 	}
 	for _, tc := range testCases {
-		assert.Equal(t, tc.keys, IntMap{tc.i}.Keys())
+		assertSlicesAreEqual(t, tc.keys, IntMap{tc.i}.Keys())
 	}
+}
+
+func assertSlicesAreEqual(t *testing.T, expected []int, actual []int, msgAndArgs ...interface{}) {
+	assert.Subset(t, expected, actual, msgAndArgs...)
+	assert.Subset(t, actual, expected, msgAndArgs...)
+}
+
+func assertMapsAreEqual(t *testing.T, expected IntMap, actual IntMap, msgAndArgs ...interface{}) {
+	assert.Subset(t, expected.Keys(), actual.Keys())
+	assert.Subset(t, actual.Keys(), expected.Keys())
+	expected.Each(func(key int, val int) {
+		assert.Equal(t, expected.data[key], actual.data[key], msgAndArgs...)
+	})
 }
