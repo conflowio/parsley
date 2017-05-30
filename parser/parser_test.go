@@ -93,7 +93,7 @@ func TestMany(t *testing.T) {
 	result, err := results.Results[0].Node().Value()
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
-	assert.Equal(t, 2213, h.GetSumCallCount())
+	assert.Equal(t, 1226, h.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {

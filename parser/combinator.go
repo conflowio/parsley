@@ -80,7 +80,7 @@ func Many(name string, h *History, nodeBuilder ast.NodeBuilder, p Parser) Func {
 // ManySep matches the given value parser one or more times separated by the separator parser
 func ManySep(name string, token string, h *History, valueP Parser, sepP Parser, interpreter ast.Interpreter) Func {
 	sepValue := And(name+"_SV", h, ast.SingleNodeBuilder(1), sepP, valueP)
-	sepValueMany := And(name+"_SV*", h, ast.AllNodesBuilder(token, interpreter), sepValue)
+	sepValueMany := Many(name+"_SV*", h, ast.AllNodesBuilder(token, interpreter), sepValue)
 	return And(name, h, ast.AllNodesBuilder(token, interpreter), valueP, sepValueMany)
 }
 
