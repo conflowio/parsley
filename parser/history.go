@@ -9,17 +9,17 @@ type storedResult struct {
 	leftRecContext data.IntMap
 }
 
-// Context records information about parser calls
-type Context struct {
+// History records information about parser calls
+type History struct {
 	parserCount  int
 	sumCallCount int
 	parsers      map[string]int
 	results      map[int]map[int]storedResult
 }
 
-// NewContext creates a new context instance
-func NewContext() *Context {
-	return &Context{
+// NewHistory creates a history instance
+func NewHistory() *History {
+	return &History{
 		parserCount:  0,
 		parsers:      make(map[string]int),
 		results:      make(map[int]map[int]storedResult),
@@ -28,37 +28,37 @@ func NewContext() *Context {
 }
 
 // GetParserIndex maps the given parser to an integer index
-func (c *Context) GetParserIndex(parser string) (parserIndex int) {
-	parserIndex, ok := c.parsers[parser]
+func (h *History) GetParserIndex(parser string) (parserIndex int) {
+	parserIndex, ok := h.parsers[parser]
 	if !ok {
-		parserIndex = c.parserCount
-		c.parsers[parser] = parserIndex
-		c.parserCount++
+		parserIndex = h.parserCount
+		h.parsers[parser] = parserIndex
+		h.parserCount++
 	}
 	return
 }
 
 // RegisterCall registers a call
-func (c *Context) RegisterCall() {
-	c.sumCallCount++
+func (h *History) RegisterCall() {
+	h.sumCallCount++
 }
 
 // GetSumCallCount returns with the sum call count
-func (c *Context) GetSumCallCount() int {
-	return c.sumCallCount
+func (h *History) GetSumCallCount() int {
+	return h.sumCallCount
 }
 
 // RegisterResults registers a parser result for a certain position
-func (c *Context) RegisterResults(parserIndex int, pos int, parserResult *ParserResult, leftRecContext data.IntMap) {
-	if _, ok := c.results[parserIndex]; !ok {
-		c.results[parserIndex] = make(map[int]storedResult)
+func (h *History) RegisterResults(parserIndex int, pos int, parserResult *ParserResult, leftRecContext data.IntMap) {
+	if _, ok := h.results[parserIndex]; !ok {
+		h.results[parserIndex] = make(map[int]storedResult)
 	}
-	c.results[parserIndex][pos] = storedResult{parserResult, leftRecContext}
+	h.results[parserIndex][pos] = storedResult{parserResult, leftRecContext}
 }
 
 // GetResults return with a previously saved result
-func (c *Context) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (*ParserResult, bool) {
-	storedResult, found := c.results[parserIndex][pos]
+func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (*ParserResult, bool) {
+	storedResult, found := h.results[parserIndex][pos]
 	if !found {
 		return nil, false
 	}

@@ -8,8 +8,14 @@ import (
 )
 
 func TestNewIntMapShouldCreateAnEmptyMap(t *testing.T) {
-	i := NewIntMap()
+	i := NewIntMap(nil)
 	assert.Equal(t, map[int]int{}, i.data)
+}
+
+func TestNewIntMapShouldCreateMapWithGivenData(t *testing.T) {
+	data := map[int]int{1: 2}
+	i := NewIntMap(data)
+	assert.Equal(t, data, i.data)
 }
 
 func TestInc(t *testing.T) {
@@ -60,7 +66,7 @@ func TestFilter(t *testing.T) {
 }
 
 func TestGetReturnsZeroForNonExistingItem(t *testing.T) {
-	i := NewIntMap()
+	i := NewIntMap(nil)
 	assert.Exactly(t, 0, i.Get(1))
 }
 
@@ -74,7 +80,7 @@ func TestEachShouldNotCallFunctionForEmptyMap(t *testing.T) {
 	f := func(key int, val int) {
 		called = true
 	}
-	i := NewIntMap()
+	i := NewIntMap(nil)
 	i.Each(f)
 	assert.False(t, called)
 }

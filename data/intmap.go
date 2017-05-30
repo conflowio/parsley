@@ -6,8 +6,11 @@ type IntMap struct {
 }
 
 // NewIntMap creates a new IntMap instance
-func NewIntMap() IntMap {
-	return IntMap{make(map[int]int)}
+func NewIntMap(data map[int]int) IntMap {
+	if data == nil {
+		return IntMap{make(map[int]int)}
+	}
+	return IntMap{data}
 }
 
 func (i IntMap) clone() IntMap {
@@ -47,7 +50,7 @@ func (i IntMap) Inc(val int) IntMap {
 
 // Filter creates a new int map including only the keys present in the given integer set
 func (i IntMap) Filter(keys IntSet) IntMap {
-	i2 := NewIntMap()
+	i2 := NewIntMap(nil)
 	keys.Each(func(key int) {
 		if v, ok := i.data[key]; ok {
 			i2.data[key] = v

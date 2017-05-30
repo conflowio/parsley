@@ -23,7 +23,7 @@ func (f Func) Parse(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 // Parse parses the given input with the parser function
 func Parse(input []byte, p Func) (interface{}, error) {
 	r := reader.New(input, true)
-	parserResult := p.Parse(data.NewIntMap(), r)
+	parserResult := p.Parse(data.NewIntMap(nil), r)
 	if len(parserResult.Results) == 0 {
 		return nil, errors.New("Failed to parse the input")
 	}

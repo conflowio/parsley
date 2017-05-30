@@ -7,10 +7,10 @@ import (
 )
 
 // Memoize handles result cache and curtailing left recursion
-func Memoize(name string, c *Context, p Parser) Func {
-	parserIndex := c.GetParserIndex(name)
+func Memoize(name string, h *History, p Parser) Func {
+	parserIndex := h.GetParserIndex(name)
 	return Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		result, found := c.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
+		result, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
 			return result
 		}
@@ -23,24 +23,24 @@ func Memoize(name string, c *Context, p Parser) Func {
 		if result != nil {
 			leftRecCtx = leftRecCtx.Filter(result.CurtailingParsers)
 		} else {
-			leftRecCtx = data.NewIntMap()
+			leftRecCtx = data.NewIntMap(nil)
 		}
 
-		c.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
+		h.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
 
 		return result
 	})
 }
 
 // Or chooses the first matching parser
-func Or(name string, c *Context, parsers ...Parser) Func {
+func Or(name string, h *History, parsers ...Parser) Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return Memoize(name, c, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+	return Memoize(name, h, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
 		parserResult := NewParserResult(data.NewIntSet())
 		for _, parser := range parsers {
-			c.RegisterCall()
+			h.RegisterCall()
 			r := parser.Parse(leftRecCtx, r.Clone())
 			if r != nil {
 				parserResult.Append(r.Results...)
@@ -61,33 +61,33 @@ func parserListLookUp(parsers []Parser) func(i int) Parser {
 }
 
 // And combines multiple parsers
-func And(name string, c *Context, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
+func And(name string, h *History, nodeBuilder ast.NodeBuilder, parsers ...Parser) Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return Memoize(name, c, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		return NewRecursiveParser(name, c, nodeBuilder, false, parserListLookUp(parsers)).Parse(leftRecCtx, r)
+	return Memoize(name, h, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+		return NewRecursiveParser(name, h, nodeBuilder, false, parserListLookUp(parsers)).Parse(leftRecCtx, r)
 	}))
 }
 
 // Many matches the same expression one or more times
-func Many(name string, c *Context, nodeBuilder ast.NodeBuilder, p Parser) Func {
-	return Memoize(name, c, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
-		return NewRecursiveParser(name, c, nodeBuilder, true, func(i int) Parser { return p }).Parse(leftRecCtx, r)
+func Many(name string, h *History, nodeBuilder ast.NodeBuilder, p Parser) Func {
+	return Memoize(name, h, Func(func(leftRecCtx data.IntMap, r *reader.Reader) *ParserResult {
+		return NewRecursiveParser(name, h, nodeBuilder, true, func(i int) Parser { return p }).Parse(leftRecCtx, r)
 	}))
 }
 
 // ManySep matches the given value parser one or more times separated by the separator parser
-func ManySep(name string, token string, c *Context, valueP Parser, sepP Parser, interpreter ast.Interpreter) Func {
-	sepValue := And(name+"_SV", c, ast.SingleNodeBuilder(1), sepP, valueP)
-	sepValueMany := And(name+"_SV*", c, ast.AllNodesBuilder(token, interpreter), sepValue)
-	return And(name, c, ast.AllNodesBuilder(token, interpreter), valueP, sepValueMany)
+func ManySep(name string, token string, h *History, valueP Parser, sepP Parser, interpreter ast.Interpreter) Func {
+	sepValue := And(name+"_SV", h, ast.SingleNodeBuilder(1), sepP, valueP)
+	sepValueMany := And(name+"_SV*", h, ast.AllNodesBuilder(token, interpreter), sepValue)
+	return And(name, h, ast.AllNodesBuilder(token, interpreter), valueP, sepValueMany)
 }
 
 // RecursiveParser is a recursive and-type parser
 type RecursiveParser struct {
 	name         string
-	c            *Context
+	h            *History
 	nodeBuilder  ast.NodeBuilder
 	parserLookUp func(i int) Parser
 	result       *ParserResult
@@ -96,10 +96,10 @@ type RecursiveParser struct {
 }
 
 // NewRecursiveParser creates a new recursive parser
-func NewRecursiveParser(name string, c *Context, nodeBuilder ast.NodeBuilder, infinite bool, parserLookUp func(i int) Parser) RecursiveParser {
+func NewRecursiveParser(name string, h *History, nodeBuilder ast.NodeBuilder, infinite bool, parserLookUp func(i int) Parser) RecursiveParser {
 	return RecursiveParser{
 		name:         name,
-		c:            c,
+		h:            h,
 		nodeBuilder:  nodeBuilder,
 		infinite:     infinite,
 		parserLookUp: parserLookUp,
@@ -118,7 +118,7 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 	var parserResult *ParserResult
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
-		rp.c.RegisterCall()
+		rp.h.RegisterCall()
 		parserResult = nextParser.Parse(leftRecCtx, r.Clone())
 	}
 
@@ -134,7 +134,7 @@ func (rp RecursiveParser) runNextParser(depth int, leftRecCtx data.IntMap, r *re
 				rp.nodes[depth] = result.Node()
 			}
 			if i > 0 || result.Reader().Cursor().Pos() > r.Cursor().Pos() {
-				leftRecCtx = data.NewIntMap()
+				leftRecCtx = data.NewIntMap(nil)
 				mergeCurtailingParsers = false
 			}
 			if rp.runNextParser(depth+1, leftRecCtx, result.Reader().Clone(), mergeCurtailingParsers) {
