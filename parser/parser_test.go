@@ -19,14 +19,14 @@ func TestDirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 	var a parser.Func
 
-	a = parser.Or("A", h,
-		parser.And("AB", h, stringBuilder(),
+	a = parser.Memoize("A", h, parser.Or(h,
+		parser.And(h, stringBuilder(),
 			&a,
 			parser.Rune('b', "CHAR"),
 		),
 		parser.Rune('a', "CHAR"),
-	)
-	all := parser.And("ALL", h, ast.SingleNodeBuilder(0), &a, parser.End())
+	))
+	all := parser.And(h, ast.SingleNodeBuilder(0), &a, parser.End())
 	results := all.Parse(data.NewIntMap(nil), r)
 	assert.Equal(t, 1, len(results.Results))
 	result, err := results.Results[0].Node().Value()
@@ -41,12 +41,12 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 	var add parser.Func
 
-	value := parser.Or("VALUE", h,
+	value := parser.Memoize("VALUE", h, parser.Or(h,
 		intLiteral(),
 		&add,
-	)
+	))
 
-	add = parser.And("ADD", h,
+	add = parser.Memoize("ADD", h, parser.And(h,
 		ast.BinaryOperatorBuilder(
 			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 				return children[0].(int) + children[1].(int), nil
@@ -55,8 +55,8 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		value,
 		parser.Rune('+', "ADD"),
 		value,
-	)
-	p := parser.And("ALL", h, ast.SingleNodeBuilder(0), value, parser.End())
+	))
+	p := parser.And(h, ast.SingleNodeBuilder(0), value, parser.End())
 	results := p.Parse(data.NewIntMap(nil), r)
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
@@ -71,12 +71,12 @@ func TestMany(t *testing.T) {
 	h := parser.NewHistory()
 	var add parser.Func
 
-	value := parser.Or("VALUE", h,
+	value := parser.Memoize("VALUE", h, parser.Or(h,
 		intLiteral(),
 		&add,
-	)
+	))
 
-	add = parser.ManySep(
+	add = parser.Memoize("ADD", h, parser.ManySep(
 		"ADD", "+", h, value, parser.Rune('+', "+"),
 		ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 			sum := 0
@@ -85,9 +85,9 @@ func TestMany(t *testing.T) {
 			}
 			return sum, nil
 		}),
-	)
+	))
 
-	p := parser.And("ALL", h, ast.SingleNodeBuilder(0), value, parser.End())
+	p := parser.And(h, ast.SingleNodeBuilder(0), value, parser.End())
 	results := p.Parse(data.NewIntMap(nil), r)
 	require.Equal(t, 1, len(results.Results), "Parser should be successful")
 	result, err := results.Results[0].Node().Value()
