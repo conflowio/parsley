@@ -15,7 +15,7 @@ func Parse(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node, err
 	parser.Stat.RegisterCall()
 	parserResult := s.Parse(parser.EmptyLeftRecCtx(), r)
 	if len(parserResult.Results) == 0 {
-		return nil, errors.New("Failed to parse the input")
+		return nil, errors.New("failed to parse the input")
 	}
 	return parserResult.Results[0].Node(), nil
 }

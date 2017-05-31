@@ -8,9 +8,11 @@ import (
 
 	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,14 +75,14 @@ func TestDirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var a parser.Func
-	a = parser.Memoize("A", h, parser.Or(
-		parser.And(stringBuilder(),
+	a = combinator.Memoize("A", h, combinator.Or(
+		combinator.And(stringBuilder(),
 			&a,
-			parser.Rune('b', "CHAR"),
+			terminal.Rune('b', "CHAR"),
 		),
-		parser.Rune('a', "CHAR"),
+		terminal.Rune('a', "CHAR"),
 	))
-	s := parser.And(ast.SingleNodeBuilder(0), &a, parser.End())
+	s := combinator.And(ast.SingleNodeBuilder(0), &a, terminal.End())
 
 	result, err := parsley.Evaluate([]byte(input), true, s)
 	require.Nil(t, err)
@@ -93,22 +95,22 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := parser.Memoize("VALUE", h, parser.Or(
+	value := combinator.Memoize("VALUE", h, combinator.Or(
 		intLiteral(),
 		&add,
 	))
 
-	add = parser.Memoize("ADD", h, parser.And(
+	add = combinator.Memoize("ADD", h, combinator.And(
 		ast.BinaryOperatorBuilder(
 			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 				return children[0].(int) + children[1].(int), nil
 			}),
 		),
 		value,
-		parser.Rune('+', "ADD"),
+		terminal.Rune('+', "ADD"),
 		value,
 	))
-	s := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
+	s := combinator.And(ast.SingleNodeBuilder(0), value, terminal.End())
 
 	result, err := parsley.Evaluate([]byte(input), true, s)
 	require.Nil(t, err)
@@ -121,13 +123,13 @@ func TestMany(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := parser.Memoize("VALUE", h, parser.Or(
+	value := combinator.Memoize("VALUE", h, combinator.Or(
 		intLiteral(),
 		&add,
 	))
 
-	add = parser.Memoize("ADD", h, parser.ManySep(
-		"ADD", "+", h, value, parser.Rune('+', "+"),
+	add = combinator.Memoize("ADD", h, combinator.SepBy(
+		"ADD", "+", h, value, terminal.Rune('+', "+"),
 		ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 			sum := 0
 			for _, v := range children {
@@ -137,7 +139,7 @@ func TestMany(t *testing.T) {
 		}),
 	))
 
-	s := parser.And(ast.SingleNodeBuilder(0), value, parser.End())
+	s := combinator.And(ast.SingleNodeBuilder(0), value, terminal.End())
 	result, err := parsley.Evaluate([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)

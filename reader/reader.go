@@ -84,7 +84,7 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 	} else {
 		ch, size = utf8.DecodeRune(r.b[r.cur.pos:])
 		if ch == utf8.RuneError {
-			return 0, 0, fmt.Errorf("Invalid UTF-8 byte sequence encountered at %s", r.cur)
+			return 0, 0, fmt.Errorf("invalid UTF-8 byte sequence encountered at %s", r.cur)
 		}
 	}
 	r.cur.pos += size
