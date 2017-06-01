@@ -41,6 +41,7 @@ func TestNonTerminalNode(t *testing.T) {
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
 	assert.Equal(t, "+", node.Token())
 	assert.Equal(t, nodes[0].Pos(), node.Pos())
+	assert.Equal(t, nodes, node.Children())
 	actualVal, actualErr := node.Value()
 	assert.Equal(t, []interface{}{1, 2}, actualValues)
 	assert.Equal(t, expectedValue, actualVal)

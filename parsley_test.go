@@ -6,6 +6,7 @@ import (
 
 	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -81,7 +82,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 		),
 		terminal.Rune('a', "CHAR"),
 	))
-	s := combinator.And(ast.SingleNodeBuilder(0), &a, parser.End())
+	s := combinator.And(builder.Select(0), &a, parser.End())
 
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
@@ -100,7 +101,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	))
 
 	add = combinator.Memoize("ADD", h, combinator.And(
-		ast.BinaryOperatorBuilder(
+		builder.BinaryOperation(
 			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 				return children[0].(int) + children[1].(int), nil
 			}),
@@ -109,7 +110,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		terminal.Rune('+', "ADD"),
 		value,
 	))
-	s := combinator.And(ast.SingleNodeBuilder(0), value, parser.End())
+	s := combinator.And(builder.Select(0), value, parser.End())
 
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
@@ -148,7 +149,7 @@ func TestManySepBy(t *testing.T) {
 		}),
 	))
 
-	s := combinator.And(ast.SingleNodeBuilder(0), value, parser.End())
+	s := combinator.And(builder.Select(0), value, parser.End())
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)

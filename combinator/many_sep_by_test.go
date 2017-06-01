@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -100,6 +101,6 @@ func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _ := combinator.Many(ast.NilBuilder(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
