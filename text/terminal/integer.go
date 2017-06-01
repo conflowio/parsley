@@ -9,6 +9,7 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text"
+	"github.com/opsidian/parsley/text/token"
 )
 
 // Integer matches all integer numbers and zero with an optional -/+ sign
@@ -20,7 +21,7 @@ func Integer() parser.Func {
 			if err != nil {
 				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
 			}
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r).AsSet()
+			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.INT, pos, intValue), r).AsSet()
 		}
 		return parser.NoCurtailingParsers(), nil
 	})
