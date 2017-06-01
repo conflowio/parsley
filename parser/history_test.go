@@ -6,49 +6,57 @@ import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 	h := parser.NewHistory()
-	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
-	results := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, nil))
-	h.RegisterResults(h.GetParserIndex("p1"), 2, results, parser.EmptyLeftRecCtx())
+	node := ast.NewTerminalNode("t", testPosition{0}, nil)
+	cp := parser.NoCurtailingParsers()
+	rs := parser.NewResult(node, nil).AsSet()
+	h.RegisterResults(h.GetParserIndex("p1"), 2, cp, rs, parser.EmptyLeftRecCtx())
 
-	actual, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
-	assert.Equal(t, results, actual)
+	actualCP, actualRS, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
+	assert.Equal(t, cp, actualCP)
+	assert.Equal(t, rs, actualRS)
 	assert.True(t, ok)
 }
 
 func TestRegisterResultShouldReturnNilResult(t *testing.T) {
 	h := parser.NewHistory()
-	h.RegisterResults(h.GetParserIndex("p1"), 2, nil, parser.EmptyLeftRecCtx())
-	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
-	assert.Nil(t, results)
+	h.RegisterResults(h.GetParserIndex("p1"), 2, parser.NoCurtailingParsers(), nil, parser.EmptyLeftRecCtx())
+	cp, rs, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Nil(t, rs)
 	assert.True(t, ok)
 }
 
 func TestRegisterResultShouldReturnFalseWhenNoResultWasRegistered(t *testing.T) {
 	h := parser.NewHistory()
-	results, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
-	assert.Nil(t, results)
+	cp, rs, ok := h.GetResults(h.GetParserIndex("p1"), 2, parser.EmptyLeftRecCtx())
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Nil(t, rs)
 	assert.False(t, ok)
 }
 
 func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
 	h := parser.NewHistory()
-	node := ast.NewTerminalNode("t", reader.NewPosition(0, 1, 2), nil)
-	results := parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, nil))
-	h.RegisterResults(h.GetParserIndex("p1"), 1, results, parser.EmptyLeftRecCtx())
-	h.RegisterResults(h.GetParserIndex("p2"), 2, nil, parser.EmptyLeftRecCtx())
+	node := ast.NewTerminalNode("t", testPosition{0}, nil)
+	cp1 := parser.NoCurtailingParsers()
+	cp2 := data.NewIntSet(1)
+	rs1 := parser.NewResult(node, nil).AsSet()
+	var rs2 parser.ResultSet
+	h.RegisterResults(h.GetParserIndex("p1"), 1, cp1, rs1, parser.EmptyLeftRecCtx())
+	h.RegisterResults(h.GetParserIndex("p2"), 2, cp2, rs2, parser.EmptyLeftRecCtx())
 
-	actual, ok := h.GetResults(h.GetParserIndex("p1"), 1, parser.EmptyLeftRecCtx())
-	assert.Equal(t, results, actual)
+	actualCP, actualRS, ok := h.GetResults(h.GetParserIndex("p1"), 1, parser.EmptyLeftRecCtx())
+	assert.Equal(t, cp1, actualCP)
+	assert.Equal(t, rs1, actualRS)
 	assert.True(t, ok)
 
-	results, ok = h.GetResults(h.GetParserIndex("p2"), 2, parser.EmptyLeftRecCtx())
-	assert.Nil(t, results)
+	actualCP, actualRS, ok = h.GetResults(h.GetParserIndex("p2"), 2, parser.EmptyLeftRecCtx())
+	assert.Equal(t, cp2, actualCP)
+	assert.Equal(t, rs2, actualRS)
 	assert.True(t, ok)
 }
 
@@ -58,15 +66,16 @@ func TestGetResultsShouldNotReturnCurtailedResult(t *testing.T) {
 		h.GetParserIndex("p1"): 2,
 		h.GetParserIndex("p2"): 1,
 	})
-	curtailingParsers := data.NewIntSet(h.GetParserIndex("p1"))
-	h.RegisterResults(h.GetParserIndex("p1"), 1, parser.NewParserResult(curtailingParsers), ctx)
+	cp := data.NewIntSet(h.GetParserIndex("p1"))
+	h.RegisterResults(h.GetParserIndex("p1"), 1, cp, nil, ctx)
 
 	ctx = data.NewIntMap(map[int]int{
 		h.GetParserIndex("p1"): 1,
 		h.GetParserIndex("p2"): 1,
 	})
-	results, found := h.GetResults(h.GetParserIndex("p1"), 1, ctx)
-	assert.Nil(t, results)
+	cp, rs, found := h.GetResults(h.GetParserIndex("p1"), 1, ctx)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Nil(t, rs)
 	assert.False(t, found)
 }
 
@@ -76,9 +85,9 @@ func TestGetResultsShouldReturnCurtailedResult(t *testing.T) {
 		h.GetParserIndex("p1"): 2,
 		h.GetParserIndex("p2"): 1,
 	})
-	curtailingParsers := data.NewIntSet(h.GetParserIndex("p1"))
-	cResults := parser.NewParserResult(curtailingParsers, parser.NewResult(nil, nil))
-	h.RegisterResults(h.GetParserIndex("p1"), 1, cResults, ctx)
+	cp := data.NewIntSet(h.GetParserIndex("p1"))
+	rs := parser.NewResult(nil, nil).AsSet()
+	h.RegisterResults(h.GetParserIndex("p1"), 1, cp, rs, ctx)
 
 	ctx = data.NewIntMap(map[int]int{
 		h.GetParserIndex("p1"): 1,
@@ -86,7 +95,8 @@ func TestGetResultsShouldReturnCurtailedResult(t *testing.T) {
 	})
 
 	ctx = ctx.Inc(h.GetParserIndex("p1"))
-	results, found := h.GetResults(h.GetParserIndex("p1"), 1, ctx)
-	assert.Equal(t, cResults, results)
+	actualCP, actualRS, found := h.GetResults(h.GetParserIndex("p1"), 1, ctx)
+	assert.Equal(t, cp, actualCP)
+	assert.Equal(t, rs, actualRS)
 	assert.True(t, found)
 }

@@ -18,6 +18,11 @@ func TestNewIntMapShouldCreateMapWithGivenData(t *testing.T) {
 	assert.Equal(t, data, i.data)
 }
 
+func TestEmptyIntMapReturnsWithAnEmptyIntMap(t *testing.T) {
+	i := EmptyIntMap()
+	assert.Equal(t, map[int]int{}, i.data)
+}
+
 func TestInc(t *testing.T) {
 	type TC struct {
 		name string

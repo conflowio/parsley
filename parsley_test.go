@@ -2,8 +2,6 @@ package parsley_test
 
 import (
 	"errors"
-	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/opsidian/parsley"
@@ -12,60 +10,61 @@ import (
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
-	"github.com/opsidian/parsley/terminal"
+	"github.com/opsidian/parsley/text"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestParseShouldRunParserAndReturnNode(t *testing.T) {
-	expectedNode := ast.NewTerminalNode("STRING", reader.NewPosition(1, 2, 3), "RES")
-	s := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r))
+	expectedNode := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), "RES")
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r).AsSet()
 	})
-	node, err := parsley.Parse([]byte("input"), true, s)
+	node, err := parsley.ParseText([]byte("input"), true, s)
 	assert.Equal(t, expectedNode, node)
 	assert.Nil(t, err)
 }
 
 func TestParseShouldHandleEmptyResult(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		return parser.NewParserResult(parser.NoCurtailingParsers())
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
 	})
-	node, err := parsley.Parse([]byte("input"), true, s)
+	node, err := parsley.ParseText([]byte("input"), true, s)
 	assert.Error(t, err)
 	assert.Nil(t, node)
 }
 
 func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 	expectedValue := "RES"
-	node := ast.NewTerminalNode("STRING", reader.NewPosition(1, 2, 3), expectedValue)
-	s := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, r))
+	node := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), expectedValue)
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet()
 	})
-	value, err := parsley.Evaluate([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s)
 	assert.Equal(t, expectedValue, value)
 	assert.Nil(t, err)
 }
 
 func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		return parser.NewParserResult(parser.NoCurtailingParsers())
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
 	})
-	value, err := parsley.Evaluate([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s)
 	assert.Error(t, err)
 	assert.Nil(t, value)
 }
 
 func TestEvaluateShouldHandleInterpreterError(t *testing.T) {
-	randomChild := ast.NewTerminalNode("X", reader.NewPosition(1, 2, 3), "X")
+	randomChild := ast.NewTerminalNode("X", text.NewPosition(1, 2, 3), "X")
 	expectedErr := errors.New("ERR")
 	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func([]interface{}) (interface{}, error) {
 		return nil, expectedErr
 	}))
-	s := parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(node, r))
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet()
 	})
-	value, err := parsley.Evaluate([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s)
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, value)
 }
@@ -82,9 +81,9 @@ func TestDirectLeftRecursion(t *testing.T) {
 		),
 		terminal.Rune('a', "CHAR"),
 	))
-	s := combinator.And(ast.SingleNodeBuilder(0), &a, terminal.End())
+	s := combinator.And(ast.SingleNodeBuilder(0), &a, parser.End())
 
-	result, err := parsley.Evaluate([]byte(input), true, s)
+	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
 	assert.Equal(t, 318, parser.Stat.GetSumCallCount())
@@ -96,7 +95,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 
 	var add parser.Func
 	value := combinator.Memoize("VALUE", h, combinator.Or(
-		intLiteral(),
+		terminal.Integer(),
 		&add,
 	))
 
@@ -110,40 +109,50 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		terminal.Rune('+', "ADD"),
 		value,
 	))
-	s := combinator.And(ast.SingleNodeBuilder(0), value, terminal.End())
+	s := combinator.And(ast.SingleNodeBuilder(0), value, parser.End())
 
-	result, err := parsley.Evaluate([]byte(input), true, s)
+	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
 	assert.Equal(t, 3459, parser.Stat.GetSumCallCount())
 }
 
-func TestMany(t *testing.T) {
-	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10")
+func TestManySepBy(t *testing.T) {
+	input := []byte("1 - 2 + 3 - 4 + 5 - 6 + 7 - 8 + 9 - 10")
 	h := parser.NewHistory()
 
 	var add parser.Func
 	value := combinator.Memoize("VALUE", h, combinator.Or(
-		intLiteral(),
+		terminal.Integer(),
 		&add,
 	))
 
-	add = combinator.Memoize("ADD", h, combinator.SepBy(
-		"ADD", "+", h, value, terminal.Rune('+', "+"),
+	add = combinator.Memoize("SUM", h, combinator.ManySepBy(
+		"SUM", "+", h, value, combinator.Or(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
 			sum := 0
+			modifier := 1
 			for _, v := range children {
-				sum += v.(int)
+				switch vt := v.(type) {
+				case int:
+					sum += modifier * vt
+				case rune:
+					if vt == '+' {
+						modifier = 1
+					} else {
+						modifier = -1
+					}
+				}
 			}
 			return sum, nil
 		}),
 	))
 
-	s := combinator.And(ast.SingleNodeBuilder(0), value, terminal.End())
-	result, err := parsley.Evaluate([]byte(input), true, s)
+	s := combinator.And(ast.SingleNodeBuilder(0), value, parser.End())
+	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
-	assert.Equal(t, 55, result)
-	assert.Equal(t, 1226, parser.Stat.GetSumCallCount())
+	assert.Equal(t, -5, result)
+	assert.Equal(t, 1246, parser.Stat.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {
@@ -158,18 +167,5 @@ func stringBuilder() ast.NodeBuilder {
 			}
 		}
 		return ast.NewTerminalNode("STRING", nodes[0].Pos(), s)
-	})
-}
-
-func intLiteral() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		if matches, pos := r.ReadMatch("^0|[\\-+]?[1-9][0-9]*"); matches != nil {
-			intValue, err := strconv.Atoi(matches[0])
-			if err != nil {
-				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
-			}
-			return parser.NewParserResult(parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("INT", pos, intValue), r))
-		}
-		return nil
 	})
 }

@@ -17,6 +17,11 @@ func TestNewIntSetShouldInsertValues(t *testing.T) {
 	assert.Equal(t, []int{0, 1, 2, 3}, i.data)
 }
 
+func TestEmptyIntSetReturnsWithAnEmptyIntSet(t *testing.T) {
+	i := EmptyIntSet()
+	assert.Equal(t, []int{}, i.data)
+}
+
 func TestLenShouldReturnWithSetLength(t *testing.T) {
 	assert.Equal(t, 0, IntSet{[]int{}}.Len())
 	assert.Equal(t, 1, IntSet{[]int{1}}.Len())

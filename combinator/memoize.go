@@ -9,25 +9,21 @@ import (
 // Memoize handles result cache and curtailing left recursion
 func Memoize(name string, h *parser.History, p parser.Parser) parser.Func {
 	parserIndex := h.GetParserIndex(name)
-	return parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		result, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
+	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		cp, rs, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
-			return result
+			return cp, rs
 		}
 
-		if leftRecCtx.Get(parserIndex) > r.CharsRemaining()+1 {
-			return parser.NewParserResult(data.NewIntSet(parserIndex))
+		if leftRecCtx.Get(parserIndex) > r.Remaining()+1 {
+			return data.NewIntSet(parserIndex), nil
 		}
 
-		result = p.Parse(leftRecCtx.Inc(parserIndex), r)
-		if result != nil {
-			leftRecCtx = leftRecCtx.Filter(result.CurtailingParsers)
-		} else {
-			leftRecCtx = parser.EmptyLeftRecCtx()
-		}
+		cp, rs = p.Parse(leftRecCtx.Inc(parserIndex), r)
+		leftRecCtx = leftRecCtx.Filter(cp)
 
-		h.RegisterResults(parserIndex, r.Cursor().Pos(), result, leftRecCtx)
+		h.RegisterResults(parserIndex, r.Cursor().Pos(), cp, rs, leftRecCtx)
 
-		return result
+		return cp, rs
 	})
 }

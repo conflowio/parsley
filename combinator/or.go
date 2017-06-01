@@ -11,16 +11,17 @@ func Or(parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return parser.Func(func(leftRecCtx data.IntMap, r *reader.Reader) *parser.ParserResult {
-		parserResult := parser.NewParserResult(parser.NoCurtailingParsers())
+	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		cp := parser.NoCurtailingParsers()
+		var rs parser.ResultSet
 		for _, p := range parsers {
 			parser.Stat.RegisterCall()
-			r := p.Parse(leftRecCtx, r.Clone())
-			if r != nil {
-				parserResult.Append(r.Results...)
-				parserResult.CurtailingParsers = parserResult.CurtailingParsers.Union(r.CurtailingParsers)
+			cp2, rs2 := p.Parse(leftRecCtx, r.Clone())
+			cp = cp.Union(cp2)
+			if rs2 != nil {
+				rs.Append(rs2...)
 			}
 		}
-		return parserResult
+		return cp, rs
 	})
 }

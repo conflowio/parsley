@@ -8,22 +8,21 @@ import (
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMaybeShouldReturnParserResultAndEmptyResult(t *testing.T) {
-	r := reader.New([]byte("ab"), true)
+	r := test.NewReader(0, 2, false, false)
 
-	var r1 parser.Result
+	r1 := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 
-	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		pos := r.Cursor()
-		ch, _, _ := r.ReadRune()
-		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
-		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return data.NewIntSet(1), r1.AsSet()
 	})
-	r2 := parser.NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r)
+	r2 := parser.NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r.Clone())
 
-	results := combinator.Maybe(p1).Parse(parser.EmptyLeftRecCtx(), r)
-	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), r2, r1), results)
+	cp, rs := combinator.Maybe(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, data.NewIntSet(1), cp)
+	assert.Equal(t, parser.NewResultSet(r2, r1), rs)
 }

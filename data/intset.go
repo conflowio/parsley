@@ -4,6 +4,8 @@ import (
 	"sort"
 )
 
+var emptyIntSet = NewIntSet()
+
 // IntSet is a sorted immutable integer set
 type IntSet struct {
 	data []int
@@ -16,6 +18,11 @@ func NewIntSet(values ...int) IntSet {
 		i.insertValue(val)
 	}
 	return i
+}
+
+// EmptyIntSet returns with the empty int set
+func EmptyIntSet() IntSet {
+	return emptyIntSet
 }
 
 // Len returns with the length of the set

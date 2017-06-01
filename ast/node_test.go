@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTerminalNode(t *testing.T) {
-	pos := reader.NewPosition(1, 2, 3)
+	pos := test.NewPosition(1)
 	node := ast.NewTerminalNode("TOKEN", pos, "VALUE")
 	assert.Equal(t, "TOKEN", node.Token())
 	assert.Equal(t, pos, node.Pos())
@@ -18,10 +18,10 @@ func TestTerminalNode(t *testing.T) {
 	assert.Equal(t, "VALUE", actualVal)
 	assert.Nil(t, actualErr)
 
-	assert.Equal(t, "T{VALUE, 2:3}", node.String())
+	assert.Equal(t, "T{VALUE, Pos{1}}", node.String())
 
 	node = ast.NewTerminalNode("TOKEN", pos, nil)
-	assert.Equal(t, "T{TOKEN, 2:3}", node.String())
+	assert.Equal(t, "T{TOKEN, Pos{1}}", node.String())
 }
 
 func TestNonTerminalNode(t *testing.T) {
@@ -34,8 +34,8 @@ func TestNonTerminalNode(t *testing.T) {
 	})
 
 	nodes := []ast.Node{
-		ast.NewTerminalNode("1", reader.NewPosition(0, 1, 2), 1),
-		ast.NewTerminalNode("2", reader.NewPosition(2, 1, 4), 2),
+		ast.NewTerminalNode("1", test.NewPosition(0), 1),
+		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
 
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
@@ -46,7 +46,7 @@ func TestNonTerminalNode(t *testing.T) {
 	assert.Equal(t, expectedValue, actualVal)
 	assert.Equal(t, expectedErr, actualErr)
 
-	assert.Equal(t, "NT{+, [T{1, 1:2} T{2, 1:4}]}", node.String())
+	assert.Equal(t, "NT{+, [T{1, Pos{0}} T{2, Pos{2}}]}", node.String())
 }
 
 func TestNonTerminalNodeShouldPanicWithoutChildren(t *testing.T) {
@@ -54,13 +54,13 @@ func TestNonTerminalNodeShouldPanicWithoutChildren(t *testing.T) {
 }
 
 func TestNonTerminalNodeShouldPanicWithoutInterpreter(t *testing.T) {
-	randomNode := ast.NewTerminalNode("X", reader.NewPosition(1, 2, 3), getInterpreterFunc(nil, nil))
+	randomNode := ast.NewTerminalNode("X", test.NewPosition(1), getInterpreterFunc(nil, nil))
 	assert.Panics(t, func() { ast.NewNonTerminalNode("X", []ast.Node{randomNode}, nil) })
 }
 
 func TestNonTerminalNodeValueShouldReturnErrorIfChildHasError(t *testing.T) {
 	expectedErr := errors.New("E")
-	randomNode := ast.NewTerminalNode("X", reader.NewPosition(1, 2, 3), getInterpreterFunc(nil, nil))
+	randomNode := ast.NewTerminalNode("X", test.NewPosition(1), getInterpreterFunc(nil, nil))
 	badChild := ast.NewNonTerminalNode("BAD", []ast.Node{randomNode}, ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
 		return nil, expectedErr
 	}))
@@ -78,9 +78,9 @@ func TestNonTerminalNodeValueShouldHandleNilNodes(t *testing.T) {
 	})
 
 	nodes := []ast.Node{
-		ast.NewTerminalNode("1", reader.NewPosition(0, 1, 2), 1),
+		ast.NewTerminalNode("1", test.NewPosition(0), 1),
 		nil,
-		ast.NewTerminalNode("2", reader.NewPosition(2, 1, 4), 2),
+		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
 
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
@@ -96,9 +96,9 @@ func TestNonTerminalNodeValueShouldIgnoreEmptyNodes(t *testing.T) {
 	})
 
 	nodes := []ast.Node{
-		ast.NewTerminalNode("1", reader.NewPosition(0, 1, 2), 1),
-		ast.NewTerminalNode(ast.EMPTY, reader.NewPosition(0, 1, 1), nil),
-		ast.NewTerminalNode("2", reader.NewPosition(2, 1, 4), 2),
+		ast.NewTerminalNode("1", test.NewPosition(0), 1),
+		ast.NewTerminalNode(ast.EMPTY, test.NewPosition(0), nil),
+		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
 
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)

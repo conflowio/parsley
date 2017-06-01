@@ -5,24 +5,24 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/text"
 )
 
-// Parse parses the given input and returns with the root node of the AST
-func Parse(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node, error) {
+// ParseText parses the given text input and returns with the root node of the AST
+func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node, error) {
 	parser.Stat.Reset()
-	r := reader.New(input, ignoreWhitespaces)
+	r := text.NewReader(input, ignoreWhitespaces)
 	parser.Stat.RegisterCall()
-	parserResult := s.Parse(parser.EmptyLeftRecCtx(), r)
-	if len(parserResult.Results) == 0 {
+	_, resultSet := s.Parse(parser.EmptyLeftRecCtx(), r)
+	if len(resultSet) == 0 {
 		return nil, errors.New("failed to parse the input")
 	}
-	return parserResult.Results[0].Node(), nil
+	return resultSet[0].Node(), nil
 }
 
-// Evaluate parses the given input and evaluates the AST
-func Evaluate(input []byte, ignoreWhitespaces bool, s parser.Parser) (interface{}, error) {
-	node, err := Parse(input, ignoreWhitespaces, s)
+// EvaluateText parses the given text input and evaluates the AST
+func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser) (interface{}, error) {
+	node, err := ParseText(input, ignoreWhitespaces, s)
 	if err != nil {
 		return nil, err
 	}

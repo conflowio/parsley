@@ -8,102 +8,75 @@ import (
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestOrShouldPanicIfNoParserWasGiven(t *testing.T) {
-	r := reader.New([]byte("ab"), true)
-	ctx := parser.EmptyLeftRecCtx()
-	assert.Panics(t, func() { combinator.Or().Parse(ctx, r) })
+	r := test.NewReader(0, 2, false, false)
+	assert.Panics(t, func() { combinator.Or().Parse(parser.EmptyLeftRecCtx(), r) })
 }
 
 func TestOrShouldHandleOnlyOneParser(t *testing.T) {
-	r := reader.New([]byte("ab"), true)
-	ctx := parser.EmptyLeftRecCtx()
+	r := test.NewReader(0, 2, false, false)
 
-	var r1 parser.Result
+	expectedCP := data.NewIntSet(1)
+	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet()
 
-	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		pos := r.Cursor()
-		ch, _, _ := r.ReadRune()
-		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
-		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return expectedCP, expectedRS
 	})
 
-	results := combinator.Or(p1).Parse(ctx, r)
-	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers(), r1), results)
+	cp, rs := combinator.Or(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, expectedCP, cp)
+	assert.Equal(t, expectedRS, rs)
 }
 
 func TestOrShouldMergeResults(t *testing.T) {
 	parser.Stat.Reset()
-	r := reader.New([]byte("ab"), true)
-	ctx := parser.EmptyLeftRecCtx()
+	r := test.NewReader(0, 2, false, false)
 
 	var r1, r2 parser.Result
 
-	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		pos := r.Cursor()
-		ch, _, _ := r.ReadRune()
-		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", pos, ch), r)
-		return parser.NewParserResult(parser.NoCurtailingParsers(), r1)
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), test.NewReader(0, 2, false, true))
+		return parser.NoCurtailingParsers(), r1.AsSet()
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		pos := r.Cursor()
-		ch1, _, _ := r.ReadRune()
-		ch2, _, _ := r.ReadRune()
-		r2 = parser.NewResult(ast.NewTerminalNode("STRING", pos, string([]rune{ch1, ch2})), r)
-		return parser.NewParserResult(data.NewIntSet(1), r2)
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		r2 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(1), 'y'), test.NewReader(1, 1, false, true))
+		return data.NewIntSet(1), r2.AsSet()
 	})
 
-	p3 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		return parser.NewParserResult(data.NewIntSet(2))
+	p3 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return data.NewIntSet(2), nil
 	})
 
-	p4 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		return nil
+	p4 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
 	})
 
-	results := combinator.Or(p1, p2, p3, p4).Parse(ctx, r)
-	curtailingParsers := data.NewIntSet(1, 2)
-	assert.EqualValues(t, parser.NewParserResult(curtailingParsers, r1, r2), results)
+	cp, rs := combinator.Or(p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
+	expectedCP := data.NewIntSet(1, 2)
+	expectedRS := parser.NewResultSet(r1, r2)
+	assert.EqualValues(t, expectedCP, cp)
+	assert.EqualValues(t, expectedRS, rs)
 
 	assert.Equal(t, 4, parser.Stat.GetSumCallCount())
 }
 
 func TestOrMayReturnEmptyResult(t *testing.T) {
-	r := reader.New([]byte("ab"), true)
-	ctx := parser.EmptyLeftRecCtx()
+	r := test.NewReader(0, 2, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		return nil
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		return nil
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
 	})
 
-	results := combinator.Or(p1, p2).Parse(ctx, r)
-	assert.Equal(t, parser.NewParserResult(parser.NoCurtailingParsers()), results)
-}
-
-func TestOrShouldCloneReadersForAllParsers(t *testing.T) {
-	parser.Stat.Reset()
-	r := reader.New([]byte("ab"), true)
-	ctx := parser.EmptyLeftRecCtx()
-
-	p1 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		assert.Equal(t, reader.NewPosition(0, 1, 1), r.Cursor())
-		r.ReadRune()
-		return nil
-	})
-
-	p2 := parser.Func(func(ctx data.IntMap, r *reader.Reader) (results *parser.ParserResult) {
-		assert.Equal(t, reader.NewPosition(0, 1, 1), r.Cursor())
-		r.ReadRune()
-		return nil
-	})
-
-	combinator.Or(p1, p2).Parse(ctx, r)
-	assert.Equal(t, 2, parser.Stat.GetSumCallCount())
+	cp, rs := combinator.Or(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Empty(t, rs)
 }

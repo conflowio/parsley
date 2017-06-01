@@ -51,3 +51,26 @@ func BinaryOperatorBuilder(interpreter Interpreter) NodeBuilder {
 		)
 	})
 }
+
+// NilBuilder returns with a node builder function which always returns with nil
+func NilBuilder() NodeBuilder {
+	return NodeBuilderFunc(func(nodes []Node) Node {
+		return nil
+	})
+}
+
+// FlattenBuilder returns all nodes and their direct children flattened in a new node
+func FlattenBuilder(token string, interpreter Interpreter) NodeBuilder {
+	return NodeBuilderFunc(func(nodes []Node) Node {
+		var children []Node
+		for _, node := range nodes {
+			switch n := node.(type) {
+			case TerminalNode:
+				children = append(children, n)
+			case NonTerminalNode:
+				children = append(children, n.children...)
+			}
+		}
+		return NewNonTerminalNode(token, children, interpreter)
+	})
+}

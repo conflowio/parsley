@@ -13,6 +13,11 @@ func NewIntMap(data map[int]int) IntMap {
 	return IntMap{data}
 }
 
+// EmptyIntMap returns with an empty int map
+func EmptyIntMap() IntMap {
+	return IntMap{make(map[int]int)}
+}
+
 func (i IntMap) clone() IntMap {
 	i2 := IntMap{make(map[int]int, len(i.data))}
 	for k, v := range i.data {

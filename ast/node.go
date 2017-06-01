@@ -112,6 +112,11 @@ func (n NonTerminalNode) Pos() reader.Position {
 	return n.pos
 }
 
+// Children returns with the children
+func (n NonTerminalNode) Children() []Node {
+	return n.children
+}
+
 func (n NonTerminalNode) String() string {
 	return fmt.Sprintf("NT{%s, %s}", n.token, n.children)
 }
