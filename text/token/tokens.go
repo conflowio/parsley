@@ -6,13 +6,11 @@ const (
 	FLOAT  = "FLOAT"
 	CHAR   = "CHAR"
 	STRING = "STRING"
+	BOOL   = "BOOL"
 
 	VAR   = "VAR"
 	ARRAY = "[]"
 	MAP   = "{}"
-
-	TRUE  = "TRUE"
-	FALSE = "FALSE"
 
 	ADD = "+"
 	SUB = "-"
