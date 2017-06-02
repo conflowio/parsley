@@ -14,19 +14,21 @@ import (
 
 // Float matches a float literal
 func Float(bitSize int) parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (cp data.IntSet, rs parser.ResultSet) {
+	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
 		if matches, pos := tr.ReadMatch("^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?"); matches != nil {
 			val, err := strconv.ParseFloat(matches[0], bitSize)
 			if err != nil {
 				panic(fmt.Sprintf("Invalid float value encountered: %s", matches[0]))
 			}
+			var rs parser.ResultSet
 			if bitSize == 32 {
 				rs = parser.NewResult(ast.NewTerminalNode(token.FLOAT, pos, float32(val)), r).AsSet()
 			} else {
 				rs = parser.NewResult(ast.NewTerminalNode(token.FLOAT, pos, val), r).AsSet()
 			}
+			return parser.NoCurtailingParsers(), rs
 		}
-		return
+		return parser.NoCurtailingParsers(), nil
 	})
 }
