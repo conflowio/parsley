@@ -20,7 +20,7 @@ func TestMaybeShouldReturnParserResultAndEmptyResult(t *testing.T) {
 	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		return data.NewIntSet(1), r1.AsSet()
 	})
-	r2 := parser.NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r.Clone())
+	r2 := parser.NewResult(nil, r.Clone())
 
 	cp, rs := combinator.Maybe(p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)

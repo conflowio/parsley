@@ -63,7 +63,8 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 			val, _ := node.Value()
 			res += val.(string)
 		}
-		return ast.NewTerminalNode("STR", nodes[0].Pos(), res)
+		first := nodes[0].(ast.TerminalNode)
+		return ast.NewTerminalNode("STR", first.Pos(), res)
 	})
 
 	_, rs := combinator.And(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)

@@ -22,5 +22,5 @@ func TestNodeBuilderFuncShouldCallFunction(t *testing.T) {
 
 	actualNode := nodeBuilderFunc.BuildNode(nodes)
 	assert.Equal(t, nodes, actualNodes)
-	assertNodesEqual(t, expectedNode, actualNode)
+	test.AssertNodesEqual(t, expectedNode, actualNode)
 }

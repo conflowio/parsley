@@ -6,9 +6,6 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// EMPTY is the EMPTY token
-const EMPTY = "EMPTY"
-
 // EOF is the end of file token
 const EOF = "EOF"
 
@@ -16,7 +13,6 @@ const EOF = "EOF"
 type Node interface {
 	Token() string
 	Value() (interface{}, error)
-	Pos() reader.Position
 }
 
 // TerminalNode is a leaf node in the AST
@@ -51,11 +47,10 @@ func (t TerminalNode) Pos() reader.Position {
 }
 
 func (t TerminalNode) String() string {
-	if t.value != nil {
-		return fmt.Sprintf("T{%v, %s}", t.value, t.pos)
-	} else {
+	if t.value == nil {
 		return fmt.Sprintf("T{%s, %s}", t.token, t.pos)
 	}
+	return fmt.Sprintf("T{%v, %s}", t.value, t.pos)
 }
 
 // NonTerminalNode represents a non-leaf node in the AST
@@ -63,22 +58,14 @@ type NonTerminalNode struct {
 	token       string
 	children    []Node
 	interpreter Interpreter
-	pos         reader.Position
 }
 
 // NewNonTerminalNode creates a new NonTerminalNode instance
 func NewNonTerminalNode(token string, children []Node, interpreter Interpreter) NonTerminalNode {
-	if len(children) == 0 {
-		panic("A non-terminal node needs to have at least one child node")
-	}
-	if interpreter == nil {
-		panic("Interpreter can not be nil")
-	}
 	return NonTerminalNode{
 		token:       token,
 		children:    children,
 		interpreter: interpreter,
-		pos:         children[0].Pos(),
 	}
 }
 
@@ -89,27 +76,23 @@ func (n NonTerminalNode) Token() string {
 
 // Value returns with the value of the node
 func (n NonTerminalNode) Value() (interface{}, error) {
+	if n.interpreter == nil || len(n.children) == 0 {
+		return nil, nil
+	}
 	values := make([]interface{}, 0, len(n.children))
 	for _, child := range n.children {
 		if child != nil {
-			if child.Token() == EMPTY {
-				continue
-			}
 			value, err := child.Value()
 			if err != nil {
 				return nil, err
 			}
 			values = append(values, value)
-		} else {
-			values = append(values, nil)
 		}
 	}
+	if len(values) == 0 {
+		return nil, nil
+	}
 	return n.interpreter.Eval(values)
-}
-
-// Pos returns the position
-func (n NonTerminalNode) Pos() reader.Position {
-	return n.pos
 }
 
 // Children returns with the children

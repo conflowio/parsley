@@ -153,7 +153,7 @@ func TestManySepBy(t *testing.T) {
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)
-	assert.Equal(t, 1246, parser.Stat.GetSumCallCount())
+	assert.Equal(t, 1266, parser.Stat.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {
@@ -167,6 +167,7 @@ func stringBuilder() ast.NodeBuilder {
 				s = s + val.(string)
 			}
 		}
-		return ast.NewTerminalNode("STRING", nodes[0].Pos(), s)
+		first := nodes[0].(ast.TerminalNode)
+		return ast.NewTerminalNode("STRING", first.Pos(), s)
 	})
 }

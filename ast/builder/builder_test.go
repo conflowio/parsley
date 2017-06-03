@@ -15,15 +15,6 @@ func getInterpreterFunc(val interface{}, err error) ast.InterpreterFunc {
 	})
 }
 
-func assertNodesEqual(t *testing.T, expected ast.Node, actual ast.Node) {
-	assert.Equal(t, expected.Token(), actual.Token())
-	assert.Equal(t, expected.Pos(), actual.Pos())
-	actualVal, actualErr := actual.Value()
-	expectedVal, expectedErr := expected.Value()
-	assert.Equal(t, expectedVal, actualVal)
-	assert.Equal(t, expectedErr, actualErr)
-}
-
 func TestSingleNodeBuilderShouldReturnWithSelectednode(t *testing.T) {
 	nodes := []ast.Node{
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
@@ -48,12 +39,7 @@ func TestAllNodesBuilderShouldIncludeAllNodes(t *testing.T) {
 	interpreter := getInterpreterFunc("X", nil)
 	expected := ast.NewNonTerminalNode("TEST", nodes, interpreter)
 	actual := builder.All("TEST", interpreter).BuildNode(nodes)
-	assert.Equal(t, expected.Token(), actual.Token())
-	assert.Equal(t, expected.Pos(), actual.Pos())
-	actualVal, actualErr := actual.Value()
-	expectedVal, expectedErr := expected.Value()
-	assert.Equal(t, expectedVal, actualVal)
-	assert.Equal(t, expectedErr, actualErr)
+	test.AssertNodesEqual(t, expected, actual)
 }
 
 func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
@@ -65,7 +51,7 @@ func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
 	interpreter := getInterpreterFunc(3, nil)
 	expected := ast.NewNonTerminalNode("+", []ast.Node{nodes[0], nodes[2]}, interpreter)
 	actual := builder.BinaryOperation(interpreter).BuildNode(nodes)
-	assertNodesEqual(t, expected, actual)
+	test.AssertNodesEqual(t, expected, actual)
 }
 
 func TestBinaryOperatorBuilderShouldPanicIfNotThreeNodes(t *testing.T) {
@@ -98,10 +84,5 @@ func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
 	}
 	expected := ast.NewNonTerminalNode("TEST", expectedNodes, interpreter)
 	actual := builder.Flatten("TEST", interpreter).BuildNode(nodes)
-	assert.Equal(t, expected.Token(), actual.Token())
-	assert.Equal(t, expected.Pos(), actual.Pos())
-	actualVal, actualErr := actual.Value()
-	expectedVal, expectedErr := expected.Value()
-	assert.Equal(t, expectedVal, actualVal)
-	assert.Equal(t, expectedErr, actualErr)
+	test.AssertNodesEqual(t, expected, actual)
 }

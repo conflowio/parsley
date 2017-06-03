@@ -47,7 +47,8 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 			val, _ := node.Value()
 			res += val.(string)
 		}
-		return ast.NewTerminalNode("STR", nodes[0].Pos(), res)
+		first := nodes[0].(ast.TerminalNode)
+		return ast.NewTerminalNode("STR", first.Pos(), res)
 	})
 
 	_, rs := combinator.Many(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
@@ -76,7 +77,7 @@ func TestManyShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		defer func() { pi++ }()
 		if pi == 0 {
-			return data.NewIntSet(0, 1), parser.NewResult(ast.NewTerminalNode(ast.EMPTY, test.NewPosition(0), nil), r).AsSet()
+			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet()
 		} else {
 			return data.NewIntSet(1, 2), nil
 		}

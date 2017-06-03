@@ -16,8 +16,7 @@ func assertCursor(t *testing.T, pos int, r reader.Reader) {
 func TestEmptyWillAlwaysReturnWithResult(t *testing.T) {
 	r := newTestReader(1, 1, false)
 	_, res := parser.Empty()(parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode(ast.EMPTY, testPosition{1}, nil)
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
+	assert.Equal(t, parser.NewResult(nil, r).AsSet(), res)
 	assertCursor(t, 1, r)
 }
 

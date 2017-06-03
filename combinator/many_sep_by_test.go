@@ -70,10 +70,15 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 	})
 
 	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Len(t, rs, 4)
 	val1, _ := rs[0].Node().Value()
 	val2, _ := rs[1].Node().Value()
-	assert.Equal(t, "a|,|c|", val1)
-	assert.Equal(t, "b|,|d|", val2)
+	val3, _ := rs[2].Node().Value()
+	val4, _ := rs[3].Node().Value()
+	assert.Equal(t, "a|", val1)
+	assert.Equal(t, "b|", val2)
+	assert.Equal(t, "a|,|c|", val3)
+	assert.Equal(t, "b|,|d|", val4)
 }
 
 func TestManySepByShouldHandleNilResults(t *testing.T) {
@@ -95,7 +100,7 @@ func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		defer func() { pi++ }()
 		if pi == 0 {
-			return data.NewIntSet(0, 1), parser.NewResult(ast.NewTerminalNode(ast.EMPTY, test.NewPosition(0), nil), r).AsSet()
+			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet()
 		} else {
 			return data.NewIntSet(1, 2), nil
 		}

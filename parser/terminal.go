@@ -9,8 +9,7 @@ import (
 // Empty always matches and returns with an empty node result
 func Empty() Func {
 	return Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet) {
-		// TODO: return with nil node
-		return NoCurtailingParsers(), NewResult(ast.NewTerminalNode(ast.EMPTY, r.Cursor(), nil), r).AsSet()
+		return NoCurtailingParsers(), NewResult(nil, r).AsSet()
 	})
 }
 
