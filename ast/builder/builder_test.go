@@ -9,12 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getInterpreterFunc(val interface{}, err error) ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
-		return val, err
-	})
-}
-
 func TestSingleNodeBuilderShouldReturnWithSelectednode(t *testing.T) {
 	nodes := []ast.Node{
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
@@ -36,7 +30,9 @@ func TestAllNodesBuilderShouldIncludeAllNodes(t *testing.T) {
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
-	interpreter := getInterpreterFunc("X", nil)
+	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		return nil, nil
+	})
 	expected := ast.NewNonTerminalNode("TEST", nodes, interpreter)
 	actual := builder.All("TEST", interpreter).BuildNode(nodes)
 	test.AssertNodesEqual(t, expected, actual)
@@ -48,7 +44,9 @@ func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
 		ast.NewTerminalNode("+", test.NewPosition(1), "+"),
 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
-	interpreter := getInterpreterFunc(3, nil)
+	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		return nil, nil
+	})
 	expected := ast.NewNonTerminalNode("+", []ast.Node{nodes[0], nodes[2]}, interpreter)
 	actual := builder.BinaryOperation(interpreter).BuildNode(nodes)
 	test.AssertNodesEqual(t, expected, actual)
@@ -67,7 +65,9 @@ func TestNilBuilderReturnsWithNil(t *testing.T) {
 }
 
 func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
-	interpreter := getInterpreterFunc("X", nil)
+	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		return nil, nil
+	})
 	nodes := []ast.Node{
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
 		ast.NewNonTerminalNode(

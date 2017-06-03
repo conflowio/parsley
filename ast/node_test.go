@@ -55,7 +55,10 @@ func TestNonTerminalNodeValueShouldReturnErrorIfChildHasError(t *testing.T) {
 	badChild := ast.NewNonTerminalNode("BAD", []ast.Node{randomNode}, ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
 		return nil, expectedErr
 	}))
-	node := ast.NewNonTerminalNode("X", []ast.Node{badChild}, getInterpreterFunc(nil, nil))
+	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		return nil, nil
+	})
+	node := ast.NewNonTerminalNode("X", []ast.Node{badChild}, interpreter)
 	actualVal, actualErr := node.Value()
 	assert.Nil(t, actualVal)
 	assert.Equal(t, expectedErr, actualErr)

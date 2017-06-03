@@ -6,11 +6,12 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestResult(t *testing.T) {
-	r := newTestReader(0, 0, false)
+	r := test.NewReader(0, 0, false, false)
 	node := ast.NewTerminalNode("x", r.Cursor(), "x")
 	res := parser.NewResult(node, r)
 	assert.Equal(t, node, res.Node())
@@ -19,8 +20,8 @@ func TestResult(t *testing.T) {
 }
 
 func testResult(pos int) parser.Result {
-	r := newTestReader(pos, 1, false)
-	node := ast.NewTerminalNode("x", testPosition{0}, "x")
+	r := test.NewReader(pos, 1, false, false)
+	node := ast.NewTerminalNode("x", test.NewPosition(0), "x")
 	return parser.NewResult(node, r)
 }
 

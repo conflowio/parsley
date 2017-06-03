@@ -6,12 +6,13 @@ import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 	h := parser.NewHistory()
-	node := ast.NewTerminalNode("t", testPosition{0}, nil)
+	node := ast.NewTerminalNode("t", test.NewPosition(0), nil)
 	cp := parser.NoCurtailingParsers()
 	rs := parser.NewResult(node, nil).AsSet()
 	h.RegisterResults(h.GetParserIndex("p1"), 2, cp, rs, parser.EmptyLeftRecCtx())
@@ -41,7 +42,7 @@ func TestRegisterResultShouldReturnFalseWhenNoResultWasRegistered(t *testing.T) 
 
 func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
 	h := parser.NewHistory()
-	node := ast.NewTerminalNode("t", testPosition{0}, nil)
+	node := ast.NewTerminalNode("t", test.NewPosition(0), nil)
 	cp1 := parser.NoCurtailingParsers()
 	cp2 := data.NewIntSet(1)
 	rs1 := parser.NewResult(node, nil).AsSet()
