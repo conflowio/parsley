@@ -3,6 +3,7 @@ package text_test
 import (
 	"io"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/opsidian/parsley/text"
 	"github.com/stretchr/testify/assert"
@@ -164,12 +165,6 @@ func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {
 	assertCursor(t, 3, 2, 2, r)
 }
 
-func TestStringShouldReturnNonEmptyString(t *testing.T) {
-	r := text.NewReader([]byte("ab"), true)
-	r.ReadRune()
-	assert.NotEmpty(t, r.String())
-}
-
 func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
 	r := text.NewReader([]byte("🍕"), true)
 	matches, pos := r.ReadMatch("^.*")
@@ -178,9 +173,95 @@ func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
 	assertCursor(t, 4, 1, 2, r)
 }
 
+func TestStringShouldReturnNonEmptyString(t *testing.T) {
+	r := text.NewReader([]byte("ab"), true)
+	r.ReadRune()
+	assert.NotEmpty(t, r.String())
+}
+
 func TestWithCursorShouldSetPositionAndCharCount(t *testing.T) {
 	r := text.NewReader([]byte("abcd"), true)
 	r2 := r.WithCursor(3, 1, 4)
 	assert.Equal(t, text.NewPosition(3, 1, 4), r2.Cursor())
 	assert.Equal(t, 1, r2.Remaining())
+}
+
+func TestReadfShouldReturnResultAndPos(t *testing.T) {
+	r := text.NewReader([]byte("123abcDEF"), true)
+	reader := func(b []byte) (string, int) {
+		assert.Equal(t, []byte("123abcDEF"), b)
+		return "NEXT: " + string(b[:3]), 3
+	}
+
+	result, pos := r.Readf(reader)
+	assert.Equal(t, "NEXT: 123", result)
+	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
+	assert.Equal(t, text.NewPosition(3, 1, 4), r.Cursor())
+}
+
+func TestReadfShouldIgnoreWhitespacesIfSet(t *testing.T) {
+	r := text.NewReader([]byte("x \r\n123abcd"), true)
+	r.ReadRune()
+	reader := func(b []byte) (string, int) {
+		assert.Equal(t, []byte("123abcd"), b)
+		return "NEXT: " + string(b[:3]), 3
+	}
+	result, pos := r.Readf(reader)
+	assert.Equal(t, "NEXT: 123", result)
+	assert.Equal(t, text.NewPosition(4, 2, 1), pos)
+	assert.Equal(t, text.NewPosition(7, 2, 4), r.Cursor())
+}
+
+func TestReadfShouldNotIgnoreWhitespacesIfNotSet(t *testing.T) {
+	r := text.NewReader([]byte("x \r\n123abcd"), false)
+	r.ReadRune()
+	reader := func(b []byte) (string, int) {
+		assert.Equal(t, []byte(" \r\n123abcd"), b)
+		return "NEXT: " + string(b[:3]), 3
+	}
+	result, pos := r.Readf(reader)
+	assert.Equal(t, "NEXT:  \r\n", result)
+	assert.Equal(t, text.NewPosition(1, 1, 2), pos)
+	assert.Equal(t, text.NewPosition(4, 2, 1), r.Cursor())
+}
+
+func TestReadfShouldReturnEmptyStringIfNoMatch(t *testing.T) {
+	r := text.NewReader([]byte("123"), true)
+	reader := func(b []byte) (string, int) {
+		return "", 0
+	}
+	result, pos := r.Readf(reader)
+	assert.Equal(t, "", result)
+	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+}
+
+func TestReadfShouldFollowLinesAndColumns(t *testing.T) {
+	r := text.NewReader([]byte("a\nb"), false)
+	reader := func(b []byte) (string, int) {
+		return "NEXT: " + string(b[:1]), 1
+	}
+
+	assertCursor(t, 0, 1, 1, r)
+
+	r.Readf(reader)
+	assertCursor(t, 1, 1, 2, r)
+
+	r.Readf(reader)
+	assertCursor(t, 2, 2, 1, r)
+
+	r.Readf(reader)
+	assertCursor(t, 3, 2, 2, r)
+}
+
+func TestReadfShouldHandleUnicodeCharacter(t *testing.T) {
+	r := text.NewReader([]byte("🍕"), true)
+	reader := func(b []byte) (string, int) {
+		r, size := utf8.DecodeRuneInString(string(b))
+		return string(r), size
+	}
+	result, pos := r.Readf(reader)
+	assert.Equal(t, "🍕", result)
+	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
+	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
 }

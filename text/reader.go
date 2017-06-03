@@ -143,16 +143,16 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 }
 
 // Readf uses the given function to match the next token
-func (r *Reader) Readf(f func(b []byte) (string, int)) string {
+func (r *Reader) Readf(f func(b []byte) (string, int)) (string, reader.Position) {
 	if r.ignoreWhitespaces {
 		r.readWhitespaces()
 	}
 
+	pos := r.cur
 	value, l := f(r.b[r.cur.pos:])
 	if l != 0 {
 		str := string(r.b[r.cur.pos : r.cur.pos+l])
 		for _, ch := range str {
-			r.cur.pos++
 			r.charCount--
 			if ch != '\n' {
 				r.cur.col++
@@ -161,8 +161,9 @@ func (r *Reader) Readf(f func(b []byte) (string, int)) string {
 				r.cur.col = 1
 			}
 		}
+		r.cur.pos += l
 	}
-	return value
+	return value, pos
 }
 
 // Remaining returns with the remaining character count

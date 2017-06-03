@@ -15,19 +15,19 @@ import (
 func String() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		pos := tr.Cursor()
 		quote, _, err := tr.ReadRune()
 		if err != nil || (quote != '"' && quote != '`') {
 			return parser.NoCurtailingParsers(), nil
 		}
 
 		var value string
-
+		var pos reader.Position
 		if quote == '`' {
-			matches, _ := tr.ReadMatch("^[^`]*")
+			var matches []string
+			matches, pos = tr.ReadMatch("^[^`]*")
 			value = matches[0]
 		} else {
-			value = tr.Readf(unquoteString)
+			value, pos = tr.Readf(unquoteString)
 		}
 
 		endQuote, _, err := tr.ReadRune()
