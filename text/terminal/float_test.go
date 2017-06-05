@@ -50,21 +50,10 @@ var validTestCases = []TC{
 	TC{"1.2e", 1.2, 3}, // only 1.2 should be consumed
 }
 
-func TestFloat32ShouldMatch(t *testing.T) {
+func TestFloatShouldMatch(t *testing.T) {
 	for _, tc := range validTestCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.Float(32).Parse(parser.EmptyLeftRecCtx(), r)
-		require.NotNil(t, res)
-		actual, _ := res[0].Node().Value()
-		assert.Equal(t, float32(tc.expected), actual)
-		assert.Equal(t, tc.cursor, res[0].Reader().Cursor().Pos())
-	}
-}
-
-func TestFloat64ShouldMatch(t *testing.T) {
-	for _, tc := range validTestCases {
-		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.Float(64).Parse(parser.EmptyLeftRecCtx(), r)
+		_, res := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res)
 		actual, _ := res[0].Node().Value()
 		assert.Equal(t, tc.expected, actual)
@@ -86,7 +75,7 @@ func TestFloatShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.Float(32).Parse(parser.EmptyLeftRecCtx(), r)
+		_, res := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 	}
 }
