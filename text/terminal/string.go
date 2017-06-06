@@ -15,7 +15,7 @@ import (
 func String() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		matches, _ := tr.ReadMatch("^[\"|`]")
+		matches, _ := tr.ReadMatch("\"|`")
 		if matches == nil {
 			return parser.NoCurtailingParsers(), nil
 		}
@@ -25,7 +25,7 @@ func String() parser.Func {
 		var pos reader.Position
 		if quote == "`" {
 			var matches []string
-			matches, pos = tr.ReadMatch("^[^`]*")
+			matches, pos = tr.ReadMatch("[^`]*")
 			value = matches[0]
 		} else {
 			value, pos = tr.Readf(unquoteString)

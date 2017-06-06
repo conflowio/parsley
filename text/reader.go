@@ -107,10 +107,6 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 
 // ReadMatch reads a set of characters matching the given regular expression
 func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
-	if expr[0] != '^' {
-		panic("Regexp match should start with ^")
-	}
-
 	if r.ignoreWhitespaces {
 		r.readWhitespaces()
 	}
@@ -194,7 +190,7 @@ func (r *Reader) String() string {
 }
 
 func (r *Reader) readWhitespaces() {
-	loc := r.getPattern("^[ \n\r\t]+").FindIndex(r.b[r.cur.pos:])
+	loc := r.getPattern("[ \n\r\t]+").FindIndex(r.b[r.cur.pos:])
 	if loc == nil {
 		return
 	}
@@ -214,7 +210,7 @@ func (r *Reader) readWhitespaces() {
 func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
 	rc, ok := r.regexpCache[expr]
 	if !ok {
-		rc = regexp.MustCompile(expr)
+		rc = regexp.MustCompile("^(?:" + expr + ")")
 		r.regexpCache[expr] = rc
 	}
 	return
