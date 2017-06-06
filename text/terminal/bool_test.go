@@ -41,6 +41,8 @@ func TestBoolShouldNotMatch(t *testing.T) {
 		TC{"fals"},
 		TC{"TRUE"},
 		TC{"FALSE"},
+		TC{"truex"},
+		TC{"falsex"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)

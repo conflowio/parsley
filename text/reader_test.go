@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertCursor(t *testing.T, pos int, line int, col int, r *text.Reader) {
-	assert.Equal(t, text.NewPosition(pos, line, col), r.Cursor())
-}
-
 func TestPositionMethods(t *testing.T) {
 	p := text.NewPosition(1, 2, 3)
 	assert.Equal(t, 1, p.Pos())
@@ -23,7 +19,7 @@ func TestPositionMethods(t *testing.T) {
 
 func TestEmptyReader(t *testing.T) {
 	r := text.NewReader([]byte{}, true)
-	assertCursor(t, 0, 1, 1, r)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 	assert.Equal(t, 0, r.Remaining())
 	assert.True(t, r.IsEOF())
 	_, _, err := r.ReadRune()
@@ -57,20 +53,28 @@ func TestCloneShouldCreateReaderWithSameParams(t *testing.T) {
 
 	assert.Equal(t, 4, r.Remaining())
 	assert.Equal(t, 0, rc.Remaining())
-	assertCursor(t, 4, 2, 2, r)
-	assertCursor(t, 8, 3, 3, rc)
+	assert.Equal(t, text.NewPosition(4, 2, 2), r.Cursor())
+	assert.Equal(t, text.NewPosition(8, 3, 3), rc.Cursor())
 	assert.False(t, r.IsEOF())
 	assert.True(t, rc.IsEOF())
-
 }
 
-func TestReadRuneShouldReturnWithCharacter(t *testing.T) {
+func TestReadRuneShouldReturnWithASCIICharacter(t *testing.T) {
+	r := text.NewReader([]byte("a"), true)
+	ch, size, err := r.ReadRune()
+	assert.Equal(t, 'a', ch)
+	assert.Equal(t, 1, size)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
+}
+
+func TestReadRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
 	r := text.NewReader([]byte("🍕"), true)
 	ch, size, err := r.ReadRune()
 	assert.Equal(t, '🍕', ch)
 	assert.Equal(t, 4, size)
 	assert.Nil(t, err)
-	assertCursor(t, 4, 1, 2, r)
+	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
 }
 
 func TestReadRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
@@ -90,16 +94,47 @@ func TestReadRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
 
 func TestReadRuneShouldFollowLinesAndColumns(t *testing.T) {
 	r := text.NewReader([]byte("a\nb"), true)
-	assertCursor(t, 0, 1, 1, r)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 
 	r.ReadRune()
-	assertCursor(t, 1, 1, 2, r)
+	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
 
 	r.ReadRune()
-	assertCursor(t, 2, 2, 1, r)
+	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
 
 	r.ReadRune()
-	assertCursor(t, 3, 2, 2, r)
+	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
+}
+
+func TestPeakRuneShouldReturnWithASCIICharacter(t *testing.T) {
+	r := text.NewReader([]byte("a"), true)
+	ch, size, err := r.PeakRune()
+	assert.Equal(t, 'a', ch)
+	assert.Equal(t, 1, size)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+}
+
+func TestPeakRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
+	r := text.NewReader([]byte("🍕"), true)
+	ch, size, err := r.PeakRune()
+	assert.Equal(t, '🍕', ch)
+	assert.Equal(t, 4, size)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+}
+
+func TestPeakRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
+	var err error
+	r := text.NewReader([]byte(""), true)
+	_, _, err = r.PeakRune()
+	assert.Exactly(t, io.EOF, err)
+}
+
+func TestPeakRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
+	r := text.NewReader([]byte("\xc3\x28"), true)
+	_, _, err := r.PeakRune()
+	assert.Error(t, err)
 }
 
 func TestReadMatchShouldAlwaysMatchTheBeginning(t *testing.T) {
@@ -142,7 +177,7 @@ func TestReadMatchShouldIgnoreWhitespacesIfSet(t *testing.T) {
 	matches, pos := r.ReadMatch("[a-z]+")
 	assert.Equal(t, 1, len(matches))
 	assert.Equal(t, "abc", matches[0])
-	assertCursor(t, 8, 2, 5, r)
+	assert.Equal(t, text.NewPosition(8, 2, 5), r.Cursor())
 	assert.Equal(t, text.NewPosition(5, 2, 2), pos)
 }
 
@@ -164,16 +199,16 @@ func TestReadMatchShouldReturnNilIfNoMatch(t *testing.T) {
 
 func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {
 	r := text.NewReader([]byte("a\nb"), false)
-	assertCursor(t, 0, 1, 1, r)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 
 	r.ReadMatch("(?s).")
-	assertCursor(t, 1, 1, 2, r)
+	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
 
 	r.ReadMatch("(?s).")
-	assertCursor(t, 2, 2, 1, r)
+	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
 
 	r.ReadMatch("(?s).")
-	assertCursor(t, 3, 2, 2, r)
+	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
 }
 
 func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
@@ -181,7 +216,40 @@ func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
 	matches, pos := r.ReadMatch(".*")
 	assert.Equal(t, []string{"🍕"}, matches)
 	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assertCursor(t, 4, 1, 2, r)
+	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
+}
+
+func TestPeakMatchShouldMatchButNotMoveCursor(t *testing.T) {
+	r := text.NewReader([]byte("abc"), true)
+	expectedPos := r.Cursor()
+	matches := r.PeakMatch("\\w+")
+	assert.Equal(t, 1, len(matches))
+	assert.Equal(t, "abc", matches[0])
+	assert.Equal(t, expectedPos, r.Cursor())
+}
+
+func TestPeakMatchShouldReturnMatchAndSubmatches(t *testing.T) {
+	r := text.NewReader([]byte("123abcDEF"), true)
+	matches := r.PeakMatch("(\\d+)([a-z]+)([A-Z]+)")
+	assert.Equal(t, 4, len(matches))
+	assert.Equal(t, "123abcDEF", matches[0])
+	assert.Equal(t, "123", matches[1])
+	assert.Equal(t, "abc", matches[2])
+	assert.Equal(t, "DEF", matches[3])
+}
+
+func TestPeakMatchShouldReturnNilIfNoMatch(t *testing.T) {
+	r := text.NewReader([]byte("123"), true)
+	matches := r.PeakMatch("[a-z]+")
+	assert.Nil(t, matches)
+}
+
+func TestPeakMatchShouldNotIgnoreWhitespacesEvenIfSet(t *testing.T) {
+	r := text.NewReader([]byte("x \r\n\tabc"), true)
+	r.ReadRune()
+	matches := r.PeakMatch("[a-z]+")
+	assert.Nil(t, matches)
+	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
 }
 
 func TestStringShouldReturnNonEmptyString(t *testing.T) {
@@ -253,16 +321,16 @@ func TestReadfShouldFollowLinesAndColumns(t *testing.T) {
 		return "NEXT: " + string(b[:1]), 1
 	}
 
-	assertCursor(t, 0, 1, 1, r)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 
 	r.Readf(reader)
-	assertCursor(t, 1, 1, 2, r)
+	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
 
 	r.Readf(reader)
-	assertCursor(t, 2, 2, 1, r)
+	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
 
 	r.Readf(reader)
-	assertCursor(t, 3, 2, 2, r)
+	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
 }
 
 func TestReadfShouldHandleUnicodeCharacter(t *testing.T) {

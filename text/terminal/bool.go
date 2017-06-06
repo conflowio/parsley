@@ -17,6 +17,10 @@ func Bool() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
 		if matches, pos := tr.ReadMatch("true|false"); matches != nil {
+			followed := tr.PeakMatch("\\w+")
+			if followed != nil {
+				return parser.NoCurtailingParsers(), nil
+			}
 			val, err := strconv.ParseBool(matches[0])
 			if err != nil {
 				panic(fmt.Sprintf("Invalid bool value encountered: %s", matches[0]))

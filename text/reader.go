@@ -105,6 +105,23 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 	return
 }
 
+// PeakRune reads the next character but does not move the cursor
+func (r *Reader) PeakRune() (ch rune, size int, err error) {
+	if r.cur.pos >= len(r.b) {
+		return 0, 0, io.EOF
+	}
+	if c := r.b[r.cur.pos]; c < utf8.RuneSelf {
+		ch = rune(c)
+		size = 1
+	} else {
+		ch, size = utf8.DecodeRune(r.b[r.cur.pos:])
+		if ch == utf8.RuneError {
+			return 0, 0, fmt.Errorf("invalid UTF-8 byte sequence encountered at %s", r.cur)
+		}
+	}
+	return
+}
+
 // ReadMatch reads a set of characters matching the given regular expression
 func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 	if r.ignoreWhitespaces {
@@ -136,6 +153,27 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 	}
 
 	return
+}
+
+// PeakMatch reads a set of characters matching the given regular expression but doesn't move the cursor
+// Also it never ignores whitespaces
+func (r *Reader) PeakMatch(expr string) []string {
+	pos := r.cur.pos
+
+	loc := r.getPattern(expr).FindSubmatchIndex(r.b[pos:])
+	if loc == nil {
+		return nil
+	}
+
+	matches := make([]string, len(loc)/2)
+	matches[0] = string(r.b[pos : pos+loc[1]])
+	if len(loc) > 2 {
+		for i := 1; i < len(loc)/2; i++ {
+			matches[i] = string(r.b[pos+loc[i*2] : pos+loc[i*2+1]])
+		}
+	}
+
+	return matches
 }
 
 // Readf uses the given function to match the next token
