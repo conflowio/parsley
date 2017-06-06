@@ -7,10 +7,17 @@ import (
 )
 
 // ManySepBy matches the given value parser zero or more times separated by the separator parser
-func ManySepBy(name string, token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, min int, interpreter ast.Interpreter) parser.Func {
-	sepValue := Memoize(name+"_MSB", h, And(builder.All("SEP_VALUE", interpreter), sepP, valueP))
-	sepValueMany := Memoize(name+"_MSB*", h, Many(builder.Flatten(token, interpreter), sepValue, 0, -1))
-	return Try(mergeChildren(token, interpreter), min, valueP, sepValueMany)
+func ManySepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
+	sepValue := Memoize(token+"_MSB", h, And(builder.All("SEP_VALUE", interpreter), sepP, valueP))
+	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, interpreter), sepValue, 0, -1))
+	return Try(mergeChildren(token, interpreter), 0, valueP, sepValueMany)
+}
+
+// ManySepBy1 matches the given value parser one or more times separated by the separator parser
+func ManySepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
+	sepValue := Memoize(token+"_MSB", h, And(builder.All("SEP_VALUE", interpreter), sepP, valueP))
+	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, interpreter), sepValue, 0, -1))
+	return Try(mergeChildren(token, interpreter), 1, valueP, sepValueMany)
 }
 
 func mergeChildren(token string, interpreter ast.Interpreter) ast.NodeBuilder {
