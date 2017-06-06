@@ -38,7 +38,6 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 		parser.NewResultSet(
 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(3), ","), test.NewReader(4, 1, false, true)),
 		),
-		nil,
 	}
 
 	pi := 0
@@ -54,7 +53,7 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 	sepi := 0
 	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		defer func() { sepi++ }()
-		if sepi < len(pResults) {
+		if sepi < len(sepResults) {
 			return parser.NoCurtailingParsers(), sepResults[sepi]
 		} else {
 			return parser.NoCurtailingParsers(), nil
@@ -71,14 +70,89 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 
 	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Len(t, rs, 4)
-	val1, _ := rs[0].Node().Value()
-	val2, _ := rs[1].Node().Value()
-	val3, _ := rs[2].Node().Value()
-	val4, _ := rs[3].Node().Value()
-	assert.Equal(t, "a|", val1)
-	assert.Equal(t, "b|", val2)
-	assert.Equal(t, "a|,|c|", val3)
-	assert.Equal(t, "b|,|d|", val4)
+	val0, _ := rs[0].Node().Value()
+	val1, _ := rs[1].Node().Value()
+	val2, _ := rs[2].Node().Value()
+	val3, _ := rs[3].Node().Value()
+	assert.Equal(t, "a|", val0)
+	assert.Equal(t, "b|", val1)
+	assert.Equal(t, "a|,|c|", val2)
+	assert.Equal(t, "b|,|d|", val3)
+}
+
+func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
+	r := test.NewReader(0, 1, false, false)
+	h := parser.NewHistory()
+
+	interpreter1 := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		res := ""
+		for _, value := range values {
+			res += value.(string) + "&"
+		}
+		return res, nil
+	})
+
+	pResults := []parser.ResultSet{
+		parser.NewResultSet(
+			parser.NewResult(
+				ast.NewNonTerminalNode("NT", []ast.Node{
+					ast.NewTerminalNode("STR", test.NewPosition(0), "a"),
+					ast.NewTerminalNode("STR", test.NewPosition(1), "b"),
+				}, interpreter1),
+				test.NewReader(2, 1, false, true),
+			),
+		),
+		parser.NewResultSet(
+			parser.NewResult(
+				ast.NewNonTerminalNode("NT", []ast.Node{
+					ast.NewTerminalNode("STR", test.NewPosition(3), "c"),
+					ast.NewTerminalNode("STR", test.NewPosition(4), "d"),
+				}, interpreter1),
+				test.NewReader(5, 1, false, true),
+			),
+		),
+	}
+
+	sepResults := []parser.ResultSet{
+		parser.NewResultSet(
+			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(2), ","), test.NewReader(3, 1, false, true)),
+		),
+	}
+
+	pi := 0
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		defer func() { pi++ }()
+		if pi < len(pResults) {
+			return parser.NoCurtailingParsers(), pResults[pi]
+		} else {
+			return parser.NoCurtailingParsers(), nil
+		}
+	})
+
+	sepi := 0
+	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		defer func() { sepi++ }()
+		if sepi < len(sepResults) {
+			return parser.NoCurtailingParsers(), sepResults[sepi]
+		} else {
+			return parser.NoCurtailingParsers(), nil
+		}
+	})
+
+	interpreter2 := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+		res := ""
+		for _, value := range values {
+			res += value.(string) + "|"
+		}
+		return res, nil
+	})
+
+	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Len(t, rs, 2)
+	val0, _ := rs[0].Node().Value()
+	val1, _ := rs[1].Node().Value()
+	assert.Equal(t, "a&b&|", val0)
+	assert.Equal(t, "a&b&|,|c&d&|", val1)
 }
 
 func TestManySepByShouldHandleNilResults(t *testing.T) {
