@@ -60,9 +60,10 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 		}
 	})
 
-	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		res := ""
-		for _, value := range values {
+		for _, node := range nodes {
+			value, _ := node.Value()
 			res += value.(string) + "|"
 		}
 		return res, nil
@@ -80,9 +81,10 @@ func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
-	interpreter1 := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter1 := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		res := ""
-		for _, value := range values {
+		for _, node := range nodes {
+			value, _ := node.Value()
 			res += value.(string) + "&"
 		}
 		return res, nil
@@ -135,9 +137,10 @@ func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
 		}
 	})
 
-	interpreter2 := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter2 := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		res := ""
-		for _, value := range values {
+		for _, node := range nodes {
+			value, _ := node.Value()
 			res += value.(string) + "|"
 		}
 		return res, nil

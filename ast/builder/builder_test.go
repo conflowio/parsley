@@ -30,7 +30,7 @@ func TestAllNodesBuilderShouldIncludeAllNodes(t *testing.T) {
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
-	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("TEST", nodes, interpreter)
@@ -44,7 +44,7 @@ func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
 		ast.NewTerminalNode("+", test.NewPosition(1), "+"),
 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
-	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("+", []ast.Node{nodes[0], nodes[2]}, interpreter)
@@ -65,7 +65,7 @@ func TestNilBuilderReturnsWithNil(t *testing.T) {
 }
 
 func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
-	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	nodes := []ast.Node{

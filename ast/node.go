@@ -79,20 +79,13 @@ func (n NonTerminalNode) Value() (interface{}, error) {
 	if n.interpreter == nil || len(n.children) == 0 {
 		return nil, nil
 	}
-	values := make([]interface{}, 0, len(n.children))
+	nodes := make([]Node, 0, len(n.children))
 	for _, child := range n.children {
 		if child != nil {
-			value, err := child.Value()
-			if err != nil {
-				return nil, err
-			}
-			values = append(values, value)
+			nodes = append(nodes, child)
 		}
 	}
-	if len(values) == 0 {
-		return nil, nil
-	}
-	return n.interpreter.Eval(values)
+	return n.interpreter.Eval(nodes)
 }
 
 // Children returns with the children

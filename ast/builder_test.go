@@ -14,7 +14,7 @@ func TestNodeBuilderFuncShouldCallFunction(t *testing.T) {
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
 	var actualNodes []ast.Node
-	interpreter := ast.InterpreterFunc(func(values []interface{}) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expectedNode := ast.NewNonTerminalNode("TEST", nodes, interpreter)

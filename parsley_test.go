@@ -59,7 +59,7 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 func TestEvaluateShouldHandleInterpreterError(t *testing.T) {
 	randomChild := ast.NewTerminalNode("X", text.NewPosition(1, 2, 3), "X")
 	expectedErr := errors.New("ERR")
-	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func([]interface{}) (interface{}, error) {
+	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func([]ast.Node) (interface{}, error) {
 		return nil, expectedErr
 	}))
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
@@ -102,8 +102,10 @@ func TestIndirectLeftRecursion(t *testing.T) {
 
 	add = combinator.Memoize("ADD", h, combinator.And(
 		builder.BinaryOperation(
-			ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
-				return children[0].(int) + children[1].(int), nil
+			ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+				value0, _ := nodes[0].Value()
+				value1, _ := nodes[1].Value()
+				return value0.(int) + value1.(int), nil
 			}),
 		),
 		value,
@@ -130,10 +132,14 @@ func TestManySepBy(t *testing.T) {
 
 	add = combinator.Memoize("SUM", h, combinator.ManySepBy(
 		"SUM", "+", h, value, combinator.Or(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
-		ast.InterpreterFunc(func(children []interface{}) (interface{}, error) {
+		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1
-			for _, v := range children {
+			for _, node := range nodes {
+				v, err := node.Value()
+				if err != nil {
+					return nil, err
+				}
 				switch vt := v.(type) {
 				case int:
 					sum += modifier * vt
