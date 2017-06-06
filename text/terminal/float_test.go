@@ -17,18 +17,6 @@ type TC struct {
 }
 
 var validTestCases = []TC{
-	TC{"0", 0, 1},
-	TC{"+0", 0, 2},
-	TC{"-0", 0, 2},
-	TC{"1", 1, 1},
-	TC{"+1", 1, 2},
-	TC{"-1", -1, 2},
-	TC{"1234567890", 1234567890, 10},
-	TC{"+1234567890", 1234567890, 11},
-	TC{"-1234567890", -1234567890, 11},
-	TC{"123abc", 123, 3},
-	TC{"00", 0, 2},
-
 	TC{"0.1", 0.1, 3},
 	TC{"+0.1", 0.1, 4},
 	TC{"-0.1", -0.1, 4},
@@ -72,6 +60,9 @@ func TestFloatShouldNotMatch(t *testing.T) {
 		TC{"-"},
 		TC{"+"},
 		TC{"."},
+		TC{"1"},
+		TC{"-1"},
+		TC{"0"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
