@@ -22,6 +22,7 @@ func TestStringShouldMatch(t *testing.T) {
 		TC{`"a"`, "a", 3},
 		TC{`"a" "b"`, "a", 3},
 		TC{`"abcd"`, "abcd", 6},
+		TC{` "abcd"`, "abcd", 6}, // Skip whitespaces
 		TC{`"'"`, "'", 3},
 		TC{`"\a\b\f\n\r\t\v"`, "\a\b\f\n\r\t\v", 16},
 		TC{`"\x67"`, "\x67", 6},
@@ -31,6 +32,7 @@ func TestStringShouldMatch(t *testing.T) {
 		TC{"`a`", `a`, 3},
 		TC{"`a` `b`", `a`, 3},
 		TC{"`abcd`", `abcd`, 6},
+		TC{" `abcd`", `abcd`, 6}, // Skip whitespaces
 		TC{"`'`", `'`, 3},
 		TC{"`" + `\a\b\f\n\r\t\v` + "`", `\a\b\f\n\r\t\v`, 16},
 		TC{"`" + `\x67` + "`", `\x67`, 6},

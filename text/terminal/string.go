@@ -15,14 +15,15 @@ import (
 func String() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		quote, _, err := tr.ReadRune()
-		if err != nil || (quote != '"' && quote != '`') {
+		matches, _ := tr.ReadMatch("^[\"|`]")
+		if matches == nil {
 			return parser.NoCurtailingParsers(), nil
 		}
+		quote := matches[0]
 
 		var value string
 		var pos reader.Position
-		if quote == '`' {
+		if quote == "`" {
 			var matches []string
 			matches, pos = tr.ReadMatch("^[^`]*")
 			value = matches[0]
@@ -31,10 +32,9 @@ func String() parser.Func {
 		}
 
 		endQuote, _, err := tr.ReadRune()
-		if err != nil || endQuote != quote {
+		if err != nil || string(endQuote) != quote {
 			return parser.NoCurtailingParsers(), nil
 		}
-
 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.STRING, pos, value), tr).AsSet()
 	})
 }
