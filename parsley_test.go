@@ -131,7 +131,7 @@ func TestManySepBy(t *testing.T) {
 	))
 
 	add = combinator.Memoize("SUM", h, combinator.ManySepBy(
-		"SUM", "+", h, value, combinator.Or(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
+		"SUM", "+", h, value, combinator.Or(terminal.Rune('+', "+"), terminal.Rune('-', "-")), 1,
 		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1

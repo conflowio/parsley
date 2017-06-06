@@ -7,8 +7,8 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// And combines multiple parsers
-func And(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
+// Try combines the the parsers until it fails and returns the longest match
+func Try(nodeBuilder ast.NodeBuilder, min int, parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
@@ -19,7 +19,6 @@ func And(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
 		return nil
 	}
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		l := len(parsers)
-		return NewRecursive(nodeBuilder, lookup, l, l).Parse(leftRecCtx, r)
+		return NewRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(leftRecCtx, r)
 	})
 }

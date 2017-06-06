@@ -69,7 +69,7 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, 1, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 2)
 	val0, _ := rs[0].Node().Value()
 	val1, _ := rs[1].Node().Value()
@@ -146,13 +146,13 @@ func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, 1, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 1)
 	val0, _ := rs[0].Node().Value()
 	assert.Equal(t, "a&b&|,|c&d&|", val0)
 }
 
-func TestManySepByShouldHandleNil(t *testing.T) {
+func TestManySepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -160,7 +160,20 @@ func TestManySepByShouldHandleNil(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.ManySepBy("TEST", "X", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.ManySepBy("TEST", "X", h, p, p, 0, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Equal(t, parser.NewResult(nil, r).AsSet(), rs)
+}
+
+func TestManySepByShouldReturnNilIfMin1(t *testing.T) {
+	r := test.NewReader(0, 1, false, false)
+	h := parser.NewHistory()
+
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
+	})
+
+	cp, rs := combinator.ManySepBy("TEST", "X", h, p, p, 1, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
@@ -189,6 +202,6 @@ func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _ := combinator.ManySepBy("TEST", "X", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.ManySepBy("TEST", "X", h, p, sep, 1, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
