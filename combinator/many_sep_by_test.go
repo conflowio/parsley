@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestManySepByShouldCombineParserResults(t *testing.T) {
@@ -69,15 +69,11 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 	})
 
 	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
-	assert.Len(t, rs, 4)
+	require.Len(t, rs, 2)
 	val0, _ := rs[0].Node().Value()
 	val1, _ := rs[1].Node().Value()
-	val2, _ := rs[2].Node().Value()
-	val3, _ := rs[3].Node().Value()
-	assert.Equal(t, "a|", val0)
-	assert.Equal(t, "b|", val1)
-	assert.Equal(t, "a|,|c|", val2)
-	assert.Equal(t, "b|,|d|", val3)
+	assert.Equal(t, "a|,|c|", val0)
+	assert.Equal(t, "b|,|d|", val1)
 }
 
 func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
@@ -148,38 +144,48 @@ func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
 	})
 
 	_, rs := combinator.ManySepBy("TEST", "X", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
-	assert.Len(t, rs, 2)
+	require.Len(t, rs, 1)
 	val0, _ := rs[0].Node().Value()
-	val1, _ := rs[1].Node().Value()
-	assert.Equal(t, "a&b&|", val0)
-	assert.Equal(t, "a&b&|,|c&d&|", val1)
+	assert.Equal(t, "a&b&|,|c&d&|", val0)
 }
 
-func TestManySepByShouldHandleNilResults(t *testing.T) {
+func TestManySepByShouldHandleNil(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
+	h := parser.NewHistory()
 
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Many(nil, p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.ManySepBy("TEST", "X", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
 
 func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
+	h := parser.NewHistory()
 
 	pi := 0
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		defer func() { pi++ }()
-		if pi == 0 {
+		if pi < 1 {
 			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet()
 		} else {
-			return data.NewIntSet(1, 2), nil
+			return parser.NoCurtailingParsers(), nil
 		}
 	})
 
-	cp, _ := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	sepi := 0
+	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		defer func() { sepi++ }()
+		if sepi < 1 {
+			return data.NewIntSet(1, 2), nil
+		} else {
+			return parser.NoCurtailingParsers(), nil
+		}
+	})
+
+	cp, _ := combinator.ManySepBy("TEST", "X", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }

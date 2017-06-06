@@ -8,8 +8,8 @@ import (
 )
 
 // Many matches the same expression one or more times
-func Many(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
+func Many(nodeBuilder ast.NodeBuilder, p parser.Parser, min int, max int) parser.Func {
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return NewRecursive(nodeBuilder, true, func(i int) parser.Parser { return p }).Parse(leftRecCtx, r)
+		return NewRecursive(nodeBuilder, func(i int) parser.Parser { return p }, min, max).Parse(leftRecCtx, r)
 	})
 }

@@ -13,7 +13,8 @@ func And(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
 		panic("No parsers were given")
 	}
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return NewRecursive(nodeBuilder, false, parserListLookUp(parsers)).Parse(leftRecCtx, r)
+		l := len(parsers)
+		return NewRecursive(nodeBuilder, parserListLookUp(parsers), l, l).Parse(leftRecCtx, r)
 	})
 }
 

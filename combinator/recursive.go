@@ -11,18 +11,20 @@ import (
 type Recursive struct {
 	nodeBuilder       ast.NodeBuilder
 	parserLookUp      func(i int) parser.Parser
+	min               int
+	max               int
 	curtailingParsers data.IntSet
 	resultSet         parser.ResultSet
 	nodes             []ast.Node
-	infinite          bool
 }
 
 // NewRecursive creates a new recursive combinator
-func NewRecursive(nodeBuilder ast.NodeBuilder, infinite bool, parserLookUp func(i int) parser.Parser) *Recursive {
+func NewRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.Parser, min int, max int) *Recursive {
 	return &Recursive{
 		nodeBuilder:       nodeBuilder,
-		infinite:          infinite,
 		parserLookUp:      parserLookUp,
+		min:               min,
+		max:               max,
 		curtailingParsers: parser.NoCurtailingParsers(),
 		resultSet:         parser.ResultSet{},
 		nodes:             []ast.Node{},
@@ -69,7 +71,7 @@ func (rp *Recursive) parse(depth int, nodesDepth int, leftRecCtx data.IntMap, r 
 		}
 	}
 	if len(rs) == 0 {
-		if (rp.infinite && depth > 0) || nextParser == nil {
+		if depth >= rp.min && (rp.max == -1 || depth <= rp.max) {
 			if nodesDepth > 0 {
 				nodesCopy := make([]ast.Node, nodesDepth)
 				copy(nodesCopy[0:nodesDepth], rp.nodes[0:nodesDepth])
