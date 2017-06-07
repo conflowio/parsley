@@ -17,6 +17,9 @@ func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node,
 	if len(resultSet) == 0 {
 		return nil, errors.New("failed to parse the input")
 	}
+	if resultSet[0].Node() == nil {
+		return nil, nil
+	}
 	return resultSet[0].Node(), nil
 }
 
@@ -25,6 +28,9 @@ func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser) (interf
 	node, err := ParseText(input, ignoreWhitespaces, s)
 	if err != nil {
 		return nil, err
+	}
+	if node == nil {
+		return nil, nil
 	}
 	return node.Value()
 }
