@@ -14,7 +14,7 @@ import (
 func Rune(char rune, token string) parser.Func {
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(string(char))); ok {
+		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(string(char)), false); ok {
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, char), r).AsSet()
 		}
 		return parser.NoCurtailingParsers(), nil

@@ -20,6 +20,7 @@ func TestStringShouldMatch(t *testing.T) {
 	testCases := []TC{
 		TC{`""`, "", 2},
 		TC{`"a"`, "a", 3},
+		TC{`" a "`, " a ", 5}, // Should keep whitespaces in the string
 		TC{`"a" "b"`, "a", 3},
 		TC{`"abcd"`, "abcd", 6},
 		TC{` "abcd"`, "abcd", 6}, // Skip whitespaces
@@ -30,6 +31,7 @@ func TestStringShouldMatch(t *testing.T) {
 		TC{`"\U0001F355"`, "\U0001F355", 12},
 		TC{"``", ``, 2},
 		TC{"`a`", `a`, 3},
+		TC{"` a `", ` a `, 5}, // Should keep whitespaces in the string
 		TC{"`a` `b`", `a`, 3},
 		TC{"`abcd`", `abcd`, 6},
 		TC{" `abcd`", `abcd`, 6}, // Skip whitespaces

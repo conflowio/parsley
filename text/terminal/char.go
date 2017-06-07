@@ -16,7 +16,7 @@ import (
 func Char() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		if matches, pos, ok := tr.ReadMatch("'(.|\\\\[abfnrtv]|\\\\x[0-9a-fA-F]{2,2}|\\\\u[0-9a-fA-F]{4,4}|\\\\U[0-9a-fA-F]{8,8})'"); ok {
+		if matches, pos, ok := tr.ReadMatch("'(.|\\\\[abfnrtv]|\\\\x[0-9a-fA-F]{2,2}|\\\\u[0-9a-fA-F]{4,4}|\\\\U[0-9a-fA-F]{8,8})'", false); ok {
 			match := matches[1]
 			value, _, tail, err := strconv.UnquoteChar(match, '"')
 			if tail != "" {

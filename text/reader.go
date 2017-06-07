@@ -118,8 +118,8 @@ func (r *Reader) PeakRune() (ch rune, size int, err error) {
 }
 
 // ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string) ([]string, reader.Position, bool) {
-	if r.ignoreWhitespaces {
+func (r *Reader) ReadMatch(expr string, includeWhitespaces bool) ([]string, reader.Position, bool) {
+	if r.ignoreWhitespaces && !includeWhitespaces {
 		r.readWhitespaces()
 	}
 
@@ -166,8 +166,8 @@ func (r *Reader) PeakMatch(expr string) ([]string, bool) {
 }
 
 // Readf uses the given function to match the next token
-func (r *Reader) Readf(f func(b []byte) (string, int, bool)) (string, reader.Position, bool) {
-	if r.ignoreWhitespaces {
+func (r *Reader) Readf(f func(b []byte) (string, int, bool), includeWhitespaces bool) (string, reader.Position, bool) {
+	if r.ignoreWhitespaces && !includeWhitespaces {
 		r.readWhitespaces()
 	}
 

@@ -14,7 +14,7 @@ import (
 func Regexp(regexp string, groupIndex int, token string) parser.Func {
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		if matches, pos, ok := tr.ReadMatch(regexp); ok {
+		if matches, pos, ok := tr.ReadMatch(regexp, false); ok {
 			if groupIndex >= len(matches) {
 				panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
 			}
