@@ -16,7 +16,7 @@ import (
 func Float() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		if matches, pos := tr.ReadMatch("[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); matches != nil {
+		if matches, pos, ok := tr.ReadMatch("[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); ok {
 			val, err := strconv.ParseFloat(matches[0], 64)
 			if err != nil {
 				panic(fmt.Sprintf("Invalid float value encountered: %s", matches[0]))

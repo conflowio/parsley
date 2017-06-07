@@ -16,9 +16,8 @@ import (
 func Bool() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		tr := r.(*text.Reader)
-		if matches, pos := tr.ReadMatch("true|false"); matches != nil {
-			followed := tr.PeakMatch("\\w+")
-			if followed != nil {
+		if matches, pos, ok := tr.ReadMatch("true|false"); ok {
+			if _, ok := tr.PeakMatch("\\w+"); ok {
 				return parser.NoCurtailingParsers(), nil
 			}
 			val, err := strconv.ParseBool(matches[0])

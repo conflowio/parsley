@@ -66,11 +66,6 @@ func NewReader(b []byte, ignoreWhitespaces bool) *Reader {
 
 // Clone creates a new reader with the same position
 func (r *Reader) Clone() reader.Reader {
-	return r.clone()
-}
-
-// Clone creates a new reader with the same position
-func (r *Reader) clone() *Reader {
 	return &Reader{
 		b:                 r.b,
 		cur:               r.cur,
@@ -123,22 +118,19 @@ func (r *Reader) PeakRune() (ch rune, size int, err error) {
 }
 
 // ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
+func (r *Reader) ReadMatch(expr string) ([]string, reader.Position, bool) {
 	if r.ignoreWhitespaces {
 		r.readWhitespaces()
 	}
 
 	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.cur.pos:])
 	if loc == nil {
-		return nil, Position{-1, -1, -1}
+		return nil, nil, false
 	}
-	pos = r.cur
-	matches = make([]string, len(loc)/2)
-	matches[0] = string(r.b[r.cur.pos : r.cur.pos+loc[1]])
-	if len(loc) > 2 {
-		for i := 1; i < len(loc)/2; i++ {
-			matches[i] = string(r.b[r.cur.pos+loc[i*2] : r.cur.pos+loc[i*2+1]])
-		}
+	pos := r.cur
+	matches := make([]string, len(loc)/2)
+	for i := 0; i < len(loc)/2; i++ {
+		matches[i] = string(r.b[r.cur.pos+loc[i*2] : r.cur.pos+loc[i*2+1]])
 	}
 
 	r.cur.pos += loc[1]
@@ -152,38 +144,38 @@ func (r *Reader) ReadMatch(expr string) (matches []string, pos Position) {
 		}
 	}
 
-	return
+	return matches, pos, true
 }
 
 // PeakMatch reads a set of characters matching the given regular expression but doesn't move the cursor
 // Also it never ignores whitespaces
-func (r *Reader) PeakMatch(expr string) []string {
+func (r *Reader) PeakMatch(expr string) ([]string, bool) {
 	pos := r.cur.pos
 
 	loc := r.getPattern(expr).FindSubmatchIndex(r.b[pos:])
 	if loc == nil {
-		return nil
+		return nil, false
 	}
 
 	matches := make([]string, len(loc)/2)
-	matches[0] = string(r.b[pos : pos+loc[1]])
-	if len(loc) > 2 {
-		for i := 1; i < len(loc)/2; i++ {
-			matches[i] = string(r.b[pos+loc[i*2] : pos+loc[i*2+1]])
-		}
+	for i := 0; i < len(loc)/2; i++ {
+		matches[i] = string(r.b[pos+loc[i*2] : pos+loc[i*2+1]])
 	}
 
-	return matches
+	return matches, true
 }
 
 // Readf uses the given function to match the next token
-func (r *Reader) Readf(f func(b []byte) (string, int)) (string, reader.Position) {
+func (r *Reader) Readf(f func(b []byte) (string, int, bool)) (string, reader.Position, bool) {
 	if r.ignoreWhitespaces {
 		r.readWhitespaces()
 	}
 
 	pos := r.cur
-	value, l := f(r.b[r.cur.pos:])
+	value, l, ok := f(r.b[r.cur.pos:])
+	if !ok {
+		return "", nil, false
+	}
 	if l != 0 {
 		str := string(r.b[r.cur.pos : r.cur.pos+l])
 		for _, ch := range str {
@@ -197,7 +189,7 @@ func (r *Reader) Readf(f func(b []byte) (string, int)) (string, reader.Position)
 		}
 		r.cur.pos += l
 	}
-	return value, pos
+	return value, pos, true
 }
 
 // Remaining returns with the remaining character count
@@ -208,14 +200,6 @@ func (r *Reader) Remaining() int {
 // Cursor returns with the cursor's position
 func (r *Reader) Cursor() reader.Position {
 	return r.cur
-}
-
-// WithCursor clones the readers and sets the cursor to the specified position
-func (r *Reader) WithCursor(pos int, line int, col int) *Reader {
-	r2 := r.clone()
-	r2.cur = NewPosition(pos, line, col)
-	r2.charCount = utf8.RuneCount(r2.b[r2.cur.Pos():])
-	return r2
 }
 
 // IsEOF returns true if we reached the end of the buffer
