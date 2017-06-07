@@ -76,16 +76,10 @@ func (n NonTerminalNode) Token() string {
 
 // Value returns with the value of the node
 func (n NonTerminalNode) Value() (interface{}, error) {
-	if n.interpreter == nil || len(n.children) == 0 {
+	if n.interpreter == nil {
 		return nil, nil
 	}
-	nodes := make([]Node, 0, len(n.children))
-	for _, child := range n.children {
-		if child != nil {
-			nodes = append(nodes, child)
-		}
-	}
-	return n.interpreter.Eval(nodes)
+	return n.interpreter.Eval(n.children)
 }
 
 // Children returns with the children
