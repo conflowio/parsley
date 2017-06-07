@@ -23,7 +23,7 @@ func ManySepBy1(token string, h *parser.History, valueP parser.Parser, sepP pars
 func mergeChildren(token string, interpreter ast.Interpreter) ast.NodeBuilder {
 	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		children := []ast.Node{nodes[0]}
-		if len(nodes) > 1 {
+		if len(nodes) > 1 && nodes[1] != nil {
 			node1 := nodes[1].(ast.NonTerminalNode)
 			children = append(children, node1.Children()...)
 		}
