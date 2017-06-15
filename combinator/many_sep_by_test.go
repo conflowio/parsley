@@ -162,7 +162,7 @@ func TestManySepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 
 	cp, rs := combinator.ManySepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Equal(t, parser.NewResult(nil, r).AsSet(), rs)
+	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
 }
 
 func TestManySepByShouldReturnNilIfMin1(t *testing.T) {

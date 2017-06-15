@@ -65,7 +65,7 @@ func TestManyShouldReturnEmptyIfMin1(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Many(nil, p, 1, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Many(builder.Nil(), p, 1, -1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
@@ -77,7 +77,7 @@ func TestManyShouldAllowEmptyResultIfMin0(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Many(nil, p, 0, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Many(builder.Nil(), p, 0, -1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, rs, parser.NewResult(nil, r).AsSet())
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -88,7 +89,7 @@ func TestAndShouldHandleNilResults(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.And(nil, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.And(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
@@ -104,7 +105,7 @@ func TestAndShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		return data.NewIntSet(1, 2), nil
 	})
 
-	cp, _ := combinator.And(nil, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.And(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
 

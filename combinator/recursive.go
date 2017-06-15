@@ -20,6 +20,9 @@ type Recursive struct {
 
 // NewRecursive creates a new recursive combinator
 func NewRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.Parser, min int, max int) *Recursive {
+	if nodeBuilder == nil {
+		panic("Node builder can not be nil!")
+	}
 	return &Recursive{
 		nodeBuilder:       nodeBuilder,
 		parserLookUp:      parserLookUp,
@@ -76,7 +79,7 @@ func (rp *Recursive) parse(depth int, leftRecCtx data.IntMap, r reader.Reader, m
 					return true
 				}
 			} else { // It's an empty result
-				rp.resultSet.Append(parser.NewResult(nil, r))
+				rp.resultSet.Append(parser.NewResult(rp.nodeBuilder.BuildNode(nil), r))
 			}
 		}
 	}
