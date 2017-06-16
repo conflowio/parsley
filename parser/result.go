@@ -50,6 +50,9 @@ func NewResultSet(results ...Result) ResultSet {
 
 // Append adds a result to the parse result
 func (rs *ResultSet) Append(results ...Result) {
+	if results == nil {
+		return
+	}
 	for _, result := range results {
 		rs.append(result)
 	}
