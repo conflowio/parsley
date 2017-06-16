@@ -7,8 +7,8 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// Recursive is a recursive and-type combinator
-type Recursive struct {
+// recursive is a recursive and-type combinator
+type recursive struct {
 	nodeBuilder       ast.NodeBuilder
 	parserLookUp      func(i int) parser.Parser
 	min               int
@@ -18,12 +18,12 @@ type Recursive struct {
 	nodes             []ast.Node
 }
 
-// NewRecursive creates a new recursive combinator
-func NewRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.Parser, min int, max int) *Recursive {
+// newRecursive creates a new recursive combinator
+func newRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.Parser, min int, max int) *recursive {
 	if nodeBuilder == nil {
 		panic("Node builder can not be nil!")
 	}
-	return &Recursive{
+	return &recursive{
 		nodeBuilder:       nodeBuilder,
 		parserLookUp:      parserLookUp,
 		min:               min,
@@ -35,12 +35,12 @@ func NewRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.P
 }
 
 // Parse runs the recursive parser
-func (rp *Recursive) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+func (rp *recursive) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 	rp.parse(0, leftRecCtx, r, true)
 	return rp.curtailingParsers, rp.resultSet
 }
 
-func (rp *Recursive) parse(depth int, leftRecCtx data.IntMap, r reader.Reader, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parse(depth int, leftRecCtx data.IntMap, r reader.Reader, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
 	var rs parser.ResultSet
 	nextParser := rp.parserLookUp(depth)

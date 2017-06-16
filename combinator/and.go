@@ -20,6 +20,6 @@ func And(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
 	}
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		l := len(parsers)
-		return NewRecursive(nodeBuilder, lookup, l, l).Parse(leftRecCtx, r)
+		return newRecursive(nodeBuilder, lookup, l, l).Parse(leftRecCtx, r)
 	})
 }

@@ -19,6 +19,6 @@ func Try(nodeBuilder ast.NodeBuilder, min int, parsers ...parser.Parser) parser.
 		return nil
 	}
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return NewRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(leftRecCtx, r)
+		return newRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(leftRecCtx, r)
 	})
 }
