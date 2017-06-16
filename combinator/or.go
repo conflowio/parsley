@@ -18,9 +18,7 @@ func Or(parsers ...parser.Parser) parser.Func {
 			parser.Stat.RegisterCall()
 			cp2, rs2 := p.Parse(leftRecCtx, r.Clone())
 			cp = cp.Union(cp2)
-			if rs2 != nil {
-				rs.Append(rs2...)
-			}
+			rs.Append(rs2...)
 		}
 		return cp, rs
 	})
