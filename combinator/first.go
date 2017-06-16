@@ -6,7 +6,7 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// First tries the given parsers until one produces a result
+// First applies the given parsers until the first produces a result
 func First(parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
