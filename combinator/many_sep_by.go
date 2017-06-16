@@ -9,14 +9,14 @@ import (
 // ManySepBy matches the given value parser zero or more times separated by the separator parser
 func ManySepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
 	sepValue := Memoize(token+"_MSB", h, And(builder.All("SEP_VALUE", nil), sepP, valueP))
-	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, nil), sepValue, 0, -1))
+	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, nil), sepValue))
 	return Try(mergeChildren(token, interpreter), 0, valueP, sepValueMany)
 }
 
 // ManySepBy1 matches the given value parser one or more times separated by the separator parser
 func ManySepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
 	sepValue := Memoize(token+"_MSB", h, And(builder.All("SEP_VALUE", nil), sepP, valueP))
-	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, nil), sepValue, 0, -1))
+	sepValueMany := Memoize(token+"_MSB*", h, Many(builder.Flatten(token, nil), sepValue))
 	return Try(mergeChildren(token, interpreter), 1, valueP, sepValueMany)
 }
 

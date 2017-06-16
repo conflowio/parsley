@@ -51,33 +51,40 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 		return ast.NewTerminalNode("STR", first.Pos(), res)
 	})
 
-	_, rs := combinator.Many(nodeBuilder, p, 0, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.Many(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.EqualValues(t, parser.NewResultSet(
+		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(3, 1, false, true)),
+		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "bd"), test.NewReader(4, 1, false, true)),
+	), rs)
+
+	pi = 0 // Reset parser call index
+	_, rs = combinator.Many1(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, parser.NewResultSet(
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(3, 1, false, true)),
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "bd"), test.NewReader(4, 1, false, true)),
 	), rs)
 }
 
-func TestManyShouldReturnEmptyIfMin1(t *testing.T) {
+func TestMany1ShouldReturnNoResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Many(builder.Nil(), p, 1, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
 
-func TestManyShouldAllowEmptyResultIfMin0(t *testing.T) {
+func TestManyShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Many(builder.Nil(), p, 0, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, rs, parser.NewResult(nil, r).AsSet())
 }
@@ -95,6 +102,10 @@ func TestManyShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _ := combinator.Many(builder.Nil(), p, 0, -1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
+
+	pi = 0 // Reset parser call index
+	cp, _ = combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
