@@ -13,13 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAndShouldPanicIfNoParserWasGiven(t *testing.T) {
+func TestSeqShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	ctx := parser.EmptyLeftRecCtx()
-	assert.Panics(t, func() { combinator.And(nil).Parse(ctx, r) })
+	assert.Panics(t, func() { combinator.Seq(nil).Parse(ctx, r) })
 }
 
-func TestAndShouldHandleOnlyOneParser(t *testing.T) {
+func TestSeqShouldHandleOnlyOneParser(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", r.Cursor(), 'a'), r.Clone()).AsSet()
 	expectedCP := data.NewIntSet(1)
@@ -29,12 +29,12 @@ func TestAndShouldHandleOnlyOneParser(t *testing.T) {
 
 	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node { return nodes[0] })
 
-	cp, rs := combinator.And(nodeBuilder, p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Seq(nodeBuilder, p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 }
 
-func TestAndShouldCombineParserResults(t *testing.T) {
+func TestSeqShouldCombineParserResults(t *testing.T) {
 	parser.Stat.Reset()
 	r := test.NewReader(0, 1, false, false)
 
@@ -68,7 +68,7 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 		return ast.NewTerminalNode("STR", first.Pos(), res)
 	})
 
-	_, rs := combinator.And(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.Seq(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, parser.NewResultSet(
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ab"), test.NewReader(3, 1, false, true)),
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(4, 1, false, true)),
@@ -78,7 +78,7 @@ func TestAndShouldCombineParserResults(t *testing.T) {
 	assert.EqualValues(t, 3, parser.Stat.GetSumCallCount())
 }
 
-func TestAndShouldHandleNilResults(t *testing.T) {
+func TestSeqShouldHandleNilResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
@@ -89,12 +89,12 @@ func TestAndShouldHandleNilResults(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.And(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
 
-func TestAndShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
+func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
@@ -105,11 +105,11 @@ func TestAndShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		return data.NewIntSet(1, 2), nil
 	})
 
-	cp, _ := combinator.And(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
 
-func TestAndShouldStopIfEOFTokenReached(t *testing.T) {
+func TestSeqShouldStopIfEOFTokenReached(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
 	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
@@ -127,7 +127,7 @@ func TestAndShouldStopIfEOFTokenReached(t *testing.T) {
 		return nodes[0]
 	})
 
-	_, rs := combinator.And(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.Seq(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t,
 		parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(2, 0, false, true)).AsSet(),
 		rs,

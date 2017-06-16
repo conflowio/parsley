@@ -7,8 +7,8 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// And applies the given parsers in order and returns the result only if all parsers matched
-func And(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
+// Seq tries to apply all parsers after each other matching effectively a sequence of tokens and returns with all // combination of the results
+func Seq(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}

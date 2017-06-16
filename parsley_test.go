@@ -94,13 +94,13 @@ func TestDirectLeftRecursion(t *testing.T) {
 
 	var a parser.Func
 	a = combinator.Memoize("A", h, combinator.Any(
-		combinator.And(stringBuilder(),
+		combinator.Seq(stringBuilder(),
 			&a,
 			terminal.Rune('b', "CHAR"),
 		),
 		terminal.Rune('a', "CHAR"),
 	))
-	s := combinator.And(builder.Select(0), &a, parser.End())
+	s := combinator.Seq(builder.Select(0), &a, parser.End())
 
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
@@ -118,7 +118,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		&add,
 	))
 
-	add = combinator.Memoize("ADD", h, combinator.And(
+	add = combinator.Memoize("ADD", h, combinator.Seq(
 		builder.BinaryOperation(
 			ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 				value0, _ := nodes[0].Value()
@@ -130,7 +130,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		terminal.Rune('+', "ADD"),
 		value,
 	))
-	s := combinator.And(builder.Select(0), value, parser.End())
+	s := combinator.Seq(builder.Select(0), value, parser.End())
 
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
@@ -173,7 +173,7 @@ func TestSepBy(t *testing.T) {
 		}),
 	))
 
-	s := combinator.And(builder.Select(0), value, parser.End())
+	s := combinator.Seq(builder.Select(0), value, parser.End())
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)

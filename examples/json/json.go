@@ -28,16 +28,16 @@ func main() {
 
 	var value parser.Func
 
-	array := combinator.And(
+	array := combinator.Seq(
 		builder.Select(1),
 		terminal.Rune('[', "["),
 		combinator.SepBy("ARRAY", h, &value, terminal.Rune(',', ","), arrayInterpreter()),
 		terminal.Rune(']', "]"),
 	)
 
-	keyValue := combinator.And(builder.All("OBJ_KV", nil), terminal.String(), terminal.Rune(':', ":"), &value)
+	keyValue := combinator.Seq(builder.All("OBJ_KV", nil), terminal.String(), terminal.Rune(':', ":"), &value)
 
-	object := combinator.And(
+	object := combinator.Seq(
 		builder.Select(1),
 		terminal.Rune('{', "{"),
 		combinator.SepBy("OBJ", h, keyValue, terminal.Rune(',', ","), objectInterpreter()),
@@ -55,7 +55,7 @@ func main() {
 		terminal.Word("null", "NULL", nil),
 	))
 
-	s := combinator.And(builder.Select(0), object, parser.End())
+	s := combinator.Seq(builder.Select(0), object, parser.End())
 	res, err := parsley.EvaluateText(b, true, s)
 	if err != nil {
 		panic(err)
