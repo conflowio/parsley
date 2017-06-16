@@ -36,6 +36,15 @@ func TestParseShouldHandleEmptyResult(t *testing.T) {
 	assert.Nil(t, node)
 }
 
+func TestParseShouldHandleNilNode(t *testing.T) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet()
+	})
+	node, err := parsley.ParseText([]byte(""), true, s)
+	assert.Nil(t, err)
+	assert.Nil(t, node)
+}
+
 func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 	expectedValue := "RES"
 	node := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), expectedValue)
@@ -53,6 +62,15 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s)
 	assert.Error(t, err)
+	assert.Nil(t, value)
+}
+
+func TestEvaluateShouldHandleNilNode(t *testing.T) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet()
+	})
+	value, err := parsley.EvaluateText([]byte(""), true, s)
+	assert.Nil(t, err)
 	assert.Nil(t, value)
 }
 
