@@ -6,8 +6,8 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// Or tries all the given parsers and merges the results
-func Or(parsers ...parser.Parser) parser.Func {
+// Any tries all the given parsers and merges the results
+func Any(parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}

@@ -93,7 +93,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var a parser.Func
-	a = combinator.Memoize("A", h, combinator.Or(
+	a = combinator.Memoize("A", h, combinator.Any(
 		combinator.And(stringBuilder(),
 			&a,
 			terminal.Rune('b', "CHAR"),
@@ -113,7 +113,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Or(
+	value := combinator.Memoize("VALUE", h, combinator.Any(
 		terminal.Integer(),
 		&add,
 	))
@@ -143,13 +143,13 @@ func TestManySepBy(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Or(
+	value := combinator.Memoize("VALUE", h, combinator.Any(
 		terminal.Integer(),
 		&add,
 	))
 
 	add = combinator.Memoize("SUM", h, combinator.ManySepBy1(
-		"SUM", h, value, combinator.Or(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
+		"SUM", h, value, combinator.Any(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1

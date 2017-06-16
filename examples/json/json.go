@@ -44,7 +44,7 @@ func main() {
 		terminal.Rune('}', "}"),
 	)
 
-	value = combinator.Memoize("VALUE", h, combinator.Or(
+	value = combinator.Memoize("VALUE", h, combinator.Any(
 		terminal.String(),
 		terminal.Integer(),
 		terminal.Float(),

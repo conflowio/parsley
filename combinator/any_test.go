@@ -12,12 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOrShouldPanicIfNoParserWasGiven(t *testing.T) {
+func TestAnyShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
-	assert.Panics(t, func() { combinator.Or().Parse(parser.EmptyLeftRecCtx(), r) })
+	assert.Panics(t, func() { combinator.Any().Parse(parser.EmptyLeftRecCtx(), r) })
 }
 
-func TestOrShouldHandleOnlyOneParser(t *testing.T) {
+func TestAnyShouldHandleOnlyOneParser(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
 	expectedCP := data.NewIntSet(1)
@@ -27,12 +27,12 @@ func TestOrShouldHandleOnlyOneParser(t *testing.T) {
 		return expectedCP, expectedRS
 	})
 
-	cp, rs := combinator.Or(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Any(p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 }
 
-func TestOrShouldMergeResults(t *testing.T) {
+func TestAnyShouldMergeResults(t *testing.T) {
 	parser.Stat.Reset()
 	r := test.NewReader(0, 2, false, false)
 
@@ -56,7 +56,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Or(p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Any(p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
 	expectedCP := data.NewIntSet(1, 2)
 	expectedRS := parser.NewResultSet(r1, r2)
 	assert.EqualValues(t, expectedCP, cp)
@@ -65,7 +65,7 @@ func TestOrShouldMergeResults(t *testing.T) {
 	assert.Equal(t, 4, parser.Stat.GetSumCallCount())
 }
 
-func TestOrMayReturnEmptyResult(t *testing.T) {
+func TestAnyMayReturnEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
 	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
@@ -76,7 +76,7 @@ func TestOrMayReturnEmptyResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.Or(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.Any(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
