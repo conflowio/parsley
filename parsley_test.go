@@ -149,7 +149,7 @@ func TestSepBy(t *testing.T) {
 	))
 
 	add = combinator.Memoize("SUM", h, combinator.SepBy1(
-		"SUM", h, value, combinator.Any(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
+		"SUM", h, value, combinator.Choice(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1
@@ -177,7 +177,7 @@ func TestSepBy(t *testing.T) {
 	result, err := parsley.EvaluateText([]byte(input), true, s)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)
-	assert.Equal(t, 1246, parser.Stat.GetSumCallCount())
+	assert.Equal(t, 1242, parser.Stat.GetSumCallCount())
 }
 
 func stringBuilder() ast.NodeBuilder {
