@@ -138,7 +138,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	assert.Equal(t, 3459, parser.Stat.GetSumCallCount())
 }
 
-func TestManySepBy(t *testing.T) {
+func TestSepBy(t *testing.T) {
 	input := []byte("1 - 2 + 3 - 4 + 5 - 6 + 7 - 8 + 9 - 10")
 	h := parser.NewHistory()
 
@@ -148,7 +148,7 @@ func TestManySepBy(t *testing.T) {
 		&add,
 	))
 
-	add = combinator.Memoize("SUM", h, combinator.ManySepBy1(
+	add = combinator.Memoize("SUM", h, combinator.SepBy1(
 		"SUM", h, value, combinator.Any(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0

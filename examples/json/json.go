@@ -31,7 +31,7 @@ func main() {
 	array := combinator.And(
 		builder.Select(1),
 		terminal.Rune('[', "["),
-		combinator.ManySepBy("ARRAY", h, &value, terminal.Rune(',', ","), arrayInterpreter()),
+		combinator.SepBy("ARRAY", h, &value, terminal.Rune(',', ","), arrayInterpreter()),
 		terminal.Rune(']', "]"),
 	)
 
@@ -40,7 +40,7 @@ func main() {
 	object := combinator.And(
 		builder.Select(1),
 		terminal.Rune('{', "{"),
-		combinator.ManySepBy("OBJ", h, keyValue, terminal.Rune(',', ","), objectInterpreter()),
+		combinator.SepBy("OBJ", h, keyValue, terminal.Rune(',', ","), objectInterpreter()),
 		terminal.Rune('}', "}"),
 	)
 

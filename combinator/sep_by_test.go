@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestManySepByShouldCombineParserResults(t *testing.T) {
+func TestSepByShouldCombineParserResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -69,7 +69,7 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.ManySepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.SepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 2)
 	val0, _ := rs[0].Node().Value()
 	val1, _ := rs[1].Node().Value()
@@ -77,7 +77,7 @@ func TestManySepByShouldCombineParserResults(t *testing.T) {
 	assert.Equal(t, "b|,|d|", val1)
 }
 
-func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
+func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -146,13 +146,13 @@ func TestManySepByShouldNotFlattenNonTerminals(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.ManySepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs := combinator.SepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 1)
 	val0, _ := rs[0].Node().Value()
 	assert.Equal(t, "a&b&|,|c&d&|", val0)
 }
 
-func TestManySepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
+func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -160,12 +160,12 @@ func TestManySepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.ManySepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.SepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
 }
 
-func TestManySepByShouldReturnNilIfMin1(t *testing.T) {
+func TestSepByShouldReturnNilIfMin1(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -173,12 +173,12 @@ func TestManySepByShouldReturnNilIfMin1(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil
 	})
 
-	cp, rs := combinator.ManySepBy1("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs := combinator.SepBy1("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 }
 
-func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
+func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
@@ -202,6 +202,6 @@ func TestManySepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _ := combinator.ManySepBy1("TEST", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _ := combinator.SepBy1("TEST", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
