@@ -17,6 +17,7 @@ func TestSeqShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	ctx := parser.EmptyLeftRecCtx()
 	assert.Panics(t, func() { combinator.Seq(nil).Parse(ctx, r) })
+	assert.Panics(t, func() { combinator.SeqTry(nil, 1).Parse(ctx, r) })
 }
 
 func TestSeqShouldHandleOnlyOneParser(t *testing.T) {
@@ -30,6 +31,10 @@ func TestSeqShouldHandleOnlyOneParser(t *testing.T) {
 	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node { return nodes[0] })
 
 	cp, rs := combinator.Seq(nodeBuilder, p1).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, expectedCP, cp)
+	assert.Equal(t, expectedRS, rs)
+
+	cp, rs = combinator.SeqTry(nodeBuilder, 0, p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 }
@@ -76,6 +81,16 @@ func TestSeqShouldCombineParserResults(t *testing.T) {
 	), rs)
 
 	assert.EqualValues(t, 3, parser.Stat.GetSumCallCount())
+
+	p2First = true
+	_, rs = combinator.SeqTry(nodeBuilder, 0, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.EqualValues(t, parser.NewResultSet(
+		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ab"), test.NewReader(3, 1, false, true)),
+		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(4, 1, false, true)),
+		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "abd"), test.NewReader(5, 1, false, true)),
+	), rs)
+
+	assert.EqualValues(t, 6, parser.Stat.GetSumCallCount())
 }
 
 func TestSeqShouldHandleNilResults(t *testing.T) {
@@ -92,6 +107,28 @@ func TestSeqShouldHandleNilResults(t *testing.T) {
 	cp, rs := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
+
+	cp, rs = combinator.SeqTry(builder.Nil(), 2, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Empty(t, rs)
+}
+
+func TestSeqTryShouldMatchLongestSequence(t *testing.T) {
+	r := test.NewReader(0, 1, false, false)
+
+	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r)
+
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), res.AsSet()
+	})
+
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+		return parser.NoCurtailingParsers(), nil
+	})
+
+	cp, rs := combinator.SeqTry(builder.All("TEST", nil), 1, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", []ast.Node{ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x')}, nil), r.Clone()).AsSet(), rs)
 }
 
 func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
@@ -106,6 +143,9 @@ func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	})
 
 	cp, _ := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
+
+	cp, _ = combinator.SeqTry(builder.Nil(), 0, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }
 
@@ -128,6 +168,12 @@ func TestSeqShouldStopIfEOFTokenReached(t *testing.T) {
 	})
 
 	_, rs := combinator.Seq(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.EqualValues(t,
+		parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(2, 0, false, true)).AsSet(),
+		rs,
+	)
+
+	_, rs = combinator.SeqTry(nodeBuilder, 0, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t,
 		parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(2, 0, false, true)).AsSet(),
 		rs,

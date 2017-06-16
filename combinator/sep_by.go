@@ -30,7 +30,7 @@ type sepBy struct {
 func (s sepBy) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
 	sepValue := Memoize(s.token+"_MSB", s.h, Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
 	sepValueMany := Memoize(s.token+"_MSB*", s.h, Many(builder.Flatten(s.token, nil), sepValue))
-	return Try(s, s.min, s.valueP, sepValueMany).Parse(leftRecCtx, r)
+	return SeqTry(s, s.min, s.valueP, sepValueMany).Parse(leftRecCtx, r)
 }
 
 func (s sepBy) BuildNode(nodes []ast.Node) ast.Node {
