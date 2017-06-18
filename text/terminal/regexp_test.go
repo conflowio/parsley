@@ -19,21 +19,19 @@ func TestRegexpShouldMatchPattern(t *testing.T) {
 }
 
 func TestRegexpShouldIgnoreWhitespaces(t *testing.T) {
-	r := text.NewReader([]byte("x   abc123"), true)
-	r.ReadRune()
+	r := text.NewReader([]byte("   abc123"), true)
 	_, res := terminal.Regexp("[a-z]+", false, 0, "TEST")(parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(4, 1, 5), "abc")
+	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(3, 1, 4), "abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
-	assert.Equal(t, text.NewPosition(7, 1, 8), r.Cursor())
+	assert.Equal(t, text.NewPosition(6, 1, 7), r.Cursor())
 }
 
 func TestRegexpShouldNotIgnoreWhitespaces(t *testing.T) {
-	r := text.NewReader([]byte("x   abc123a"), true)
-	r.ReadRune()
+	r := text.NewReader([]byte("   abc123a"), true)
 	_, res := terminal.Regexp("[ a-z]+", true, 0, "TEST")(parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(1, 1, 2), "   abc")
+	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(0, 1, 1), "   abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
-	assert.Equal(t, text.NewPosition(7, 1, 8), r.Cursor())
+	assert.Equal(t, text.NewPosition(6, 1, 7), r.Cursor())
 }
 
 func TestRegexpShouldUseMatchIfTokenEmpty(t *testing.T) {

@@ -1,7 +1,6 @@
 package text
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"regexp"
@@ -52,9 +51,6 @@ type Reader struct {
 
 // NewReader creates a new reader instance
 func NewReader(b []byte, ignoreWhitespaces bool) *Reader {
-	if ignoreWhitespaces {
-		b = bytes.Trim(b, "\r\n\t ")
-	}
 	return &Reader{
 		b:                 b,
 		cur:               NewPosition(0, 1, 1),
