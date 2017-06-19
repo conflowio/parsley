@@ -17,23 +17,25 @@ func TestOptionalShouldReturnParserResult(t *testing.T) {
 
 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return data.NewIntSet(1), res.AsSet()
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return data.NewIntSet(1), res.AsSet(), nil
 	})
 
-	cp, rs := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)
 	assert.Equal(t, parser.NewResultSet(res), rs)
+	assert.Nil(t, err)
 }
 
 func TestOptionalShouldReturnEmptyResultIfParserFailed(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return data.NewIntSet(1), nil
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return data.NewIntSet(1), nil, nil
 	})
 
-	cp, rs := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)
 	assert.Equal(t, parser.NewResultSet(parser.NewResult(nil, r.Clone())), rs)
+	assert.Nil(t, err)
 }

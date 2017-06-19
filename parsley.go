@@ -1,7 +1,7 @@
 package parsley
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/parser"
@@ -13,9 +13,9 @@ func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node,
 	parser.Stat.Reset()
 	r := text.NewReader(input, ignoreWhitespaces)
 	parser.Stat.RegisterCall()
-	_, resultSet := s.Parse(parser.EmptyLeftRecCtx(), r)
+	_, resultSet, err := s.Parse(parser.EmptyLeftRecCtx(), r)
 	if len(resultSet) == 0 {
-		return nil, errors.New("failed to parse the input")
+		return nil, fmt.Errorf("Failed to parse the input, at %s %s", err.Pos(), err.Error())
 	}
 	if resultSet[0].Node() == nil {
 		return nil, nil

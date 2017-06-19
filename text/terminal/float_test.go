@@ -41,11 +41,12 @@ var validTestCases = []TC{
 func TestFloatShouldMatch(t *testing.T) {
 	for _, tc := range validTestCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res)
 		actual, _ := res[0].Node().Value()
 		assert.Equal(t, tc.expected, actual)
 		assert.Equal(t, tc.cursor, res[0].Reader().Cursor().Pos())
+		assert.Nil(t, err)
 	}
 }
 
@@ -55,7 +56,6 @@ func TestFloatShouldNotMatch(t *testing.T) {
 	}
 	testCases := []TC{
 		TC{""},
-		TC{" "},
 		TC{"a"},
 		TC{"-"},
 		TC{"+"},
@@ -66,7 +66,9 @@ func TestFloatShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
+		require.NotNil(t, err)
+		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
 	}
 }

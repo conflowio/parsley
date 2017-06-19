@@ -37,7 +37,7 @@ func (p Position) Col() int {
 }
 
 func (p Position) String() string {
-	return fmt.Sprintf("%d|%d:%d", p.pos, p.line, p.col)
+	return fmt.Sprintf("%d:%d", p.line, p.col)
 }
 
 // Reader defines a byte reader

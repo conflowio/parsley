@@ -14,7 +14,7 @@ import (
 
 // Char matches a character literal enclosed in single quotes
 func Char() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch("'(.|\\\\[abfnrtv]|\\\\x[0-9a-fA-F]{2,2}|\\\\u[0-9a-fA-F]{4,4}|\\\\U[0-9a-fA-F]{8,8})'", false); ok {
 			match := matches[1]
@@ -23,9 +23,9 @@ func Char() parser.Func {
 				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
 			}
 			if err == nil {
-				return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.CHAR, pos, value), r).AsSet()
+				return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.CHAR, pos, value), r).AsSet(), nil
 			}
 		}
-		return parser.NoCurtailingParsers(), nil
+		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting char literal")
 	})
 }

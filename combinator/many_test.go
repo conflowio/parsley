@@ -11,6 +11,7 @@ import (
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestManyShouldCombineParserResults(t *testing.T) {
@@ -32,12 +33,12 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
-			return parser.NoCurtailingParsers(), pResults[pi]
+			return parser.NoCurtailingParsers(), pResults[pi], nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
@@ -51,61 +52,66 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 		return ast.NewTerminalNode("STR", first.Pos(), res)
 	})
 
-	_, rs := combinator.Many(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, err := combinator.Many(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, parser.NewResultSet(
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(3, 1, false, true)),
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "bd"), test.NewReader(4, 1, false, true)),
 	), rs)
+	assert.Nil(t, err)
 
 	pi = 0 // Reset parser call index
-	_, rs = combinator.Many1(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, err = combinator.Many1(nodeBuilder, p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, parser.NewResultSet(
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ac"), test.NewReader(3, 1, false, true)),
 		parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "bd"), test.NewReader(4, 1, false, true)),
 	), rs)
+	assert.Nil(t, err)
 }
 
 func TestMany1ShouldReturnNoResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
 	})
 
-	cp, rs := combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(1), err.Pos())
 }
 
 func TestManyShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
 	})
 
-	cp, rs := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, rs, parser.NewResult(nil, r).AsSet())
+	assert.Nil(t, err)
 }
 
 func TestManyShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { pi++ }()
 		if pi == 0 {
-			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet()
+			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
 		} else {
-			return data.NewIntSet(1, 2), nil
+			return data.NewIntSet(1, 2), nil, parser.NewError(test.NewPosition(1), "ERR1")
 		}
 	})
 
-	cp, _ := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _, _ := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 
 	pi = 0 // Reset parser call index
-	cp, _ = combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _, _ = combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }

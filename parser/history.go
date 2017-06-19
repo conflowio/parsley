@@ -7,6 +7,7 @@ import (
 type storedResult struct {
 	curtailingParsers data.IntSet
 	resultSet         ResultSet
+	err               Error
 	leftRecCtx        data.IntMap
 }
 
@@ -38,25 +39,25 @@ func (h *History) GetParserIndex(parser string) (parserIndex int) {
 }
 
 // RegisterResults registers a parser result for a certain position
-func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers data.IntSet, resultSet ResultSet, leftRecCtx data.IntMap) {
+func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers data.IntSet, resultSet ResultSet, err Error, leftRecCtx data.IntMap) {
 	if _, ok := h.results[parserIndex]; !ok {
 		h.results[parserIndex] = make(map[int]storedResult)
 	}
-	h.results[parserIndex][pos] = storedResult{curtailingParsers, resultSet, leftRecCtx}
+	h.results[parserIndex][pos] = storedResult{curtailingParsers, resultSet, err, leftRecCtx}
 }
 
 // GetResults return with a previously saved result
-func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (data.IntSet, ResultSet, bool) {
+func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (data.IntSet, ResultSet, Error, bool) {
 	storedResult, found := h.results[parserIndex][pos]
 	if !found {
-		return data.EmptyIntSet(), nil, false
+		return data.EmptyIntSet(), nil, nil, false
 	}
 
 	for key := range storedResult.leftRecCtx.Keys() {
 		if storedResult.leftRecCtx.Get(key) > leftRecCtx.Get(key) {
-			return data.EmptyIntSet(), nil, false
+			return data.EmptyIntSet(), nil, nil, false
 		}
 	}
 
-	return storedResult.curtailingParsers, storedResult.resultSet, true
+	return storedResult.curtailingParsers, storedResult.resultSet, storedResult.err, true
 }

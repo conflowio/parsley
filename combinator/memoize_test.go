@@ -19,9 +19,9 @@ func TestMemoizeShouldIncreaseLeftRecCtx(t *testing.T) {
 	parserIndex := h.GetParserIndex("p1")
 	assert.Equal(t, leftRecCtx.Get(parserIndex), 0)
 
-	p := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		assert.Equal(t, leftRecCtx.Get(parserIndex), 1)
-		return parser.NoCurtailingParsers(), nil
+		return parser.NoCurtailingParsers(), nil, nil
 	})
 	combinator.Memoize("p1", h, p).Parse(leftRecCtx, r)
 }
@@ -33,13 +33,15 @@ func TestMemoizeShouldReturnParserResult(t *testing.T) {
 	node := ast.NewTerminalNode("a", test.NewPosition(1), "a")
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(node, r).AsSet()
+	expectedErr := parser.NewError(test.NewPosition(1), "ERR1")
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return expectedCP, expectedRS
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return expectedCP, expectedRS, expectedErr
 	})
-	cp, rs := combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
+	assert.Equal(t, expectedErr, err)
 }
 
 func TestMemoizeShouldRememberResult(t *testing.T) {
@@ -49,21 +51,23 @@ func TestMemoizeShouldRememberResult(t *testing.T) {
 	node := ast.NewTerminalNode("a", test.NewPosition(1), "a")
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(node, r).AsSet()
+	expectedErr := parser.NewError(test.NewPosition(1), "ERR1")
 
 	called := false
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		called = true
-		return expectedCP, expectedRS
+		return expectedCP, expectedRS, expectedErr
 	})
 	combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), r)
 
 	called = false
 
-	cp, rs := combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), r)
 
 	assert.False(t, called, "The parser function should not have been called")
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
+	assert.Equal(t, expectedErr, err)
 
 	combinator.Memoize("p1", h, p).Parse(parser.EmptyLeftRecCtx(), test.NewReader(1, 1, false, true))
 	assert.True(t, called, "The parser function should have been called for the new position")
@@ -79,13 +83,14 @@ func TestMemoizeShouldCurtailResult(t *testing.T) {
 	})
 
 	called := false
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		called = true
-		return parser.NoCurtailingParsers(), nil
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
 	})
 	expectedCP := data.NewIntSet(h.GetParserIndex("p1"))
-	cp, rs := combinator.Memoize("p1", h, p).Parse(ctx, r)
+	cp, rs, err := combinator.Memoize("p1", h, p).Parse(ctx, r)
 	assert.False(t, called, "The call tree should have been curtailed")
 	assert.Equal(t, expectedCP, cp)
 	assert.Nil(t, rs)
+	assert.Nil(t, err)
 }

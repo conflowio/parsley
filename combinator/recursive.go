@@ -15,6 +15,7 @@ type recursive struct {
 	max               int
 	curtailingParsers data.IntSet
 	resultSet         parser.ResultSet
+	err               parser.Error
 	nodes             []ast.Node
 }
 
@@ -35,18 +36,26 @@ func newRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.P
 }
 
 // Parse runs the recursive parser
-func (rp *recursive) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+func (rp *recursive) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 	rp.parse(0, leftRecCtx, r, true)
-	return rp.curtailingParsers, rp.resultSet
+	if len(rp.resultSet) > 0 {
+		return rp.curtailingParsers, rp.resultSet, nil
+	} else {
+		return rp.curtailingParsers, nil, rp.err
+	}
 }
 
 func (rp *recursive) parse(depth int, leftRecCtx data.IntMap, r reader.Reader, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
 	var rs parser.ResultSet
+	var err parser.Error
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
 		parser.Stat.RegisterCall()
-		cp, rs = nextParser.Parse(leftRecCtx, r.Clone())
+		cp, rs, err = nextParser.Parse(leftRecCtx, r.Clone())
+		if err != nil && (rp.err == nil || err.Pos().Pos() >= rp.err.Pos().Pos()) {
+			rp.err = err
+		}
 	}
 
 	if mergeCurtailingParsers {

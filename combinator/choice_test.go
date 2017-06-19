@@ -23,13 +23,14 @@ func TestChoiceShouldHandleOnlyOneParser(t *testing.T) {
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet()
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return expectedCP, expectedRS
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return expectedCP, expectedRS, nil
 	})
 
-	cp, rs := combinator.Choice(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice(p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
+	assert.Nil(t, err)
 }
 
 func TestChoiceShouldMergeCurtailingParsers(t *testing.T) {
@@ -38,24 +39,25 @@ func TestChoiceShouldMergeCurtailingParsers(t *testing.T) {
 
 	var res parser.Result
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return data.NewIntSet(1), parser.NewResultSet()
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return data.NewIntSet(1), parser.NewResultSet(), parser.NewError(test.NewPosition(2), "ERR2")
 	})
 
-	p3 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p3 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		res = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST"), test.NewReader(1, 1, false, true))
-		return data.NewIntSet(2), res.AsSet()
+		return data.NewIntSet(2), res.AsSet(), nil
 	})
 
-	cp, rs := combinator.Choice(p1, p2, p3).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice(p1, p2, p3).Parse(parser.EmptyLeftRecCtx(), r)
 	expectedCP := data.NewIntSet(1, 2)
 	expectedRS := res.AsSet()
 	assert.EqualValues(t, expectedCP, cp)
 	assert.EqualValues(t, expectedRS, rs)
+	assert.Nil(t, err)
 
 	assert.Equal(t, 3, parser.Stat.GetSumCallCount())
 }
@@ -66,18 +68,19 @@ func TestChoiceShouldStopAtChoiceResult(t *testing.T) {
 
 	var res1, res2 parser.Result
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		res1 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST"), test.NewReader(1, 1, false, true))
-		return parser.NoCurtailingParsers(), res1.AsSet()
+		return parser.NoCurtailingParsers(), res1.AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		res2 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST2"), test.NewReader(1, 1, false, true))
-		return parser.NoCurtailingParsers(), res2.AsSet()
+		return parser.NoCurtailingParsers(), res2.AsSet(), nil
 	})
 
-	_, rs := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, err := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, res1.AsSet(), rs)
+	assert.Nil(t, err)
 
 	assert.Equal(t, 1, parser.Stat.GetSumCallCount())
 }
@@ -85,15 +88,17 @@ func TestChoiceShouldStopAtChoiceResult(t *testing.T) {
 func TestChoiceMayReturnEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(2), "ERR1")
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR2")
 	})
 
-	cp, rs := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
+	assert.Equal(t, test.NewPosition(2), err.Pos())
+	assert.Equal(t, "ERR1", err.Error())
 }

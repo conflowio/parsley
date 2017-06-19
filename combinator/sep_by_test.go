@@ -41,22 +41,22 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
-			return parser.NoCurtailingParsers(), pResults[pi]
+			return parser.NoCurtailingParsers(), pResults[pi], nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { sepi++ }()
 		if sepi < len(sepResults) {
-			return parser.NoCurtailingParsers(), sepResults[sepi]
+			return parser.NoCurtailingParsers(), sepResults[sepi], nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
@@ -69,12 +69,13 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.SepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, err := combinator.SepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 2)
 	val0, _ := rs[0].Node().Value()
 	val1, _ := rs[1].Node().Value()
 	assert.Equal(t, "a|,|c|", val0)
 	assert.Equal(t, "b|,|d|", val1)
+	assert.Nil(t, err)
 }
 
 func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
@@ -118,22 +119,22 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
-			return parser.NoCurtailingParsers(), pResults[pi]
+			return parser.NoCurtailingParsers(), pResults[pi], nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { sepi++ }()
 		if sepi < len(sepResults) {
-			return parser.NoCurtailingParsers(), sepResults[sepi]
+			return parser.NoCurtailingParsers(), sepResults[sepi], nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
@@ -146,7 +147,7 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs := combinator.SepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, _ := combinator.SepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 1)
 	val0, _ := rs[0].Node().Value()
 	assert.Equal(t, "a&b&|,|c&d&|", val0)
@@ -156,26 +157,29 @@ func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs := combinator.SepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.SepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
+	assert.Nil(t, err)
 }
 
-func TestSepByShouldReturnNilIfMin1(t *testing.T) {
+func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
-		return parser.NoCurtailingParsers(), nil
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs := combinator.SepBy1("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.SepBy1("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(1), err.Pos())
 }
 
 func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
@@ -183,25 +187,25 @@ func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	h := parser.NewHistory()
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { pi++ }()
 		if pi < 1 {
-			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet()
+			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		defer func() { sepi++ }()
 		if sepi < 1 {
-			return data.NewIntSet(1, 2), nil
+			return data.NewIntSet(1, 2), nil, nil
 		} else {
-			return parser.NoCurtailingParsers(), nil
+			return parser.NoCurtailingParsers(), nil, nil
 		}
 	})
 
-	cp, _ := combinator.SepBy1("TEST", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _, _ := combinator.SepBy1("TEST", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }

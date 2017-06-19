@@ -12,7 +12,7 @@ import (
 
 // Regexp matches the given regular expression
 func Regexp(regexp string, includeWhitespaces bool, groupIndex int, token string) parser.Func {
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch(regexp, includeWhitespaces); ok {
 			if groupIndex >= len(matches) {
@@ -21,8 +21,8 @@ func Regexp(regexp string, includeWhitespaces bool, groupIndex int, token string
 			if token == "" {
 				token = matches[groupIndex]
 			}
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, matches[groupIndex]), r).AsSet()
+			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, matches[groupIndex]), r).AsSet(), nil
 		}
-		return parser.NoCurtailingParsers(), nil
+		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting %s", regexp)
 	})
 }

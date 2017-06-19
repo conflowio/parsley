@@ -14,7 +14,7 @@ import (
 
 // Float matches a float literal
 func Float() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch("[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?", false); ok {
 			val, err := strconv.ParseFloat(matches[0], 64)
@@ -23,8 +23,8 @@ func Float() parser.Func {
 			}
 			var rs parser.ResultSet
 			rs = parser.NewResult(ast.NewTerminalNode(token.FLOAT, pos, val), r).AsSet()
-			return parser.NoCurtailingParsers(), rs
+			return parser.NoCurtailingParsers(), rs, nil
 		}
-		return parser.NoCurtailingParsers(), nil
+		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting float value")
 	})
 }

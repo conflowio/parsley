@@ -15,18 +15,20 @@ func TestParserFuncShouldCallFunction(t *testing.T) {
 	expectedReader := test.NewReader(0, 1, false, false)
 	expectedCurtailingParsers := data.NewIntSet(1)
 	expectedResultSet := parser.NewResult(nil, test.NewReader(1, 0, false, false)).AsSet()
+	expectedErr := parser.NewError(test.NewPosition(1), "testerr")
 	var actualLeftRecCtx data.IntMap
 	var actualReader reader.Reader
-	parserFunc := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+	parserFunc := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		actualLeftRecCtx = leftRecCtx
 		actualReader = r
-		return expectedCurtailingParsers, expectedResultSet
+		return expectedCurtailingParsers, expectedResultSet, expectedErr
 	})
 
-	actualCurtailingParsers, actualResultSet := parserFunc.Parse(expectedLeftRecCtx, expectedReader)
+	actualCurtailingParsers, actualResultSet, actualErr := parserFunc.Parse(expectedLeftRecCtx, expectedReader)
 
 	assert.Equal(t, expectedCurtailingParsers, actualCurtailingParsers)
 	assert.Equal(t, expectedResultSet, actualResultSet)
 	assert.Equal(t, expectedLeftRecCtx, actualLeftRecCtx)
 	assert.Equal(t, expectedReader, actualReader)
+	assert.Equal(t, expectedErr, actualErr)
 }

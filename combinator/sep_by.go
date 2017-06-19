@@ -27,7 +27,7 @@ type sepBy struct {
 	min         int
 }
 
-func (s sepBy) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet) {
+func (s sepBy) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 	sepValue := Memoize(s.token+"_MSB", s.h, Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
 	sepValueMany := Memoize(s.token+"_MSB*", s.h, Many(builder.Flatten(s.token, nil), sepValue))
 	return SeqTry(s, s.min, s.valueP, sepValueMany).Parse(leftRecCtx, r)

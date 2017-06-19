@@ -43,11 +43,12 @@ func TestStringShouldMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value()
 		assert.Equal(t, tc.expected, actual)
 		assert.Equal(t, tc.cursor, res[0].Reader().Cursor().Pos())
+		assert.Nil(t, err)
 	}
 }
 
@@ -57,9 +58,7 @@ func TestStringShouldNotMatch(t *testing.T) {
 	}
 	testCases := []TC{
 		TC{``},
-		TC{`"`},
 		TC{`'`},
-		TC{"`"},
 		TC{"''"},
 		TC{"'a'"},
 		TC{"5"},
@@ -67,7 +66,29 @@ func TestStringShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
+		require.NotNil(t, err)
+		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
+	}
+}
+
+func TestUnclosedStringLiteral(t *testing.T) {
+	type TC struct {
+		input  string
+		errPos text.Position
+	}
+	testCases := []TC{
+		TC{`"`, text.NewPosition(1, 1, 2)},
+		TC{"`", text.NewPosition(1, 1, 2)},
+		TC{`"a`, text.NewPosition(2, 1, 3)},
+		TC{"`a", text.NewPosition(2, 1, 3)},
+	}
+	for _, tc := range testCases {
+		r := text.NewReader([]byte(tc.input), true)
+		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
+		require.NotNil(t, err)
+		assert.Equal(t, tc.errPos, err.Pos())
 	}
 }
