@@ -15,20 +15,19 @@ import (
 func String() parser.Func {
 	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		tr := r.(*text.Reader)
-		matches, _, ok := tr.ReadMatch("\"|`", false)
+		matches, pos, ok := tr.ReadMatch("\"|`", false)
 		if !ok {
 			return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting string literal")
 		}
 		quote := matches[0]
 
 		var value string
-		var pos reader.Position
 		if quote == "`" {
 			var matches []string
-			matches, pos, _ = tr.ReadMatch("[^`]*", true)
+			matches, _, _ = tr.ReadMatch("[^`]*", true)
 			value = matches[0]
 		} else {
-			value, pos, _ = tr.Readf(unquoteString, true)
+			value, _, _ = tr.Readf(unquoteString, true)
 		}
 
 		endQuote, _, err := tr.ReadRune()

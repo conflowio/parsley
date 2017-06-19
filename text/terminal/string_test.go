@@ -11,6 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestStringShouldReturnQuotePosition(t *testing.T) {
+	r := text.NewReader([]byte(`"abc"`), true)
+	_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+	require.NotNil(t, res)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
+}
+
 func TestStringShouldMatch(t *testing.T) {
 	type TC struct {
 		input    string
