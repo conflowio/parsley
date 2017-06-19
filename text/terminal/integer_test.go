@@ -11,6 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestIntegerShouldReturnStartingPosition(t *testing.T) {
+	r := text.NewReader([]byte("1"), true)
+	_, res, err := terminal.Integer().Parse(parser.EmptyLeftRecCtx(), r)
+	require.NotNil(t, res)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
+}
+
 func TestIntegerShouldMatch(t *testing.T) {
 	type TC struct {
 		input    string

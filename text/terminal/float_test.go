@@ -38,6 +38,14 @@ var validTestCases = []TC{
 	TC{"1.2e", 1.2, 3}, // only 1.2 should be consumed
 }
 
+func TestFloatShouldReturnStartingPosition(t *testing.T) {
+	r := text.NewReader([]byte("1.23"), true)
+	_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+	require.NotNil(t, res)
+	assert.Nil(t, err)
+	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
+}
+
 func TestFloatShouldMatch(t *testing.T) {
 	for _, tc := range validTestCases {
 		r := text.NewReader([]byte(tc.input), true)
