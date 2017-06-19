@@ -13,6 +13,7 @@ const EOF = "EOF"
 type Node interface {
 	Token() string
 	Value() (interface{}, error)
+	Pos() reader.Position
 }
 
 // TerminalNode is a leaf node in the AST
@@ -56,14 +57,23 @@ func (t TerminalNode) String() string {
 // NonTerminalNode represents a non-leaf node in the AST
 type NonTerminalNode struct {
 	token       string
+	pos         reader.Position
 	children    []Node
 	interpreter Interpreter
 }
 
 // NewNonTerminalNode creates a new NonTerminalNode instance
 func NewNonTerminalNode(token string, children []Node, interpreter Interpreter) NonTerminalNode {
+	var pos reader.Position
+	for _, child := range children {
+		if child != nil {
+			pos = child.Pos()
+			break
+		}
+	}
 	return NonTerminalNode{
 		token:       token,
+		pos:         pos,
 		children:    children,
 		interpreter: interpreter,
 	}
@@ -80,6 +90,11 @@ func (n NonTerminalNode) Value() (interface{}, error) {
 		return nil, nil
 	}
 	return n.interpreter.Eval(n.children)
+}
+
+// Pos returns the position
+func (n NonTerminalNode) Pos() reader.Position {
+	return n.pos
 }
 
 // Children returns with the children

@@ -41,12 +41,23 @@ func TestNonTerminalNode(t *testing.T) {
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
 	assert.Equal(t, "+", node.Token())
 	assert.Equal(t, nodes, node.Children())
+	assert.Equal(t, test.NewPosition(0), node.Pos())
 	actualVal, actualErr := node.Value()
 	assert.Equal(t, nodes, actualNodes)
 	assert.Equal(t, expectedValue, actualVal)
 	assert.Equal(t, expectedErr, actualErr)
 
 	assert.Equal(t, "NT{+, [T{1, Pos{0}} T{2, Pos{2}}]}", node.String())
+}
+
+func TestNonTerminalNodeShouldGetPosFromFirstNonNilChild(t *testing.T) {
+	nodes := []ast.Node{
+		nil,
+		ast.NewTerminalNode("1", test.NewPosition(0), 1),
+	}
+
+	node := ast.NewNonTerminalNode("TEST", nodes, nil)
+	assert.Equal(t, test.NewPosition(0), node.Pos())
 }
 
 func TestNonTerminalNodeValueShouldIncludeNilNodes(t *testing.T) {
