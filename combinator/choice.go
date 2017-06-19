@@ -28,7 +28,7 @@ func Choice(desc string, parsers ...parser.Parser) parser.Func {
 				break
 			}
 		}
-		if err != nil && err.Pos().Pos() == cur.Pos() {
+		if desc != "" && err != nil && err.Pos().Pos() == cur.Pos() {
 			err = parser.NewError(cur, "was expecting "+desc)
 		}
 		return cp, rs, err

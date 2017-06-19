@@ -17,6 +17,6 @@ func Rune(char rune, token string) parser.Func {
 		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(string(char)), false); ok {
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, char), r).AsSet(), nil
 		}
-		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting \"%s\"", string(char))
+		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting '%s'", string(char))
 	})
 }
