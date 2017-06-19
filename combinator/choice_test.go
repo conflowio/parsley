@@ -10,11 +10,12 @@ import (
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestChoiceShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
-	assert.Panics(t, func() { combinator.Choice().Parse(parser.EmptyLeftRecCtx(), r) })
+	assert.Panics(t, func() { combinator.Choice("test").Parse(parser.EmptyLeftRecCtx(), r) })
 }
 
 func TestChoiceShouldHandleOnlyOneParser(t *testing.T) {
@@ -27,7 +28,7 @@ func TestChoiceShouldHandleOnlyOneParser(t *testing.T) {
 		return expectedCP, expectedRS, nil
 	})
 
-	cp, rs, err := combinator.Choice(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice("test", p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 	assert.Nil(t, err)
@@ -52,12 +53,14 @@ func TestChoiceShouldMergeCurtailingParsers(t *testing.T) {
 		return data.NewIntSet(2), res.AsSet(), nil
 	})
 
-	cp, rs, err := combinator.Choice(p1, p2, p3).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice("test", p1, p2, p3).Parse(parser.EmptyLeftRecCtx(), r)
 	expectedCP := data.NewIntSet(1, 2)
 	expectedRS := res.AsSet()
 	assert.EqualValues(t, expectedCP, cp)
 	assert.EqualValues(t, expectedRS, rs)
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(2), err.Pos())
+	assert.Equal(t, "ERR2", err.Error())
 
 	assert.Equal(t, 3, parser.Stat.GetSumCallCount())
 }
@@ -78,7 +81,7 @@ func TestChoiceShouldStopAtChoiceResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), res2.AsSet(), nil
 	})
 
-	_, rs, err := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, err := combinator.Choice("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, res1.AsSet(), rs)
 	assert.Nil(t, err)
 
@@ -96,9 +99,29 @@ func TestChoiceMayReturnEmptyResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR2")
 	})
 
-	cp, rs, err := combinator.Choice(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Choice("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
+	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(2), err.Pos())
 	assert.Equal(t, "ERR1", err.Error())
+}
+
+func TestChoiceShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
+	r := test.NewReader(0, 2, false, false)
+
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR1")
+	})
+
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR2")
+	})
+
+	cp, rs, err := combinator.Choice("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Empty(t, rs)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(0), err.Pos())
+	assert.Equal(t, "was expecting test", err.Error())
 }

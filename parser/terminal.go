@@ -19,6 +19,6 @@ func End() Func {
 		if r.IsEOF() {
 			return NoCurtailingParsers(), NewResult(ast.NewTerminalNode(ast.EOF, r.Cursor(), nil), r).AsSet(), nil
 		}
-		return NoCurtailingParsers(), nil, NewError(r.Cursor(), "was expecting }}")
+		return NoCurtailingParsers(), nil, NewError(r.Cursor(), "was expecting the end of input")
 	})
 }

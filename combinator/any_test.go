@@ -15,7 +15,7 @@ import (
 
 func TestAnyShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
-	assert.Panics(t, func() { combinator.Any().Parse(parser.EmptyLeftRecCtx(), r) })
+	assert.Panics(t, func() { combinator.Any("test").Parse(parser.EmptyLeftRecCtx(), r) })
 }
 
 func TestAnyShouldHandleOnlyOneParser(t *testing.T) {
@@ -28,7 +28,7 @@ func TestAnyShouldHandleOnlyOneParser(t *testing.T) {
 		return expectedCP, expectedRS, nil
 	})
 
-	cp, rs, err := combinator.Any(p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Any("test", p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 	assert.Nil(t, err)
@@ -58,12 +58,14 @@ func TestAnyShouldMergeResults(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(2), "ERR2")
 	})
 
-	cp, rs, err := combinator.Any(p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Any("test", p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
 	expectedCP := data.NewIntSet(1, 2)
 	expectedRS := parser.NewResultSet(r1, r2)
 	assert.EqualValues(t, expectedCP, cp)
 	assert.EqualValues(t, expectedRS, rs)
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(2), err.Pos())
+	assert.Equal(t, "ERR2", err.Error())
 
 	assert.Equal(t, 4, parser.Stat.GetSumCallCount())
 }
@@ -79,10 +81,29 @@ func TestAnyMayReturnEmptyResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR2")
 	})
 
-	cp, rs, err := combinator.Any(p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Any("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(2), err.Pos())
 	assert.Equal(t, "ERR1", err.Error())
+}
+
+func TestAnyShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
+	r := test.NewReader(0, 2, false, false)
+
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR1")
+	})
+
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR2")
+	})
+
+	cp, rs, err := combinator.Any("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	assert.Equal(t, parser.NoCurtailingParsers(), cp)
+	assert.Empty(t, rs)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(0), err.Pos())
+	assert.Equal(t, "was expecting test", err.Error())
 }

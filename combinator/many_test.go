@@ -92,7 +92,8 @@ func TestManyShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	cp, rs, err := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, rs, parser.NewResult(nil, r).AsSet())
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(1), err.Pos())
 }
 
 func TestManyShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {

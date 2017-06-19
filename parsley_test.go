@@ -29,11 +29,11 @@ func TestParseShouldRunParserAndReturnNode(t *testing.T) {
 
 func TestParseShouldHandleEmptyResult(t *testing.T) {
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "was a test error")
+		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	node, err := parsley.ParseText([]byte("input"), true, s)
 	assert.Error(t, err)
-	assert.Equal(t, "Failed to parse the input, at 1:3 was a test error", err.Error())
+	assert.Equal(t, "Failed to parse the input, encountered a test error at 1:3", err.Error())
 	assert.Nil(t, node)
 }
 
@@ -59,11 +59,11 @@ func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 
 func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "was a test error")
+		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s)
 	assert.Error(t, err)
-	assert.Equal(t, "Failed to parse the input, at 1:3 was a test error", err.Error())
+	assert.Equal(t, "Failed to parse the input, encountered a test error at 1:3", err.Error())
 	assert.Nil(t, value)
 }
 
@@ -95,7 +95,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var a parser.Func
-	a = combinator.Memoize("A", h, combinator.Any(
+	a = combinator.Memoize("A", h, combinator.Any("a or ab",
 		combinator.Seq(stringBuilder(),
 			&a,
 			terminal.Rune('b', "CHAR"),
@@ -111,11 +111,11 @@ func TestDirectLeftRecursion(t *testing.T) {
 }
 
 func TestIndirectLeftRecursion(t *testing.T) {
-	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 +")
+	input := []byte("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10")
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Any(
+	value := combinator.Memoize("VALUE", h, combinator.Any("value",
 		terminal.Integer(),
 		&add,
 	))
@@ -145,13 +145,13 @@ func TestSepBy(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Any(
+	value := combinator.Memoize("VALUE", h, combinator.Any("value",
 		terminal.Integer(),
 		&add,
 	))
 
 	add = combinator.Memoize("SUM", h, combinator.SepBy1(
-		"SUM", h, value, combinator.Choice(terminal.Rune('+', "+"), terminal.Rune('-', "-")),
+		"SUM", h, value, combinator.Choice("+ or -", terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1

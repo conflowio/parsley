@@ -38,11 +38,7 @@ func newRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.P
 // Parse runs the recursive parser
 func (rp *recursive) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 	rp.parse(0, leftRecCtx, r, true)
-	if len(rp.resultSet) > 0 {
-		return rp.curtailingParsers, rp.resultSet, nil
-	} else {
-		return rp.curtailingParsers, nil, rp.err
-	}
+	return rp.curtailingParsers, rp.resultSet, rp.err
 }
 
 func (rp *recursive) parse(depth int, leftRecCtx data.IntMap, r reader.Reader, mergeCurtailingParsers bool) bool {

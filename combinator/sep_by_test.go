@@ -164,7 +164,8 @@ func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	cp, rs, err := combinator.SepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(1), err.Pos())
 }
 
 func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {

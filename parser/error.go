@@ -8,7 +8,8 @@ import (
 
 // Error is a parser error interface
 type Error interface {
-	Error() string
+	error
+	fmt.Stringer
 	Pos() reader.Position
 }
 
@@ -34,4 +35,9 @@ func (e err) Error() string {
 // Pos returns with the error's position
 func (e err) Pos() reader.Position {
 	return e.pos
+}
+
+// String returns with the string representation of the error
+func (e err) String() string {
+	return fmt.Sprintf("%s at %s", e.msg, e.pos)
 }

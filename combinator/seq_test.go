@@ -138,7 +138,8 @@ func TestSeqTryShouldMatchLongestSequence(t *testing.T) {
 	cp, rs, err := combinator.SeqTry(builder.All("TEST", nil), 1, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", []ast.Node{ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x')}, nil), r.Clone()).AsSet(), rs)
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	assert.Equal(t, test.NewPosition(1), err.Pos())
 }
 
 func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {

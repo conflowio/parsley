@@ -7,11 +7,12 @@ import (
 )
 
 // Any tries all the given parsers independently and merges the results
-func Any(parsers ...parser.Parser) parser.Func {
+func Any(desc string, parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		cur := r.Cursor()
 		cp := parser.NoCurtailingParsers()
 		var rs parser.ResultSet
 		var err parser.Error
@@ -24,10 +25,9 @@ func Any(parsers ...parser.Parser) parser.Func {
 				err = err2
 			}
 		}
-		if len(rs) > 0 {
-			return cp, rs, nil
-		} else {
-			return cp, nil, err
+		if err != nil && err.Pos().Pos() == cur.Pos() {
+			err = parser.NewError(cur, "was expecting "+desc)
 		}
+		return cp, rs, err
 	})
 }
