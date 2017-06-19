@@ -65,7 +65,7 @@ func TestAnyShouldMergeResults(t *testing.T) {
 	assert.EqualValues(t, expectedRS, rs)
 	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(2), err.Pos())
-	assert.Equal(t, "ERR2", err.Error())
+	assert.Equal(t, "ERR2 at Pos{2}", err.Error())
 
 	assert.Equal(t, 4, parser.Stat.GetSumCallCount())
 }
@@ -86,7 +86,7 @@ func TestAnyMayReturnEmptyResult(t *testing.T) {
 	assert.Empty(t, rs)
 	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(2), err.Pos())
-	assert.Equal(t, "ERR1", err.Error())
+	assert.Equal(t, "ERR1 at Pos{2}", err.Error())
 }
 
 func TestAnyShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
@@ -105,5 +105,5 @@ func TestAnyShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
 	assert.Empty(t, rs)
 	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(0), err.Pos())
-	assert.Equal(t, "was expecting test", err.Error())
+	assert.Equal(t, "was expecting test at Pos{0}", err.Error())
 }
