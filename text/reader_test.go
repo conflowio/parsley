@@ -209,11 +209,12 @@ func TestReadMatchShouldIncludeWhitespacesIfSet(t *testing.T) {
 }
 
 func TestReadMatchShouldReturnFalseIfNoMatch(t *testing.T) {
-	r := text.NewReader([]byte("123"), true)
+	r := text.NewReader([]byte(" 123"), true)
 	matches, pos, ok := r.ReadMatch("[a-z]+", false)
 	assert.False(t, ok)
 	assert.Nil(t, pos)
 	assert.Nil(t, matches)
+	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 }
 
 func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {

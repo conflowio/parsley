@@ -115,12 +115,14 @@ func (r *Reader) PeakRune() (ch rune, size int, err error) {
 
 // ReadMatch reads a set of characters matching the given regular expression
 func (r *Reader) ReadMatch(expr string, includeWhitespaces bool) ([]string, reader.Position, bool) {
+	cur := r.cur
 	if r.ignoreWhitespaces && !includeWhitespaces {
 		r.readWhitespaces()
 	}
 
 	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.cur.pos:])
 	if loc == nil {
+		r.cur = cur
 		return nil, nil, false
 	}
 	pos := r.cur
