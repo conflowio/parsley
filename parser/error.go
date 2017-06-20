@@ -9,6 +9,7 @@ import (
 // Error is a parser error interface
 type Error interface {
 	error
+	Msg() string
 	Pos() reader.Position
 }
 
@@ -26,7 +27,12 @@ func NewError(pos reader.Position, format string, values ...interface{}) Error {
 	}
 }
 
-// Error returns with the error message
+// Msg returns with the error message
+func (e err) Msg() string {
+	return e.msg
+}
+
+// Error returns with the full error message including the position
 func (e err) Error() string {
 	return fmt.Sprintf("%s at %s", e.msg, e.pos)
 }
