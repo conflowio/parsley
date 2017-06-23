@@ -34,7 +34,7 @@ func TestBoolShouldMatch(t *testing.T) {
 		r := text.NewReader([]byte(tc.input), true)
 		_, res, err := terminal.Bool().Parse(parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
-		actual, _ := res[0].Node().Value()
+		actual, _ := res[0].Node().Value(nil)
 		assert.Equal(t, tc.expected, actual)
 		assert.Equal(t, tc.cursor, res[0].Reader().Cursor().Pos())
 		assert.Nil(t, err)

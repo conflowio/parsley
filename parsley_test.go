@@ -52,8 +52,22 @@ func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
-	value, err := parsley.EvaluateText([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
 	assert.Equal(t, expectedValue, value)
+	assert.Nil(t, err)
+}
+
+func TestEvaluateShouldPassContext(t *testing.T) {
+	ctx := "testctx"
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		return ctx, nil
+	})
+	node := ast.NewNonTerminalNode("STRING", nil, interpreter)
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
+	})
+	value, err := parsley.EvaluateText([]byte("input"), true, s, ctx)
+	assert.Equal(t, ctx, value)
 	assert.Nil(t, err)
 }
 
@@ -61,7 +75,7 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
-	value, err := parsley.EvaluateText([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
 	assert.Error(t, err)
 	assert.Equal(t, "Failed to parse the input, encountered a test error at 1:3", err.Error())
 	assert.Nil(t, value)
@@ -71,7 +85,7 @@ func TestEvaluateShouldHandleNilNode(t *testing.T) {
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet(), nil
 	})
-	value, err := parsley.EvaluateText([]byte(""), true, s)
+	value, err := parsley.EvaluateText([]byte(""), true, s, nil)
 	assert.Nil(t, err)
 	assert.Nil(t, value)
 }
@@ -79,13 +93,13 @@ func TestEvaluateShouldHandleNilNode(t *testing.T) {
 func TestEvaluateShouldHandleInterpreterError(t *testing.T) {
 	randomChild := ast.NewTerminalNode("X", text.NewPosition(1, 2, 3), "X")
 	expectedErr := errors.New("ERR")
-	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func([]ast.Node) (interface{}, error) {
+	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, expectedErr
 	}))
 	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
-	value, err := parsley.EvaluateText([]byte("input"), true, s)
+	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, value)
 }
@@ -94,9 +108,25 @@ func TestDirectLeftRecursion(t *testing.T) {
 	input := "abbbbbbbbbbbbbbbbbbb"
 	h := parser.NewHistory()
 
+	concatNodes := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		s := ""
+		for _, node := range nodes {
+			val, err := node.Value(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if runeVal, ok := val.(rune); ok {
+				s = s + string(runeVal)
+			} else {
+				s = s + val.(string)
+			}
+		}
+		return s, nil
+	})
+
 	var a parser.Func
 	a = combinator.Memoize("A", h, combinator.Any("a or ab",
-		combinator.Seq(stringBuilder(),
+		combinator.Seq(builder.All("AB", concatNodes),
 			&a,
 			terminal.Rune('b', "CHAR"),
 		),
@@ -104,7 +134,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 	))
 	s := combinator.Seq(builder.Select(0), &a, parser.End())
 
-	result, err := parsley.EvaluateText([]byte(input), true, s)
+	result, err := parsley.EvaluateText([]byte(input), true, s, nil)
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
 	assert.Equal(t, 318, parser.Stat.GetSumCallCount())
@@ -122,9 +152,9 @@ func TestIndirectLeftRecursion(t *testing.T) {
 
 	add = combinator.Memoize("ADD", h, combinator.Seq(
 		builder.BinaryOperation(
-			ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
-				value0, _ := nodes[0].Value()
-				value1, _ := nodes[1].Value()
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+				value0, _ := nodes[0].Value(ctx)
+				value1, _ := nodes[1].Value(ctx)
 				return value0.(int) + value1.(int), nil
 			}),
 		),
@@ -134,7 +164,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	))
 	s := combinator.Seq(builder.Select(0), value, parser.End())
 
-	result, err := parsley.EvaluateText([]byte(input), true, s)
+	result, err := parsley.EvaluateText([]byte(input), true, s, nil)
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
 	assert.Equal(t, 3459, parser.Stat.GetSumCallCount())
@@ -152,11 +182,11 @@ func TestSepBy(t *testing.T) {
 
 	add = combinator.Memoize("SUM", h, combinator.SepBy1(
 		"SUM", h, value, combinator.Choice("+ or -", terminal.Rune('+', "+"), terminal.Rune('-', "-")),
-		ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 			sum := 0
 			modifier := 1
 			for _, node := range nodes {
-				v, err := node.Value()
+				v, err := node.Value(ctx)
 				if err != nil {
 					return nil, err
 				}
@@ -176,24 +206,8 @@ func TestSepBy(t *testing.T) {
 	))
 
 	s := combinator.Seq(builder.Select(0), value, parser.End())
-	result, err := parsley.EvaluateText([]byte(input), true, s)
+	result, err := parsley.EvaluateText([]byte(input), true, s, nil)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)
 	assert.Equal(t, 1242, parser.Stat.GetSumCallCount())
-}
-
-func stringBuilder() ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		s := ""
-		for _, node := range nodes {
-			val, _ := node.Value()
-			if runeVal, ok := val.(rune); ok {
-				s = s + string(runeVal)
-			} else {
-				s = s + val.(string)
-			}
-		}
-		first := nodes[0].(ast.TerminalNode)
-		return ast.NewTerminalNode("STRING", first.Pos(), s)
-	})
 }

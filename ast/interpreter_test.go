@@ -10,20 +10,24 @@ import (
 )
 
 func TesInterpreterFuncShouldCallFunction(t *testing.T) {
+	ctx := "textCtx"
 	nodes := []ast.Node{
 		ast.NewTerminalNode("INT", test.NewPosition(0), 1),
 	}
 	expectedValue := 1
 	expectedErr := errors.New("e")
+	var actualCtx interface{}
 	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		actualCtx = ctx
 		actualNodes = nodes
 		return expectedValue, expectedErr
 	})
 
-	actualValue, actualErr := interpreterFunc.Eval(nodes)
+	actualValue, actualErr := interpreterFunc.Eval(ctx, nodes)
 
+	assert.Equal(t, ctx, actualCtx)
 	assert.Equal(t, nodes, actualNodes)
-	assert.Equal(t, expectedValue, actualValue)
 	assert.Equal(t, expectedErr, actualErr)
+	assert.Equal(t, expectedValue, actualValue)
 }

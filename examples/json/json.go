@@ -56,7 +56,7 @@ func main() {
 	))
 
 	s := combinator.Seq(builder.Select(0), object, parser.End())
-	res, err := parsley.EvaluateText(b, true, s)
+	res, err := parsley.EvaluateText(b, true, s, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -69,13 +69,13 @@ func main() {
 }
 
 func arrayInterpreter() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		if len(nodes) == 0 {
 			return []interface{}{}, nil
 		}
 		res := make([]interface{}, len(nodes)/2+1)
 		for i := 0; i < len(nodes); i += 2 {
-			value, err := nodes[i].Value()
+			value, err := nodes[i].Value(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -86,15 +86,15 @@ func arrayInterpreter() ast.InterpreterFunc {
 }
 
 func objectInterpreter() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		if len(nodes) == 0 {
 			return []interface{}{}, nil
 		}
 		res := make(map[string]interface{}, len(nodes)/2+1)
 		for i := 0; i < len(nodes); i += 2 {
 			pair := nodes[i].(ast.NonTerminalNode)
-			key, _ := pair.Children()[0].Value()
-			value, err := pair.Children()[2].Value()
+			key, _ := pair.Children()[0].Value(ctx)
+			value, err := pair.Children()[2].Value(ctx)
 			if err != nil {
 				return nil, err
 			}

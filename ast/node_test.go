@@ -14,7 +14,7 @@ func TestTerminalNode(t *testing.T) {
 	node := ast.NewTerminalNode("TOKEN", pos, "VALUE")
 	assert.Equal(t, "TOKEN", node.Token())
 	assert.Equal(t, pos, node.Pos())
-	actualVal, actualErr := node.Value()
+	actualVal, actualErr := node.Value(nil)
 	assert.Equal(t, "VALUE", actualVal)
 	assert.Nil(t, actualErr)
 
@@ -27,12 +27,15 @@ func TestTerminalNode(t *testing.T) {
 func TestNonTerminalNode(t *testing.T) {
 	expectedValue := 3
 	expectedErr := errors.New("E")
+	var actualCtx interface{}
 	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		actualCtx = ctx
 		actualNodes = nodes
 		return expectedValue, expectedErr
 	})
 
+	ctx := "textctx"
 	nodes := []ast.Node{
 		ast.NewTerminalNode("1", test.NewPosition(0), 1),
 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
@@ -42,7 +45,8 @@ func TestNonTerminalNode(t *testing.T) {
 	assert.Equal(t, "+", node.Token())
 	assert.Equal(t, nodes, node.Children())
 	assert.Equal(t, test.NewPosition(0), node.Pos())
-	actualVal, actualErr := node.Value()
+	actualVal, actualErr := node.Value(ctx)
+	assert.Equal(t, ctx, actualCtx)
 	assert.Equal(t, nodes, actualNodes)
 	assert.Equal(t, expectedValue, actualVal)
 	assert.Equal(t, expectedErr, actualErr)
@@ -62,7 +66,7 @@ func TestNonTerminalNodeShouldGetPosFromFirstNonNilChild(t *testing.T) {
 
 func TestNonTerminalNodeValueShouldIncludeNilNodes(t *testing.T) {
 	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		actualNodes = nodes
 		return nil, nil
 	})
@@ -74,7 +78,7 @@ func TestNonTerminalNodeValueShouldIncludeNilNodes(t *testing.T) {
 	}
 
 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
-	node.Value()
+	node.Value(nil)
 	assert.Equal(t, nodes, actualNodes)
 }
 
@@ -84,23 +88,23 @@ func TestNonTerminalNodeValueShouldReturnNilIfNoInterpreter(t *testing.T) {
 	}
 
 	node := ast.NewNonTerminalNode("+", nodes, nil)
-	val, err := node.Value()
+	val, err := node.Value(nil)
 	assert.Nil(t, val)
 	assert.Nil(t, err)
 }
 
 func TestNonTerminalNodeValueShouldCallInterpreterEvenIfNoChildren(t *testing.T) {
-	interpreterFunc := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return 1, nil
 	})
 	node := ast.NewNonTerminalNode("+", []ast.Node{}, interpreterFunc)
-	val, err := node.Value()
+	val, err := node.Value(nil)
 	assert.Equal(t, 1, val)
 	assert.Nil(t, err)
 }
 
 func TestNonTerminalNodeValueShouldReturnNilIfAllChildrenAreNil(t *testing.T) {
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	nodes := []ast.Node{
@@ -108,7 +112,7 @@ func TestNonTerminalNodeValueShouldReturnNilIfAllChildrenAreNil(t *testing.T) {
 		nil,
 	}
 	node := ast.NewNonTerminalNode("+", nodes, interpreter)
-	val, err := node.Value()
+	val, err := node.Value(nil)
 	assert.Nil(t, val)
 	assert.Nil(t, err)
 }

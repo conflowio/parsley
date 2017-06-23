@@ -45,7 +45,7 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		var res string
 		for _, node := range nodes {
-			val, _ := node.Value()
+			val, _ := node.Value(nil)
 			res += val.(string)
 		}
 		first := nodes[0].(ast.TerminalNode)

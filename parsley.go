@@ -22,7 +22,7 @@ func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node,
 }
 
 // EvaluateText parses the given text input and evaluates the AST
-func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser) (interface{}, error) {
+func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser, ctx interface{}) (interface{}, error) {
 	node, err := ParseText(input, ignoreWhitespaces, s)
 	if err != nil {
 		return nil, err
@@ -30,5 +30,5 @@ func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser) (interf
 	if node == nil {
 		return nil, nil
 	}
-	return node.Value()
+	return node.Value(ctx)
 }

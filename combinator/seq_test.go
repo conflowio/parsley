@@ -29,14 +29,12 @@ func TestSeqShouldHandleOnlyOneParser(t *testing.T) {
 		return expectedCP, expectedRS, nil
 	})
 
-	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node { return nodes[0] })
-
-	cp, rs, err := combinator.Seq(nodeBuilder, p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Seq(builder.Select(0), p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 	assert.Nil(t, err)
 
-	cp, rs, err = combinator.SeqTry(nodeBuilder, 0, p1).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err = combinator.SeqTry(builder.Select(0), 0, p1).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, expectedCP, cp)
 	assert.Equal(t, expectedRS, rs)
 	assert.Nil(t, err)
@@ -69,7 +67,7 @@ func TestSeqShouldCombineParserResults(t *testing.T) {
 	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		var res string
 		for _, node := range nodes {
-			val, _ := node.Value()
+			val, _ := node.Value(nil)
 			res += val.(string)
 		}
 		first := nodes[0].(ast.TerminalNode)
@@ -174,17 +172,13 @@ func TestSeqShouldStopIfEOFTokenReached(t *testing.T) {
 		), nil
 	})
 
-	nodeBuilder := ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		return nodes[0]
-	})
-
-	_, rs, _ := combinator.Seq(nodeBuilder, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, _ := combinator.Seq(builder.Select(0), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t,
 		parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(2, 0, false, true)).AsSet(),
 		rs,
 	)
 
-	_, rs, _ = combinator.SeqTry(nodeBuilder, 0, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, _ = combinator.SeqTry(builder.Select(0), 0, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t,
 		parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(2, 0, false, true)).AsSet(),
 		rs,

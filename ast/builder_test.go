@@ -14,7 +14,7 @@ func TestNodeBuilderFuncShouldCallFunction(t *testing.T) {
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
 	var actualNodes []ast.Node
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expectedNode := ast.NewNonTerminalNode("TEST", nodes, interpreter)
@@ -25,5 +25,5 @@ func TestNodeBuilderFuncShouldCallFunction(t *testing.T) {
 
 	actualNode := nodeBuilderFunc.BuildNode(nodes)
 	assert.Equal(t, nodes, actualNodes)
-	test.AssertNodesEqual(t, expectedNode, actualNode)
+	test.AssertNodesEqual(t, nil, expectedNode, actualNode)
 }

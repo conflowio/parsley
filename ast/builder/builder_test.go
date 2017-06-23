@@ -30,12 +30,12 @@ func TestAllNodesBuilderShouldIncludeAllNodes(t *testing.T) {
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("TEST", nodes, interpreter)
 	actual := builder.All("TEST", interpreter).BuildNode(nodes)
-	test.AssertNodesEqual(t, expected, actual)
+	test.AssertNodesEqual(t, nil, expected, actual)
 }
 
 func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
@@ -44,12 +44,12 @@ func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
 		ast.NewTerminalNode("+", test.NewPosition(1), "+"),
 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("+", []ast.Node{nodes[0], nodes[2]}, interpreter)
 	actual := builder.BinaryOperation(interpreter).BuildNode(nodes)
-	test.AssertNodesEqual(t, expected, actual)
+	test.AssertNodesEqual(t, nil, expected, actual)
 }
 
 func TestBinaryOperatorBuilderShouldPanicIfNotThreeNodes(t *testing.T) {
@@ -65,7 +65,7 @@ func TestNilBuilderReturnsWithNil(t *testing.T) {
 }
 
 func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		return nil, nil
 	})
 	nodes := []ast.Node{
@@ -84,5 +84,5 @@ func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
 	}
 	expected := ast.NewNonTerminalNode("TEST", expectedNodes, interpreter)
 	actual := builder.Flatten("TEST", interpreter).BuildNode(nodes)
-	test.AssertNodesEqual(t, expected, actual)
+	test.AssertNodesEqual(t, nil, expected, actual)
 }

@@ -60,10 +60,10 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 		}
 	})
 
-	interpreter := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		res := ""
 		for _, node := range nodes {
-			value, _ := node.Value()
+			value, _ := node.Value(ctx)
 			res += value.(string) + "|"
 		}
 		return res, nil
@@ -71,8 +71,8 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 
 	_, rs, err := combinator.SepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 2)
-	val0, _ := rs[0].Node().Value()
-	val1, _ := rs[1].Node().Value()
+	val0, _ := rs[0].Node().Value(nil)
+	val1, _ := rs[1].Node().Value(nil)
 	assert.Equal(t, "a|,|c|", val0)
 	assert.Equal(t, "b|,|d|", val1)
 	assert.Nil(t, err)
@@ -82,10 +82,10 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	h := parser.NewHistory()
 
-	interpreter1 := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter1 := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		res := ""
 		for _, node := range nodes {
-			value, _ := node.Value()
+			value, _ := node.Value(ctx)
 			res += value.(string) + "&"
 		}
 		return res, nil
@@ -138,10 +138,10 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 		}
 	})
 
-	interpreter2 := ast.InterpreterFunc(func(nodes []ast.Node) (interface{}, error) {
+	interpreter2 := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 		res := ""
 		for _, node := range nodes {
-			value, _ := node.Value()
+			value, _ := node.Value(ctx)
 			res += value.(string) + "|"
 		}
 		return res, nil
@@ -149,7 +149,7 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 
 	_, rs, _ := combinator.SepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 1)
-	val0, _ := rs[0].Node().Value()
+	val0, _ := rs[0].Node().Value(nil)
 	assert.Equal(t, "a&b&|,|c&d&|", val0)
 }
 
