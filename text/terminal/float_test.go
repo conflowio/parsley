@@ -71,6 +71,7 @@ func TestFloatShouldNotMatch(t *testing.T) {
 		TC{"1"},
 		TC{"-1"},
 		TC{"0"},
+		TC{"1.2e3456"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
