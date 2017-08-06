@@ -9,7 +9,6 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/token"
 )
 
 // Bool matches a bool literal: true or false
@@ -24,7 +23,7 @@ func Bool() parser.Func {
 			if err != nil {
 				panic(fmt.Sprintf("Invalid bool value encountered: %s", matches[0]))
 			}
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.BOOL, pos, val), r).AsSet(), nil
+			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("BOOL", pos, val), r).AsSet(), nil
 		}
 		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting boolean")
 	})

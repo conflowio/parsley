@@ -9,7 +9,6 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/token"
 )
 
 // Char matches a character literal enclosed in single quotes
@@ -23,7 +22,7 @@ func Char() parser.Func {
 				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
 			}
 			if err == nil {
-				return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.CHAR, pos, value), r).AsSet(), nil
+				return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, value), r).AsSet(), nil
 			}
 		}
 		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting char literal")

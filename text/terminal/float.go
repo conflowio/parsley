@@ -8,7 +8,6 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/token"
 )
 
 // Float matches a float literal
@@ -22,7 +21,7 @@ func Float() parser.Func {
 				return parser.NoCurtailingParsers(), nil, parser.NewError(cur, "invalid float value encountered")
 			}
 			var rs parser.ResultSet
-			rs = parser.NewResult(ast.NewTerminalNode(token.FLOAT, pos, val), r).AsSet()
+			rs = parser.NewResult(ast.NewTerminalNode("FLOAT", pos, val), r).AsSet()
 			return parser.NoCurtailingParsers(), rs, nil
 		}
 		return parser.NoCurtailingParsers(), nil, parser.NewError(cur, "was expecting float value")

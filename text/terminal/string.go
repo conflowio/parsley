@@ -8,7 +8,6 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/token"
 )
 
 // String matches a string literal enclosed in double quotes
@@ -34,7 +33,7 @@ func String() parser.Func {
 		if err != nil || string(endQuote) != quote {
 			return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting '%s'", quote)
 		}
-		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token.STRING, pos, value), tr).AsSet(), nil
+		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("STRING", pos, value), tr).AsSet(), nil
 	})
 }
 
