@@ -31,9 +31,9 @@ func TestInc(t *testing.T) {
 		i2   map[int]int
 	}
 	testCases := []TC{
-		TC{"Insert to empty map", map[int]int{}, 1, map[int]int{1: 1}},
-		TC{"Insert new value", map[int]int{1: 1}, 2, map[int]int{1: 1, 2: 1}},
-		TC{"Increase existing value", map[int]int{1: 1, 2: 1}, 2, map[int]int{1: 1, 2: 2}},
+		{"Insert to empty map", map[int]int{}, 1, map[int]int{1: 1}},
+		{"Insert new value", map[int]int{1: 1}, 2, map[int]int{1: 1, 2: 1}},
+		{"Increase existing value", map[int]int{1: 1, 2: 1}, 2, map[int]int{1: 1, 2: 2}},
 	}
 	for _, tc := range testCases {
 		i1c := make(map[int]int, len(tc.i1))
@@ -54,10 +54,10 @@ func TestFilter(t *testing.T) {
 		i2   map[int]int
 	}
 	testCases := []TC{
-		TC{"Empty keys", map[int]int{1: 2}, []int{}, map[int]int{}},
-		TC{"Empty map", map[int]int{}, []int{1}, map[int]int{}},
-		TC{"None of the keys present", map[int]int{1: 2}, []int{2}, map[int]int{}},
-		TC{"Only include keys", map[int]int{1: 2, 3: 4, 5: 6}, []int{3, 5}, map[int]int{3: 4, 5: 6}},
+		{"Empty keys", map[int]int{1: 2}, []int{}, map[int]int{}},
+		{"Empty map", map[int]int{}, []int{1}, map[int]int{}},
+		{"None of the keys present", map[int]int{1: 2}, []int{2}, map[int]int{}},
+		{"Only include keys", map[int]int{1: 2, 3: 4, 5: 6}, []int{3, 5}, map[int]int{3: 4, 5: 6}},
 	}
 	for _, tc := range testCases {
 		i1c := make(map[int]int, len(tc.i1))
@@ -110,8 +110,8 @@ func TestKeys(t *testing.T) {
 		keys []int
 	}
 	testCases := []TC{
-		TC{"Empty map", map[int]int{}, []int{}},
-		TC{"Non-empty map", map[int]int{1: 2, 3: 4}, []int{1, 3}},
+		{"Empty map", map[int]int{}, []int{}},
+		{"Non-empty map", map[int]int{1: 2, 3: 4}, []int{1, 3}},
 	}
 	for _, tc := range testCases {
 		assertSlicesAreEqual(t, tc.keys, IntMap{tc.i}.Keys())

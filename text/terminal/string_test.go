@@ -26,28 +26,28 @@ func TestStringShouldMatch(t *testing.T) {
 		cursor   int
 	}
 	testCases := []TC{
-		TC{`""`, "", 2},
-		TC{`"a"`, "a", 3},
-		TC{`" a "`, " a ", 5}, // Should keep whitespaces in the string
-		TC{`"a" "b"`, "a", 3},
-		TC{`"abcd"`, "abcd", 6},
-		TC{` "abcd"`, "abcd", 7}, // Skip whitespaces
-		TC{`"'"`, "'", 3},
-		TC{`"\a\b\f\n\r\t\v"`, "\a\b\f\n\r\t\v", 16},
-		TC{`"\x67"`, "\x67", 6},
-		TC{`"\uAB12"`, "\uAB12", 8},
-		TC{`"\U0001F355"`, "\U0001F355", 12},
-		TC{"``", ``, 2},
-		TC{"`a`", `a`, 3},
-		TC{"` a `", ` a `, 5}, // Should keep whitespaces in the string
-		TC{"`a` `b`", `a`, 3},
-		TC{"`abcd`", `abcd`, 6},
-		TC{" `abcd`", `abcd`, 7}, // Skip whitespaces
-		TC{"`'`", `'`, 3},
-		TC{"`" + `\a\b\f\n\r\t\v` + "`", `\a\b\f\n\r\t\v`, 16},
-		TC{"`" + `\x67` + "`", `\x67`, 6},
-		TC{"`" + `\uAB12` + "`", `\uAB12`, 8},
-		TC{"`" + `\U0001F355` + "`", `\U0001F355`, 12},
+		{`""`, "", 2},
+		{`"a"`, "a", 3},
+		{`" a "`, " a ", 5}, // Should keep whitespaces in the string
+		{`"a" "b"`, "a", 3},
+		{`"abcd"`, "abcd", 6},
+		{` "abcd"`, "abcd", 7}, // Skip whitespaces
+		{`"'"`, "'", 3},
+		{`"\a\b\f\n\r\t\v"`, "\a\b\f\n\r\t\v", 16},
+		{`"\x67"`, "\x67", 6},
+		{`"\uAB12"`, "\uAB12", 8},
+		{`"\U0001F355"`, "\U0001F355", 12},
+		{"``", ``, 2},
+		{"`a`", `a`, 3},
+		{"` a `", ` a `, 5}, // Should keep whitespaces in the string
+		{"`a` `b`", `a`, 3},
+		{"`abcd`", `abcd`, 6},
+		{" `abcd`", `abcd`, 7}, // Skip whitespaces
+		{"`'`", `'`, 3},
+		{"`" + `\a\b\f\n\r\t\v` + "`", `\a\b\f\n\r\t\v`, 16},
+		{"`" + `\x67` + "`", `\x67`, 6},
+		{"`" + `\uAB12` + "`", `\uAB12`, 8},
+		{"`" + `\U0001F355` + "`", `\U0001F355`, 12},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
@@ -65,12 +65,12 @@ func TestStringShouldNotMatch(t *testing.T) {
 		input string
 	}
 	testCases := []TC{
-		TC{``},
-		TC{`'`},
-		TC{"''"},
-		TC{"'a'"},
-		TC{"5"},
-		TC{"a"},
+		{``},
+		{`'`},
+		{"''"},
+		{"'a'"},
+		{"5"},
+		{"a"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
@@ -87,10 +87,10 @@ func TestUnclosedStringLiteral(t *testing.T) {
 		errPos text.Position
 	}
 	testCases := []TC{
-		TC{`"`, text.NewPosition(1, 1, 2)},
-		TC{"`", text.NewPosition(1, 1, 2)},
-		TC{`"a`, text.NewPosition(2, 1, 3)},
-		TC{"`a", text.NewPosition(2, 1, 3)},
+		{`"`, text.NewPosition(1, 1, 2)},
+		{"`", text.NewPosition(1, 1, 2)},
+		{`"a`, text.NewPosition(2, 1, 3)},
+		{"`a", text.NewPosition(2, 1, 3)},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)

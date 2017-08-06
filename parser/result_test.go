@@ -34,14 +34,14 @@ func TestResultSetAppend(t *testing.T) {
 	}
 
 	testCases := []TC{
-		TC{"Append to nil list", parser.ResultSet(nil), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1))},
-		TC{"Append nil to list", parser.NewResultSet(testResult(1)), nil, parser.NewResultSet(testResult(1))},
-		TC{"Append empty array to list", parser.NewResultSet(testResult(1)), []parser.Result{}, parser.NewResultSet(testResult(1))},
-		TC{"Append to empty list", parser.NewResultSet(), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1))},
-		TC{"Append to end of list", parser.NewResultSet(testResult(1)), []parser.Result{testResult(2)}, parser.NewResultSet(testResult(1), testResult(2))},
-		TC{"Append should keep list sorted", parser.NewResultSet(testResult(2)), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1), testResult(2))},
-		TC{"Append should ignore result with same cursor", parser.NewResultSet(testResult(2)), []parser.Result{testResult(2)}, parser.NewResultSet(testResult(2))},
-		TC{"Append multiple", parser.NewResultSet(testResult(2)), []parser.Result{testResult(1), testResult(3)}, parser.NewResultSet(testResult(1), testResult(2), testResult(3))},
+		{"Append to nil list", parser.ResultSet(nil), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1))},
+		{"Append nil to list", parser.NewResultSet(testResult(1)), nil, parser.NewResultSet(testResult(1))},
+		{"Append empty array to list", parser.NewResultSet(testResult(1)), []parser.Result{}, parser.NewResultSet(testResult(1))},
+		{"Append to empty list", parser.NewResultSet(), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1))},
+		{"Append to end of list", parser.NewResultSet(testResult(1)), []parser.Result{testResult(2)}, parser.NewResultSet(testResult(1), testResult(2))},
+		{"Append should keep list sorted", parser.NewResultSet(testResult(2)), []parser.Result{testResult(1)}, parser.NewResultSet(testResult(1), testResult(2))},
+		{"Append should ignore result with same cursor", parser.NewResultSet(testResult(2)), []parser.Result{testResult(2)}, parser.NewResultSet(testResult(2))},
+		{"Append multiple", parser.NewResultSet(testResult(2)), []parser.Result{testResult(1), testResult(3)}, parser.NewResultSet(testResult(1), testResult(2), testResult(3))},
 	}
 	for _, tc := range testCases {
 		tc.actual.Append(tc.res...)

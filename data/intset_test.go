@@ -36,12 +36,12 @@ func TestInsert(t *testing.T) {
 		i2   []int
 	}
 	testCases := []TC{
-		TC{"Insert to empty list", []int{}, 1, []int{1}},
-		TC{"Insert zero", []int{}, 0, []int{0}},
-		TC{"Existing item should not be duplicated", []int{1}, 1, []int{1}},
-		TC{"Insert to the end of the list", []int{1}, 2, []int{1, 2}},
-		TC{"Insert to the beginning of the list", []int{2}, 1, []int{1, 2}},
-		TC{"Insert to the middle of the list", []int{1, 3}, 2, []int{1, 2, 3}},
+		{"Insert to empty list", []int{}, 1, []int{1}},
+		{"Insert zero", []int{}, 0, []int{0}},
+		{"Existing item should not be duplicated", []int{1}, 1, []int{1}},
+		{"Insert to the end of the list", []int{1}, 2, []int{1, 2}},
+		{"Insert to the beginning of the list", []int{2}, 1, []int{1, 2}},
+		{"Insert to the middle of the list", []int{1, 3}, 2, []int{1, 2, 3}},
 	}
 	for _, tc := range testCases {
 		i1c := make([]int, len(tc.i1))
@@ -60,15 +60,15 @@ func TestUnion(t *testing.T) {
 		i3   []int
 	}
 	testCases := []TC{
-		TC{"Empty lists", []int{}, []int{}, []int{}},
-		TC{"First empty", []int{}, []int{1}, []int{1}},
-		TC{"Second empty", []int{1}, []int{}, []int{1}},
-		TC{"First longer", []int{1, 3}, []int{2}, []int{1, 2, 3}},
-		TC{"Second longer", []int{2}, []int{1, 3}, []int{1, 2, 3}},
-		TC{"First then second", []int{1, 2}, []int{3, 4}, []int{1, 2, 3, 4}},
-		TC{"Second then first", []int{3, 4}, []int{1, 2}, []int{1, 2, 3, 4}},
-		TC{"Mixed", []int{1, 3}, []int{2, 4}, []int{1, 2, 3, 4}},
-		TC{"Ignore duplicated", []int{1, 2, 3}, []int{2, 3, 4}, []int{1, 2, 3, 4}},
+		{"Empty lists", []int{}, []int{}, []int{}},
+		{"First empty", []int{}, []int{1}, []int{1}},
+		{"Second empty", []int{1}, []int{}, []int{1}},
+		{"First longer", []int{1, 3}, []int{2}, []int{1, 2, 3}},
+		{"Second longer", []int{2}, []int{1, 3}, []int{1, 2, 3}},
+		{"First then second", []int{1, 2}, []int{3, 4}, []int{1, 2, 3, 4}},
+		{"Second then first", []int{3, 4}, []int{1, 2}, []int{1, 2, 3, 4}},
+		{"Mixed", []int{1, 3}, []int{2, 4}, []int{1, 2, 3, 4}},
+		{"Ignore duplicated", []int{1, 2, 3}, []int{2, 3, 4}, []int{1, 2, 3, 4}},
 	}
 	for _, tc := range testCases {
 		i1c := make([]int, len(tc.i1))

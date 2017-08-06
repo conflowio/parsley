@@ -26,26 +26,26 @@ func TestIntegerShouldMatch(t *testing.T) {
 		cursor   int
 	}
 	testCases := []TC{
-		TC{"0", 0, 1},
-		TC{"+0", 0, 2},
-		TC{"-0", 0, 2},
-		TC{"1", 1, 1},
-		TC{"+1", 1, 2},
-		TC{"-1", -1, 2},
-		TC{"1234567890", 1234567890, 10},
-		TC{"+1234567890", 1234567890, 11},
-		TC{"-1234567890", -1234567890, 11},
-		TC{"123abc", 123, 3},
-		TC{"00", 0, 2}, // this is a valid octal number
-		TC{"01234567", 01234567, 8},
-		TC{"+012", 012, 4},
-		TC{"-012", -012, 4},
-		TC{"08", 0, 1}, // as 08 is not a valid octal number only 0 should be parsed
-		TC{"0x0123456789abcdef", 0x0123456789abcdef, 18},
-		TC{"0X0123456789abcdef", 0x0123456789abcdef, 18},
-		TC{"+0x12", 0x12, 5},
-		TC{"-0x12", -0x12, 5},
-		TC{"0xg", 0, 1}, // as 0xg is not a valid hexadecimal number only 0 should be parsed
+		{"0", 0, 1},
+		{"+0", 0, 2},
+		{"-0", 0, 2},
+		{"1", 1, 1},
+		{"+1", 1, 2},
+		{"-1", -1, 2},
+		{"1234567890", 1234567890, 10},
+		{"+1234567890", 1234567890, 11},
+		{"-1234567890", -1234567890, 11},
+		{"123abc", 123, 3},
+		{"00", 0, 2}, // this is a valid octal number
+		{"01234567", 01234567, 8},
+		{"+012", 012, 4},
+		{"-012", -012, 4},
+		{"08", 0, 1}, // as 08 is not a valid octal number only 0 should be parsed
+		{"0x0123456789abcdef", 0x0123456789abcdef, 18},
+		{"0X0123456789abcdef", 0x0123456789abcdef, 18},
+		{"+0x12", 0x12, 5},
+		{"-0x12", -0x12, 5},
+		{"0xg", 0, 1}, // as 0xg is not a valid hexadecimal number only 0 should be parsed
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
@@ -63,10 +63,10 @@ func TestIntegerShouldNotMatch(t *testing.T) {
 		input string
 	}
 	testCases := []TC{
-		TC{""},
-		TC{"a"},
-		TC{"-"},
-		TC{"+"},
+		{""},
+		{"a"},
+		{"-"},
+		{"+"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)

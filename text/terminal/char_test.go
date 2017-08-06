@@ -26,23 +26,23 @@ func TestCharShouldMatch(t *testing.T) {
 		cursor   int
 	}
 	testCases := []TC{
-		TC{`' '`, ' ', 3},
-		TC{`'a'`, 'a', 3},
-		TC{`'🍕'`, '🍕', 6},
-		TC{`'a' xx`, 'a', 3},
-		TC{`'\a'`, '\a', 4},
-		TC{`'\b'`, '\b', 4},
-		TC{`'\f'`, '\f', 4},
-		TC{`'\n'`, '\n', 4},
-		TC{`'\v'`, '\v', 4},
-		TC{`'\r'`, '\r', 4},
-		TC{`'\t'`, '\t', 4},
-		TC{`'\xa0'`, '\xa0', 6},
-		TC{`'\xA0'`, '\xa0', 6},
-		TC{`'\u12ab'`, '\u12ab', 8},
-		TC{`'\u12AB'`, '\u12ab', 8},
-		TC{`'\U0001f355'`, '🍕', 12},
-		TC{`'\U0001F355'`, '🍕', 12},
+		{`' '`, ' ', 3},
+		{`'a'`, 'a', 3},
+		{`'🍕'`, '🍕', 6},
+		{`'a' xx`, 'a', 3},
+		{`'\a'`, '\a', 4},
+		{`'\b'`, '\b', 4},
+		{`'\f'`, '\f', 4},
+		{`'\n'`, '\n', 4},
+		{`'\v'`, '\v', 4},
+		{`'\r'`, '\r', 4},
+		{`'\t'`, '\t', 4},
+		{`'\xa0'`, '\xa0', 6},
+		{`'\xA0'`, '\xa0', 6},
+		{`'\u12ab'`, '\u12ab', 8},
+		{`'\u12AB'`, '\u12ab', 8},
+		{`'\U0001f355'`, '🍕', 12},
+		{`'\U0001F355'`, '🍕', 12},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
@@ -60,12 +60,12 @@ func TestCharShouldNotMatch(t *testing.T) {
 		input string
 	}
 	testCases := []TC{
-		TC{``},
-		TC{`''`},
-		TC{`'aa'`},
-		TC{`"a"`},
-		TC{`\x`},
-		TC{`\x`},
+		{``},
+		{`''`},
+		{`'aa'`},
+		{`"a"`},
+		{`\x`},
+		{`\x`},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)

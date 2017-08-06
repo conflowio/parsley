@@ -26,9 +26,9 @@ func TestBoolShouldMatch(t *testing.T) {
 		cursor   int
 	}
 	testCases := []TC{
-		TC{"true", true, 4},
-		TC{"false", false, 5},
-		TC{"true xxx", true, 4},
+		{"true", true, 4},
+		{"false", false, 5},
+		{"true xxx", true, 4},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
@@ -46,12 +46,12 @@ func TestBoolShouldNotMatch(t *testing.T) {
 		input string
 	}
 	testCases := []TC{
-		TC{"tru"},
-		TC{"fals"},
-		TC{"TRUE"},
-		TC{"FALSE"},
-		TC{"truex"},
-		TC{"falsex"},
+		{"tru"},
+		{"fals"},
+		{"TRUE"},
+		{"FALSE"},
+		{"truex"},
+		{"falsex"},
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
