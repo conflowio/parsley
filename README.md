@@ -164,7 +164,7 @@ Please more information about the available parsers and combinators please check
 
 ## Versioning
 
-The library will use the [Semantic Versioning 2.0.0.](http://semver.org/spec/v2.0.0.html).
+The library will use the [Semantic Versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
 
 ## Acknowledgements
 
