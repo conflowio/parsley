@@ -170,7 +170,7 @@ You can find the change log in the [CHANGELOG.md](CHANGELOG.md) file.
 
 ## Testing
 
-For testing you need to have [Testify](github.com/stretchr/testify) installed in your Go path.
+For testing you need to have [Testify](https://github.com/stretchr/testify) installed in your Go path.
 
 To run all the tests simply run: ```make test```.
 
