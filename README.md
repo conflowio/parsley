@@ -166,6 +166,18 @@ Please more information about the available parsers and combinators please check
 
 The library will use the [Semantic Versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
 
+You can find the change log in the [CHANGELOG.md](CHANGELOG.md) file.
+
+## Testing
+
+For testing you need to have [Testify](github.com/stretchr/testify) installed in your Go path.
+
+To run all the tests simply run: ```make test```.
+
+## LICENSE
+
+This software is distributed under the Mozilla Public License, version 2.0. See the [LICENSE](LICENSE) file for more details.
+
 ## Acknowledgements
 
 I would like to say thank you to Frost R.A., Hafiz R., and Callaghan P. as Parsley's main algorithms are based on their paper:
