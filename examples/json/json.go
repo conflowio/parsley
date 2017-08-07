@@ -1,7 +1,13 @@
+// This is a JSON parser example. It's not a strict implementation as it was written only for demonstration. For most JSON strings it should still be able to parse the input.
+//
+// You can run this file to see the parser in action:
+//  go run json.go
+// By default the included example.json file will be used and the output will be:
+//  Parser calls: 240
+//  map[title:Person type:object properties:map[firstName:map[type:string] lastName:map[type:string] age:map[description:Age in years type:integer minimum:0]] required:[firstName lastName]]
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -60,12 +66,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	json, err := json.Marshal(res)
-	if err != nil {
-		panic(err)
-	}
 	fmt.Printf("Parser calls: %d\n", parser.Stat.GetSumCallCount())
-	fmt.Println(string(json))
+	fmt.Printf("%v\n", res)
 }
 
 func arrayInterpreter() ast.InterpreterFunc {

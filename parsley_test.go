@@ -2,6 +2,7 @@ package parsley_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/opsidian/parsley"
@@ -16,6 +17,59 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's define a simple parser which is able to parse adding two integers.
+func ExampleParseText() {
+	add := combinator.Seq(
+		builder.BinaryOperation(
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+				value0, _ := nodes[0].Value(ctx)
+				value1, _ := nodes[1].Value(ctx)
+				return value0.(int) + value1.(int), nil
+			}),
+		),
+		terminal.Integer(),
+		terminal.Rune('+', "ADD"),
+		terminal.Integer(),
+	)
+	s := combinator.Seq(builder.Select(0), add, parser.End())
+
+	node, err := parsley.ParseText([]byte("1 + 2"), true, s)
+	if err != nil {
+		panic(err)
+	}
+
+	value, err2 := node.Value(nil)
+	if err2 != nil {
+		panic(err2)
+	}
+	fmt.Printf("Result: %d\n", value.(int))
+	// Output: Result: 3
+}
+
+// Let's define a simple parser which is able to parse adding two integers.
+func ExampleEvaluateText() {
+	add := combinator.Seq(
+		builder.BinaryOperation(
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+				value0, _ := nodes[0].Value(ctx)
+				value1, _ := nodes[1].Value(ctx)
+				return value0.(int) + value1.(int), nil
+			}),
+		),
+		terminal.Integer(),
+		terminal.Rune('+', "ADD"),
+		terminal.Integer(),
+	)
+	s := combinator.Seq(builder.Select(0), add, parser.End())
+
+	value, err := parsley.EvaluateText([]byte("1 + 2"), true, s, nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Result: %d\n", value.(int))
+	// Output: Result: 3
+}
 
 func TestParseShouldRunParserAndReturnNode(t *testing.T) {
 	expectedNode := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), "RES")

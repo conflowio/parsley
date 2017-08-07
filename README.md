@@ -131,13 +131,18 @@ add := combinator.Seq(
 	terminal.Integer(),
 	terminal.Rune('+', "ADD"),
 	terminal.Integer(),
-))
-s := combinator.Seq(builder.Select(0), value, parser.End())
+)
+s := combinator.Seq(builder.Select(0), add, parser.End())
 
-result, err := parsley.EvaluateText([]byte("1 + 2"), true, s, nil)
+value, err := parsley.EvaluateText([]byte("1 + 2"), true, s, nil)
+if err != nil {
+	panic(err)
+}
+fmt.Printf("Result: %d\n", value.(int))
+// Output: Result: 3
 ```
 
-The **add** variable will contain a parser which is able to parse the given expression and the **s** variable contains the sentence parser which makes sure we parsed the full expression.
+The **add** variable will contain a parser which is able to parse the given expression and the **s** variable contains the sentence parser which makes sure we parsed all the input data.
 
 #### More examples
 
