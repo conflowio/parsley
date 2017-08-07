@@ -162,6 +162,10 @@ Please more information about the available parsers and combinators please check
  - [text](text): text reader implementation
  - [text/terminal](text/terminal): common parsers for text literals (string literal, int, float, etc.)
 
+## Versioning
+
+The library will use the [Semantic Versioning 2.0.0.](http://semver.org/spec/v2.0.0.html).
+
 ## Acknowledgements
 
 I would like to say thank you to Frost R.A., Hafiz R., and Callaghan P. as Parsley's main algorithms are based on their paper:
