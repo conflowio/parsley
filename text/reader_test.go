@@ -376,3 +376,13 @@ func TestReadfShouldHandleUnicodeCharacter(t *testing.T) {
 	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
 	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
 }
+
+func TestIsEOFShouldIgnoreWhitespacesIfSet(t *testing.T) {
+	r := text.NewReader([]byte(" "), true)
+	assert.True(t, r.IsEOF())
+}
+
+func TestIsEOFShouldReturnFalseIfNotAtTheEnd(t *testing.T) {
+	r := text.NewReader([]byte(" "), false)
+	assert.False(t, r.IsEOF())
+}

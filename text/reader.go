@@ -202,6 +202,9 @@ func (r *Reader) Cursor() reader.Position {
 
 // IsEOF returns true if we reached the end of the buffer
 func (r *Reader) IsEOF() bool {
+	if r.ignoreWhitespaces {
+		r.readWhitespaces()
+	}
 	return r.cur.pos >= len(r.b)
 }
 
