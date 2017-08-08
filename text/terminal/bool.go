@@ -1,9 +1,6 @@
 package terminal
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -19,9 +16,9 @@ func Bool() parser.Func {
 			if _, ok := tr.PeakMatch("\\w+"); ok {
 				return parser.NoCurtailingParsers(), nil, parser.NewError(pos, "was expecting boolean")
 			}
-			val, err := strconv.ParseBool(matches[0])
-			if err != nil {
-				panic(fmt.Sprintf("Invalid bool value encountered: %s", matches[0]))
+			val := false
+			if matches[0] == "true" {
+				val = true
 			}
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("BOOL", pos, val), r).AsSet(), nil
 		}
