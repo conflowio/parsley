@@ -11,6 +11,9 @@ import (
 )
 
 // Regexp matches the given regular expression
+// The desc variable is used for error messages, so it should be descriptive and make sense in the sentence "was expecting %s".
+// The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
+// If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
 func Regexp(desc string, regexp string, includeWhitespaces bool, groupIndex int, token string) parser.Func {
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		tr := r.(*text.Reader)

@@ -1,6 +1,7 @@
 package text_test
 
 import (
+	"fmt"
 	"io"
 	"testing"
 	"unicode/utf8"
@@ -9,6 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's read from a byte array with a regular expression
+func ExampleReader() {
+	r := text.NewReader([]byte("abcd"), true)
+	matches, _, _ := r.ReadMatch("ab|cd", false)
+	fmt.Println(matches[0])
+	// Output: ab
+}
 
 func TestPositionMethods(t *testing.T) {
 	p := text.NewPosition(1, 2, 3)

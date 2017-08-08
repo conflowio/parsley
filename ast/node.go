@@ -47,6 +47,7 @@ func (t TerminalNode) Pos() reader.Position {
 	return t.pos
 }
 
+// String returns with a string representation of the node
 func (t TerminalNode) String() string {
 	if t.value == nil {
 		return fmt.Sprintf("T{%s, %s}", t.token, t.pos)
@@ -54,7 +55,7 @@ func (t TerminalNode) String() string {
 	return fmt.Sprintf("T{%v, %s}", t.value, t.pos)
 }
 
-// NonTerminalNode represents a non-leaf node in the AST
+// NonTerminalNode represents a branch node in the AST
 type NonTerminalNode struct {
 	token       string
 	pos         reader.Position
@@ -102,6 +103,7 @@ func (n NonTerminalNode) Children() []Node {
 	return n.children
 }
 
+// String returns with a string representation of the node
 func (n NonTerminalNode) String() string {
 	return fmt.Sprintf("NT{%s, %s}", n.token, n.children)
 }

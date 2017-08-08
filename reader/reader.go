@@ -1,3 +1,4 @@
+// Package reader defines interfaces for an input reader and reader position
 package reader
 
 import "fmt"

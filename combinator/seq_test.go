@@ -1,8 +1,10 @@
 package combinator_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
@@ -10,9 +12,52 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's define a parser which accepts "a", "b", "c" characters in order.
+func ExampleSeq() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+
+	s := combinator.Seq(builder.All("ABC", concat),
+		terminal.Rune('a', "a"),
+		terminal.Rune('b', "b"),
+		terminal.Rune('c', "c"),
+	)
+	value, _ := parsley.EvaluateText([]byte("abc"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string abc
+}
+
+// Let's define a parser which accepts any prefix of the "abc" string.
+func ExampleSeqTry() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+
+	s := combinator.SeqTry(builder.All("ABC", concat), 0,
+		terminal.Rune('a', "a"),
+		terminal.Rune('b', "b"),
+		terminal.Rune('c', "c"),
+	)
+	value, _ := parsley.EvaluateText([]byte("abde"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string ab
+}
 
 func TestSeqShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)

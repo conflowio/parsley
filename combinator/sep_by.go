@@ -9,11 +9,13 @@ import (
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
+// It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
 	return sepBy{token, h, valueP, sepP, interpreter, 0}
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
+// It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
 	return sepBy{token, h, valueP, sepP, interpreter, 1}
 }

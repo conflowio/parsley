@@ -1,3 +1,4 @@
+// Package builder defines functions for generating basic node builder functions
 package builder
 
 import (
@@ -6,7 +7,7 @@ import (
 	"github.com/opsidian/parsley/ast"
 )
 
-// Select simply returns with the node at the given index
+// Select returns with a node builder function which returns with the node at the given index
 func Select(i int) ast.NodeBuilder {
 	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		if i >= len(nodes) {
@@ -16,7 +17,7 @@ func Select(i int) ast.NodeBuilder {
 	})
 }
 
-// All returns with a function for including all nodes for interpretation
+// All returns with a node builder function for including all nodes for interpretation
 func All(token string, interpreter ast.Interpreter) ast.NodeBuilder {
 	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		return ast.NewNonTerminalNode(
@@ -27,7 +28,7 @@ func All(token string, interpreter ast.Interpreter) ast.NodeBuilder {
 	})
 }
 
-// BinaryOperation returns with a function for building binary operator nodes
+// BinaryOperation returns with a node builder function for building binary operator nodes
 func BinaryOperation(interpreter ast.Interpreter) ast.NodeBuilder {
 	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		if len(nodes) != 3 {
@@ -48,7 +49,7 @@ func Nil() ast.NodeBuilder {
 	})
 }
 
-// Flatten returns all nodes and their direct children flattened in a new node
+// Flatten returns with a node builder function which puts all nodes and their direct children flattened in a new node
 func Flatten(token string, interpreter ast.Interpreter) ast.NodeBuilder {
 	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
 		var children []ast.Node

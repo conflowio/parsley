@@ -2,13 +2,13 @@
 
 [![CircleCI status](https://circleci.com/gh/opsidian/parsley.svg?style=shield&circle-token=c42cce0e1ae1496645d1d6dc640d86a9e6de808d)](https://circleci.com/gh/opsidian/parsley)
 
-Parsley is a general parser combinator library which handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time.
+Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.
 
 You can read a general introduction about parser combinators here: https://en.wikipedia.org/wiki/Parser_combinator
 
 For more information about handling left-recursion please check out **Parser Combinators for Ambiguous Left-Recursive Grammars (2007)** by Frost R.A., Hafiz R., and Callaghan P.
 
-Currently only a text reader and text parsers are defined in the library, but the interfaces are written with  binary parsing in mind.
+Currently the library supports only text processing, but the interfaces are written with binary parsing in mind.
 
 ## How to use this library?
 

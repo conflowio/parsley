@@ -1,3 +1,4 @@
+// Package parser contains the main structs for parsing
 package parser
 
 import (

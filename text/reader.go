@@ -9,7 +9,7 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
-// Position represents a token position
+// Position represents a token position. It also contains the line and column indexes.
 type Position struct {
 	pos  int
 	line int
@@ -40,7 +40,8 @@ func (p Position) String() string {
 	return fmt.Sprintf("%d:%d", p.line, p.col)
 }
 
-// Reader defines a byte reader
+// Reader defines a text input reader
+// For more efficient reading it provides methods for regexp matching.
 type Reader struct {
 	b                 []byte
 	cur               Position

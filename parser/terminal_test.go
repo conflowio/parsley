@@ -1,15 +1,52 @@
 package parser_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Using the Empty parser you can match expressions optionally.
+// Note: there is an Optional combinator for this purpose.
+func ExampleEmpty() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			if node != nil {
+				val, _ := node.Value(ctx)
+				res += string(val.(rune))
+			}
+		}
+		return res, nil
+	})
+
+	s := combinator.Seq(builder.All("AB", concat),
+		terminal.Rune('a', "a"),
+		combinator.Choice("b or nothing", terminal.Rune('b', "b"), parser.Empty()),
+		terminal.Rune('c', "c"),
+	)
+	value, _ := parsley.EvaluateText([]byte("ac"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string ac
+}
+
+// Using the End parser you can make sure you fully match the input
+func ExampleEnd() {
+	s := combinator.Seq(builder.Select(0), terminal.Float(), parser.End())
+	value, _ := parsley.EvaluateText([]byte("1.23"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: float64 1.23
+}
 
 func assertCursor(t *testing.T, pos int, r reader.Reader) {
 	assert.Equal(t, pos, r.Cursor().Pos())

@@ -1,17 +1,34 @@
 package combinator_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's define a parser which accepts integer or float numbers.
+// The parser would return with all matches, so both 1 and 1.23.
+func ExampleAny() {
+	number := combinator.Any("number",
+		terminal.Integer(),
+		terminal.Float(),
+	)
+	s := combinator.Seq(builder.Select(0), number, parser.End())
+	value, _ := parsley.EvaluateText([]byte("1.23"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: float64 1.23
+}
 
 func TestAnyShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)

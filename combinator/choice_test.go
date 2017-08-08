@@ -1,17 +1,34 @@
 package combinator_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's define a parser which accepts integer or float numbers.
+// The parser would return only the first match so in this case we have to put the float parser first.
+func ExampleChoice() {
+	number := combinator.Choice("number",
+		terminal.Float(),
+		terminal.Integer(),
+	)
+	s := combinator.Seq(builder.Select(0), number, parser.End())
+	value, _ := parsley.EvaluateText([]byte("1.23"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: float64 1.23
+}
 
 func TestChoiceShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)

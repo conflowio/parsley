@@ -1,16 +1,54 @@
 package combinator_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 )
+
+// Let's define a left-recursive language where we need to curtail left-recursion
+// and also cache previous parser matches with Memoize.
+// Grammar: S -> A, A -> a | Ab
+func ExampleMemoize() {
+	h := parser.NewHistory()
+
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			if runeVal, ok := val.(rune); ok {
+				res += string(runeVal)
+			} else {
+				res += val.(string)
+			}
+		}
+		return res, nil
+	})
+
+	var a parser.Func
+	a = combinator.Memoize("A", h, combinator.Any("a or ab",
+		terminal.Rune('a', "CHAR"),
+		combinator.Seq(builder.All("AB", concat),
+			&a,
+			terminal.Rune('b', "CHAR"),
+		),
+	))
+	s := combinator.Seq(builder.Select(0), &a, parser.End())
+
+	value, _ := parsley.EvaluateText([]byte("abbbbbbbb"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string abbbbbbbb
+}
 
 func TestMemoizeShouldIncreaseLeftRecCtx(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)

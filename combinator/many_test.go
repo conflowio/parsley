@@ -1,8 +1,10 @@
 package combinator_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
@@ -10,9 +12,42 @@ import (
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Let's define a parser which accepts any number of "a" characters
+func ExampleMany() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+	s := combinator.Many(builder.All("a", concat), terminal.Rune('a', "A"))
+	value, _ := parsley.EvaluateText([]byte("aaaaabbbbb"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string aaaaa
+}
+
+// Let's define a parser which accepts one or many "a" characters
+func ExampleMany1() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+	s := combinator.Many1(builder.All("a", concat), terminal.Rune('a', "A"))
+	value, _ := parsley.EvaluateText([]byte("aaaaabbbbb"), true, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string aaaaa
+}
 
 func TestManyShouldCombineParserResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)

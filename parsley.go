@@ -1,6 +1,12 @@
-// Package parsley is a parser combinator library.
+// Package parsley contains helper functions for parsing and evaluating text input data.
 //
-// You can read a general introduction about parser combinators here: https://en.wikipedia.org/wiki/Parser_combinator
+// Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.
+//
+//You can read a general introduction about parser combinators here: https://en.wikipedia.org/wiki/Parser_combinator
+//
+//For more information about handling left-recursion please check out **Parser Combinators for Ambiguous Left-Recursive Grammars (2007)** by Frost R.A., Hafiz R., and Callaghan P.
+//
+//Currently the library supports only text processing, but the interfaces are written with binary parsing in mind.
 package parsley
 
 import (
@@ -10,6 +16,7 @@ import (
 )
 
 // ParseText parses the given text input and returns with the root node of the AST. It expects a byte array as input, the root parser and whether to ignore whitespaces between terminals. Unless you need full control over whitespaces in your parser set the ignoreWhitespaces to true.
+// If there are multiple possible parse trees only the first one is returned.
 func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node, parser.Error) {
 	parser.Stat.Reset()
 	r := text.NewReader(input, ignoreWhitespaces)
@@ -25,6 +32,7 @@ func ParseText(input []byte, ignoreWhitespaces bool, s parser.Parser) (ast.Node,
 }
 
 // EvaluateText parses the given text input and evaluates it. It expects a byte array as input, the root parser, the evaluation context and whether to ignore whitespaces between terminals. Unless you need full control over whitespaces in your parser set the ignoreWhitespaces to true.
+// If there are multiple possible parse trees only the first one is used for evaluation.
 func EvaluateText(input []byte, ignoreWhitespaces bool, s parser.Parser, ctx interface{}) (interface{}, error) {
 	node, err := ParseText(input, ignoreWhitespaces, s)
 	if err != nil {

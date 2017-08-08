@@ -7,6 +7,7 @@ import (
 )
 
 // Memoize handles result cache and curtailing left recursion
+// The name has to be unique for a grammar.
 func Memoize(name string, h *parser.History, p parser.Parser) parser.Func {
 	parserIndex := h.GetParserIndex(name)
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
