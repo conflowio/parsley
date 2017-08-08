@@ -27,6 +27,12 @@ func NewHistory() *History {
 	}
 }
 
+// Reset deletes the collected data
+func (h *History) Reset() {
+	h.parserCount = 0
+	h.results = make(map[int]map[int]storedResult)
+}
+
 // GetParserIndex maps the given parser to an integer index
 func (h *History) GetParserIndex(parser string) (parserIndex int) {
 	parserIndex, ok := h.parsers[parser]

@@ -112,3 +112,14 @@ func TestGetResultsShouldReturnCurtailedResult(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, found)
 }
+
+func TestResetShouldDeleteData(t *testing.T) {
+	h := parser.NewHistory()
+	ctx := data.NewIntMap(map[int]int{1: 1})
+	cp := data.NewIntSet(1)
+	rs := parser.NewResult(nil, nil).AsSet()
+	h.RegisterResults(1, 1, cp, rs, nil, ctx)
+	h.Reset()
+	_, _, _, found := h.GetResults(1, 1, data.EmptyIntMap())
+	assert.False(t, found)
+}
