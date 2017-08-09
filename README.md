@@ -1,6 +1,6 @@
 # Parsley - Parser combinator library written in Go
 
-[![CircleCI status](https://circleci.com/gh/opsidian/parsley.svg?style=shield&circle-token=c42cce0e1ae1496645d1d6dc640d86a9e6de808d)](https://circleci.com/gh/opsidian/parsley) [![GoDoc](https://godoc.org/github.com/opsidian/parsley?status.svg)](https://godoc.org/github.com/opsidian/parsley)
+[![CircleCI status](https://circleci.com/gh/opsidian/parsley.svg?style=shield&circle-token=c42cce0e1ae1496645d1d6dc640d86a9e6de808d)](https://circleci.com/gh/opsidian/parsley) [![Codecov.io status](https://codecov.io/gh/opsidian/parsley/branch/master/graph/badge.svg)](https://codecov.io/gh/opsidian/parsley) [![GoDoc](https://godoc.org/github.com/opsidian/parsley?status.svg)](https://godoc.org/github.com/opsidian/parsley) [![Latest release](https://img.shields.io/github/release/opsidian/parsley.svg)](https://github.com/opsidian/parsley/releases/latest)
 
 Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.
 
