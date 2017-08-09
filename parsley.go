@@ -1,3 +1,9 @@
+// Copyright (c) 2017 Opsidian Ltd.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 // Package parsley contains helper functions for parsing and evaluating text input data.
 //
 // Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.

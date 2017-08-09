@@ -188,3 +188,7 @@ This software is distributed under the Mozilla Public License, version 2.0. See 
 I would like to say thank you to Frost R.A., Hafiz R., and Callaghan P. as Parsley's main algorithms are based on their paper:
 
 Frost R.A., Hafiz R., Callaghan P. (2007) Parser Combinators for Ambiguous Left-Recursive Grammars. In: Hudak P., Warren D.S. (eds) Practical Aspects of Declarative Languages. PADL 2008. Lecture Notes in Computer Science, vol 4902. Springer, Berlin, Heidelberg
+
+---
+
+Copyright (c) 2017 Opsidian Ltd.
