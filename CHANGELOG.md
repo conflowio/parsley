@@ -1,3 +1,11 @@
+## 1.0.2
+
+IMPROVEMENTS:
+
+* Add copyright and license headers to all .go files
+* Improve code coverage, add notes for (hopefully) impossible panics
+* Add codecov.io integration
+
 ## 1.0.1
 
 BUG FIXES:
