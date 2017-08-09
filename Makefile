@@ -7,4 +7,4 @@ help:
 
 .PHONY: test
 test: ## Runs all the tests
-	go test -v -cover $$(go list ./... | grep -v /vendor/)
+	@./test.sh
