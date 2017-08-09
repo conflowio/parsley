@@ -8,11 +8,11 @@
 //
 // Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.
 //
-//You can read a general introduction about parser combinators here: https://en.wikipedia.org/wiki/Parser_combinator
+// You can read a general introduction about parser combinators here: https://en.wikipedia.org/wiki/Parser_combinator
 //
-//For more information about handling left-recursion please check out **Parser Combinators for Ambiguous Left-Recursive Grammars (2007)** by Frost R.A., Hafiz R., and Callaghan P.
+// For more information about handling left-recursion please check out **Parser Combinators for Ambiguous Left-Recursive Grammars (2007)** by Frost R.A., Hafiz R., and Callaghan P.
 //
-//Currently the library supports only text processing, but the interfaces are written with binary parsing in mind.
+// Currently the library supports only text processing, but the interfaces are written with binary parsing in mind.
 package parsley
 
 import (
