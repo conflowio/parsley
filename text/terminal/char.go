@@ -19,6 +19,7 @@ func Char() parser.Func {
 			match := matches[1]
 			value, _, tail, err := strconv.UnquoteChar(match, '"')
 			if tail != "" {
+				// This should never happen
 				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
 			}
 			if err == nil {

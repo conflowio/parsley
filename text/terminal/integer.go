@@ -18,6 +18,7 @@ func Integer() parser.Func {
 		if matches, pos, ok := tr.ReadMatch("[-+]?(?:[1-9][0-9]*|0[xX][0-9a-fA-F]+|0[0-7]*)", false); ok {
 			intValue, err := strconv.ParseInt(matches[0], 0, 0)
 			if err != nil {
+				// This should never happen
 				panic(fmt.Sprintf("Could not convert %s to integer", matches[0]))
 			}
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("INT", pos, int(intValue)), r).AsSet(), nil

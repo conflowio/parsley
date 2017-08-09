@@ -49,6 +49,18 @@ func ExampleMany1() {
 	// Output: string aaaaa
 }
 
+func TestManyShouldPanicIfNoBuilder(t *testing.T) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, nil
+	})
+	assert.Panics(t, func() {
+		combinator.Many(nil, p)(parser.EmptyLeftRecCtx(), test.NewReader(0, 0, false, false))
+	})
+	assert.Panics(t, func() {
+		combinator.Many1(nil, p)(parser.EmptyLeftRecCtx(), test.NewReader(0, 0, false, false))
+	})
+}
+
 func TestManyShouldCombineParserResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 

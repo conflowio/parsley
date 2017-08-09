@@ -59,6 +59,18 @@ func ExampleSeqTry() {
 	// Output: string ab
 }
 
+func TestSeqShouldPanicIfNoBuilder(t *testing.T) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+		return parser.NoCurtailingParsers(), nil, nil
+	})
+	assert.Panics(t, func() {
+		combinator.Seq(nil, p)(parser.EmptyLeftRecCtx(), test.NewReader(0, 0, false, false))
+	})
+	assert.Panics(t, func() {
+		combinator.SeqTry(nil, 0, p)(parser.EmptyLeftRecCtx(), test.NewReader(0, 0, false, false))
+	})
+}
+
 func TestSeqShouldPanicIfNoParserWasGiven(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	ctx := parser.EmptyLeftRecCtx()
