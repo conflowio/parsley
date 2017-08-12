@@ -185,7 +185,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 	})
 
 	var a parser.Func
-	a = combinator.Memoize("A", h, combinator.Any("a or ab",
+	a = h.Memoize(combinator.Any("a or ab",
 		combinator.Seq(builder.All("AB", concatNodes),
 			&a,
 			terminal.Rune('b', "CHAR"),
@@ -205,12 +205,12 @@ func TestIndirectLeftRecursion(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Any("value",
+	value := h.Memoize(combinator.Any("value",
 		terminal.Integer(),
 		&add,
 	))
 
-	add = combinator.Memoize("ADD", h, combinator.Seq(
+	add = h.Memoize(combinator.Seq(
 		builder.BinaryOperation(
 			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 				value0, _ := nodes[0].Value(ctx)
@@ -235,12 +235,12 @@ func TestSepBy(t *testing.T) {
 	h := parser.NewHistory()
 
 	var add parser.Func
-	value := combinator.Memoize("VALUE", h, combinator.Any("value",
+	value := h.Memoize(combinator.Any("value",
 		terminal.Integer(),
 		&add,
 	))
 
-	add = combinator.Memoize("SUM", h, combinator.SepBy1(
+	add = h.Memoize(combinator.SepBy1(
 		"SUM", h, value, combinator.Choice("+ or -", terminal.Rune('+', "+"), terminal.Rune('-', "-")),
 		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
 			sum := 0

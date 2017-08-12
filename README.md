@@ -94,6 +94,8 @@ Combinators are special parsers as they are combining other parsers to process m
 
 #### Memoization and handling left-recursion
 
+IMPORTANT: make sure you only call the Memoize generator function once for a specific parser as it generates an internal parser index for every call.
+
 Depending on the language you define a parser can attempt to match at the same reader position multiple times. You can cache the parser results with the provided Memoize wrapper.
 
 Also if your language contains left-recursion you need to use Memoize for any parser that is directly or indirectly part of it as Memoize is responsible for curtailing these calls.
@@ -102,7 +104,7 @@ The following code will wrap the integer parser with a memoizer:
 
 ```
 h := parser.NewHistory()
-cachedParser := combinator.Memoize("INTEGER", h, terminal.Integer())
+cachedParser := h.Memoize(terminal.Integer())
 ```
 
 The history object will store the result cache and also track left recursion counts and curtailing parsers, so you should only create it once.
