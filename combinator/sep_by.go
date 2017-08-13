@@ -9,42 +9,45 @@ package combinator
 import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
-	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return newSepBy(token, h, valueP, sepP, interpreter, 0)
+	return newSepBy(token, h, valueP, sepP, interpreter, 0).CreateParser()
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return newSepBy(token, h, valueP, sepP, interpreter, 1)
+	return newSepBy(token, h, valueP, sepP, interpreter, 1).CreateParser()
 }
 
 type sepBy struct {
 	token       string
+	h           *parser.History
+	valueP      parser.Parser
+	sepP        parser.Parser
 	interpreter ast.Interpreter
-	p           parser.Parser
+	min         int
 }
 
 func newSepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int) sepBy {
-	inst := sepBy{
+	return sepBy{
 		token:       token,
+		h:           h,
+		valueP:      valueP,
+		sepP:        sepP,
 		interpreter: interpreter,
+		min:         min,
 	}
-	sepValue := h.Memoize(Seq(builder.All("SEP_VALUE", nil), sepP, valueP))
-	sepValueMany := h.Memoize(Many(builder.Flatten(token, nil), sepValue))
-	inst.p = SeqTry(inst, min, valueP, sepValueMany)
-	return inst
 }
 
-func (s sepBy) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-	return s.p.Parse(leftRecCtx, r)
+func (s sepBy) CreateParser() parser.Func {
+	sepValue := s.h.Memoize(Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
+	sepValueMany := s.h.Memoize(Many(builder.Flatten(s.token, nil), sepValue))
+	return SeqTry(s, s.min, s.valueP, sepValueMany)
 }
 
 func (s sepBy) BuildNode(nodes []ast.Node) ast.Node {
