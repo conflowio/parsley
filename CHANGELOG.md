@@ -1,3 +1,18 @@
+## 1.0.3
+
+DEPRECATED:
+
+* combinator.Memoize will be removed in version 2. Use the Memoize method on the history object instead.
+
+IMPROVEMENTS:
+
+* You don't need to use meaningless names for memoization anymore, but you have to be careful to call Memoize
+  for your parsers only once.
+
+CHANGES:
+
+* History.GetParserIndex was removed as only the original combinator.Memoize needed it
+
 ## 1.0.2
 
 IMPROVEMENTS:

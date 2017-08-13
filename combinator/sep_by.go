@@ -17,28 +17,34 @@ import (
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return sepBy{token, h, valueP, sepP, interpreter, 0}
+	return newSepBy(token, h, valueP, sepP, interpreter, 0)
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return sepBy{token, h, valueP, sepP, interpreter, 1}
+	return newSepBy(token, h, valueP, sepP, interpreter, 1)
 }
 
 type sepBy struct {
 	token       string
-	h           *parser.History
-	valueP      parser.Parser
-	sepP        parser.Parser
 	interpreter ast.Interpreter
-	min         int
+	p           parser.Parser
+}
+
+func newSepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int) sepBy {
+	inst := sepBy{
+		token:       token,
+		interpreter: interpreter,
+	}
+	sepValue := h.Memoize(Seq(builder.All("SEP_VALUE", nil), sepP, valueP))
+	sepValueMany := h.Memoize(Many(builder.Flatten(token, nil), sepValue))
+	inst.p = SeqTry(inst, min, valueP, sepValueMany)
+	return inst
 }
 
 func (s sepBy) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-	sepValue := Memoize(s.token+"_MSB", s.h, Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
-	sepValueMany := Memoize(s.token+"_MSB*", s.h, Many(builder.Flatten(s.token, nil), sepValue))
-	return SeqTry(s, s.min, s.valueP, sepValueMany).Parse(leftRecCtx, r)
+	return s.p.Parse(leftRecCtx, r)
 }
 
 func (s sepBy) BuildNode(nodes []ast.Node) ast.Node {
