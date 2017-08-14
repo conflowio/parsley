@@ -6,6 +6,7 @@ jobs:
     working_directory: /go/src/github.com/opsidian/parsley
     steps:
       - checkout
-      - run: go get -v -t -d ./...
+      - run: go get -u github.com/golang/dep/cmd/dep
+      - run: dep ensure
       - run: make test
       - run: bash <(curl -s https://codecov.io/bash)
