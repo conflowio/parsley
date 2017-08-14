@@ -1,2 +1,4 @@
-debug.test
-coverage.*
+/debug.test
+/coverage.*
+/vendor
+/Gopkg.lock
