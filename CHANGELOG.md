@@ -4,6 +4,7 @@ IMPROVEMENTS:
 
 * All combinators will return with a parser.Func type (not the parser.Parser interface)
 * Change internal sepBy to a factory
+* Define dependencies with Go Dep
 
 ## 1.0.3
 
