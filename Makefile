@@ -8,3 +8,7 @@ help:
 .PHONY: test
 test: ## Runs all the tests
 	@./test.sh
+
+generate-mocks: ## Regenerates all mocks with mockery
+	cd ast && mockery --all --case=underscore
+	cd reader && mockery --all --case=underscore
