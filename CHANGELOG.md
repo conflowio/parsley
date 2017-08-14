@@ -1,3 +1,10 @@
+## 1.0.4
+
+IMPROVEMENTS:
+
+* All combinators will return with a parser.Func type (not the parser.Parser interface)
+* Change internal sepBy to a factory
+
 ## 1.0.3
 
 DEPRECATED:
