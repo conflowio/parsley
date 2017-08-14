@@ -11,6 +11,6 @@ import (
 )
 
 // Optional returns the parser's matches or an empty match if it fails
-func Optional(p parser.Parser) parser.Parser {
+func Optional(p parser.Parser) parser.Func {
 	return Choice("", p, parser.Empty())
 }

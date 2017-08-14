@@ -14,7 +14,7 @@ import (
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
+func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
 	return newSepBy(token, h, valueP, sepP, interpreter, 0).CreateParser()
 }
 

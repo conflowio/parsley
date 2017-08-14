@@ -13,7 +13,7 @@ import (
 )
 
 // SuppressError removes the error from the parser result
-func SuppressError(p parser.Parser) parser.Parser {
+func SuppressError(p parser.Parser) parser.Func {
 	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
 		cp, rs, _ := p.Parse(leftRecCtx, r)
 		return cp, rs, nil
