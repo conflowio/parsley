@@ -1,3 +1,9 @@
+## 1.0.5
+
+IMPROVEMENTS:
+
+* Add cause to parser.Error, add parser.WrapError constructor
+
 ## 1.0.4
 
 IMPROVEMENTS:
