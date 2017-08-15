@@ -32,7 +32,7 @@ func Any(desc string, parsers ...parser.Parser) parser.Func {
 			}
 		}
 		if desc != "" && err != nil && err.Pos().Pos() == cur.Pos() {
-			err = parser.NewError(cur, "was expecting "+desc)
+			err = parser.NewError(cur, "was expecting %s", desc)
 		}
 		return cp, rs, err
 	})

@@ -7,16 +7,36 @@
 package parser_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/reader/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewError(t *testing.T) {
-	err := parser.NewError(test.NewPosition(1), "ERR1")
-	assert.Equal(t, test.NewPosition(1), err.Pos())
-	assert.Equal(t, "ERR1", err.Msg())
-	assert.Equal(t, "ERR1 at Pos{1}", err.Error())
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS")
+	err := parser.NewError(pos, "ERR")
+	assert.Equal(t, pos, err.Pos())
+	assert.Equal(t, "ERR", err.Msg())
+	assert.Equal(t, "ERR at POS", err.Error())
+}
+
+func TestWrapErrorShouldWrapErr(t *testing.T) {
+	cause := errors.New("ERR")
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS")
+	err := parser.WrapError(pos, cause)
+	assert.Equal(t, pos, err.Pos())
+	assert.Equal(t, cause, err.Cause())
+	assert.Equal(t, "ERR", err.Msg())
+	assert.Equal(t, "ERR at POS", err.Error())
+}
+
+func TestWrapErrorShouldNotDoubleWrap(t *testing.T) {
+	cause := parser.NewError(new(mocks.Position), "ERR")
+	err := parser.WrapError(new(mocks.Position), cause)
+	assert.Equal(t, cause, err)
 }

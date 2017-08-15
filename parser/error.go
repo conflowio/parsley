@@ -15,32 +15,50 @@ import (
 // Error is a parser error interface
 type Error interface {
 	error
+	Cause() error
 	Msg() string
 	Pos() reader.Position
 }
 
 // err is a parser error
 type err struct {
-	msg string
-	pos reader.Position
+	cause error
+	pos   reader.Position
 }
 
 // NewError creates a new parser error instance
 func NewError(pos reader.Position, format string, values ...interface{}) Error {
 	return err{
-		msg: fmt.Sprintf(format, values...),
-		pos: pos,
+		cause: fmt.Errorf(format, values...),
+		pos:   pos,
 	}
+}
+
+// WrapError wraps the given error in a parser error
+// If the cause is already a parser error that will be returned as is
+func WrapError(pos reader.Position, cause error) Error {
+	if parserErr, ok := cause.(Error); ok {
+		return parserErr
+	}
+	return err{
+		cause: cause,
+		pos:   pos,
+	}
+}
+
+// Cause returns with the original error
+func (e err) Cause() error {
+	return e.cause
 }
 
 // Msg returns with the error message
 func (e err) Msg() string {
-	return e.msg
+	return e.cause.Error()
 }
 
 // Error returns with the full error message including the position
 func (e err) Error() string {
-	return fmt.Sprintf("%s at %s", e.msg, e.pos)
+	return fmt.Sprintf("%s at %s", e.cause, e.pos)
 }
 
 // Pos returns with the error's position
