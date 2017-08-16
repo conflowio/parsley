@@ -93,7 +93,7 @@ func TestParseShouldHandleEmptyResult(t *testing.T) {
 	})
 	node, err := parsley.ParseText([]byte("input"), true, s)
 	assert.Error(t, err)
-	assert.Equal(t, "Failed to parse the input, encountered a test error at 1:3", err.Error())
+	assert.Equal(t, "Failed to parse the input: encountered a test error at 1:3", err.Error())
 	assert.Nil(t, node)
 }
 
@@ -137,7 +137,7 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
 	assert.Error(t, err)
-	assert.Equal(t, "Failed to parse the input, encountered a test error at 1:3", err.Error())
+	assert.Equal(t, "Failed to parse the input: encountered a test error at 1:3", err.Error())
 	assert.Nil(t, value)
 }
 

@@ -24,19 +24,46 @@ func TestNewError(t *testing.T) {
 	assert.Equal(t, "ERR at POS", err.Error())
 }
 
-func TestWrapErrorShouldWrapErr(t *testing.T) {
-	cause := errors.New("ERR")
+func TestNewErrorWithParams(t *testing.T) {
 	pos := new(mocks.Position)
 	pos.On("String").Return("POS")
-	err := parser.WrapError(pos, cause)
+	err := parser.NewError(pos, "ERR %s", "message")
+	assert.Equal(t, "ERR message", err.Msg())
+	assert.Equal(t, "ERR message at POS", err.Error())
+}
+
+func TestWrapErrorShouldWrapErr(t *testing.T) {
+	cause := errors.New("WRAPPED ERR")
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS")
+	err := parser.WrapError(pos, cause, "ERR")
 	assert.Equal(t, pos, err.Pos())
 	assert.Equal(t, cause, err.Cause())
 	assert.Equal(t, "ERR", err.Msg())
 	assert.Equal(t, "ERR at POS", err.Error())
 }
 
-func TestWrapErrorShouldNotDoubleWrap(t *testing.T) {
-	cause := parser.NewError(new(mocks.Position), "ERR")
-	err := parser.WrapError(new(mocks.Position), cause)
-	assert.Equal(t, cause, err)
+func TestWrapErrorShouldWrapErrWithParams(t *testing.T) {
+	cause := errors.New("WRAPPED ERR")
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS")
+	err := parser.WrapError(pos, cause, "ERR %s", "message")
+	assert.Equal(t, "ERR message", err.Msg())
+	assert.Equal(t, "ERR message at POS", err.Error())
+}
+
+func TestWrapErrorShouldUpdateErrorMessageForParserError(t *testing.T) {
+	cause1 := errors.New("CAUSE 1")
+	pos1 := new(mocks.Position)
+	pos1.On("String").Return("POS 1")
+	err1 := parser.WrapError(pos1, cause1, "ERR 1")
+
+	pos2 := new(mocks.Position)
+	pos2.On("String").Return("POS 2")
+
+	err2 := parser.WrapError(pos2, err1, "ERR 2")
+	assert.Equal(t, pos1, err2.Pos())
+	assert.Equal(t, cause1, err2.Cause())
+	assert.Equal(t, "ERR 2", err2.Msg())
+	assert.Equal(t, "ERR 2 at POS 1", err2.Error())
 }
