@@ -40,7 +40,7 @@ func (_m *Node) Token() string {
 }
 
 // Value provides a mock function with given fields: ctx
-func (_m *Node) Value(ctx interface{}) (interface{}, error) {
+func (_m *Node) Value(ctx interface{}) (interface{}, reader.Error) {
 	ret := _m.Called(ctx)
 
 	var r0 interface{}
@@ -52,11 +52,13 @@ func (_m *Node) Value(ctx interface{}) (interface{}, error) {
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
+	var r1 reader.Error
+	if rf, ok := ret.Get(1).(func(interface{}) reader.Error); ok {
 		r1 = rf(ctx)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(reader.Error)
+		}
 	}
 
 	return r0, r1

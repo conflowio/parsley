@@ -1,3 +1,11 @@
+## 0.2.1
+
+BUGFIXES:
+* the ast.Node mock wasn't regenerated
+
+IMPROVEMENTS:
+* Generate mock for parser.Parser
+
 ## 0.2.0
 
 BACKWARDS INCOMPATIBILITIES:
