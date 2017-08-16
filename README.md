@@ -171,7 +171,12 @@ Please more information about the available parsers and combinators please check
 
 ## Versioning
 
-The library will use the [Semantic Versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
+The library is expected to have occasional minor API changes while the version is 0.MAJOR.MINOR.
+
+ * MAJOR version will be increased for backward incompatible changes
+ * MINOR version will be increased for improvements and bugfixes
+
+Starting from 1.0.0 the library will use the [Semantic Versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
 
 You can find the change log in the [CHANGELOG.md](CHANGELOG.md) file.
 
