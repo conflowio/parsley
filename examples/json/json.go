@@ -23,6 +23,7 @@ import (
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/text/terminal"
 )
 
@@ -77,7 +78,7 @@ func main() {
 }
 
 func arrayInterpreter() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		if len(nodes) == 0 {
 			return []interface{}{}, nil
 		}
@@ -94,7 +95,7 @@ func arrayInterpreter() ast.InterpreterFunc {
 }
 
 func objectInterpreter() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	return ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		if len(nodes) == 0 {
 			return []interface{}{}, nil
 		}

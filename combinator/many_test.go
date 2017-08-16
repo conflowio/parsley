@@ -25,7 +25,7 @@ import (
 
 // Let's define a parser which accepts any number of "a" characters
 func ExampleMany() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value(ctx)
@@ -41,7 +41,7 @@ func ExampleMany() {
 
 // Let's define a parser which accepts one or many "a" characters
 func ExampleMany1() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value(ctx)
@@ -56,7 +56,7 @@ func ExampleMany1() {
 }
 
 func TestManyShouldPanicIfNoBuilder(t *testing.T) {
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), nil, nil
 	})
 	assert.Panics(t, func() {
@@ -86,7 +86,7 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
 			return parser.NoCurtailingParsers(), pResults[pi], nil
@@ -124,8 +124,8 @@ func TestManyShouldCombineParserResults(t *testing.T) {
 func TestMany1ShouldReturnNoResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
 	cp, rs, err := combinator.Many1(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
@@ -138,8 +138,8 @@ func TestMany1ShouldReturnNoResultIfNoMatch(t *testing.T) {
 func TestManyShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
 	cp, rs, err := combinator.Many(builder.Nil(), p).Parse(parser.EmptyLeftRecCtx(), r)
@@ -153,12 +153,12 @@ func TestManyShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { pi++ }()
 		if pi == 0 {
 			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
 		} else {
-			return data.NewIntSet(1, 2), nil, parser.NewError(test.NewPosition(1), "ERR1")
+			return data.NewIntSet(1, 2), nil, reader.NewError(test.NewPosition(1), "ERR1")
 		}
 	})
 

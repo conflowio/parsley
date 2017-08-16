@@ -7,7 +7,9 @@
 // Package reader defines interfaces for an input reader and reader position
 package reader
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Position is a given position in the reader
 type Position interface {
@@ -22,4 +24,12 @@ type Reader interface {
 	Cursor() Position
 	IsEOF() bool
 	fmt.Stringer
+}
+
+// Error is an interface for handling errors with a position
+type Error interface {
+	error
+	Cause() error
+	Msg() string
+	Pos() Position
 }

@@ -47,7 +47,7 @@ func TestAnyShouldHandleOnlyOneParser(t *testing.T) {
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet()
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return expectedCP, expectedRS, nil
 	})
 
@@ -63,22 +63,22 @@ func TestAnyShouldMergeResults(t *testing.T) {
 
 	var r1, r2 parser.Result
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		r1 = parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), test.NewReader(0, 2, false, true))
 		return parser.NoCurtailingParsers(), r1.AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		r2 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(1), 'y'), test.NewReader(1, 1, false, true))
 		return data.NewIntSet(1), r2.AsSet(), nil
 	})
 
-	p3 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return data.NewIntSet(2), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p3 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return data.NewIntSet(2), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
-	p4 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(2), "ERR2")
+	p4 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(2), "ERR2")
 	})
 
 	cp, rs, err := combinator.Any("test", p1, p2, p3, p4).Parse(parser.EmptyLeftRecCtx(), r)
@@ -96,12 +96,12 @@ func TestAnyShouldMergeResults(t *testing.T) {
 func TestAnyMayReturnEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(2), "ERR1")
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(2), "ERR1")
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR2")
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR2")
 	})
 
 	cp, rs, err := combinator.Any("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
@@ -115,12 +115,12 @@ func TestAnyMayReturnEmptyResult(t *testing.T) {
 func TestAnyShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR1")
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(0), "ERR1")
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(0), "ERR2")
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(0), "ERR2")
 	})
 
 	cp, rs, err := combinator.Any("test", p1, p2).Parse(parser.EmptyLeftRecCtx(), r)

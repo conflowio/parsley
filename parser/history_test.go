@@ -28,7 +28,7 @@ import (
 func ExampleHistory_Memoize() {
 	h := parser.NewHistory()
 
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value(ctx)
@@ -62,7 +62,7 @@ func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 	node := ast.NewTerminalNode("t", test.NewPosition(0), nil)
 	cp := parser.NoCurtailingParsers()
 	rs := parser.NewResult(node, nil).AsSet()
-	err := parser.NewError(test.NewPosition(1), "ERR1")
+	err := reader.NewError(test.NewPosition(1), "ERR1")
 	h.RegisterResults(parserIndex, 2, cp, rs, err, parser.EmptyLeftRecCtx())
 
 	actualCP, actualRS, actualErr, ok := h.GetResults(parserIndex, 2, parser.EmptyLeftRecCtx())
@@ -75,7 +75,7 @@ func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 func TestRegisterResultShouldReturnNilResult(t *testing.T) {
 	h := parser.NewHistory()
 	parserIndex := 1
-	err := parser.NewError(test.NewPosition(1), "ERR1")
+	err := reader.NewError(test.NewPosition(1), "ERR1")
 	h.RegisterResults(parserIndex, 2, parser.NoCurtailingParsers(), nil, err, parser.EmptyLeftRecCtx())
 	cp, rs, actualErr, ok := h.GetResults(parserIndex, 2, parser.EmptyLeftRecCtx())
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
@@ -103,8 +103,8 @@ func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
 	cp2 := data.NewIntSet(1)
 	rs1 := parser.NewResult(node, nil).AsSet()
 	var rs2 parser.ResultSet
-	err1 := parser.NewError(test.NewPosition(1), "ERR1")
-	var err2 parser.Error
+	err1 := reader.NewError(test.NewPosition(1), "ERR1")
+	var err2 reader.Error
 	h.RegisterResults(p1Index, 1, cp1, rs1, err1, parser.EmptyLeftRecCtx())
 	h.RegisterResults(p2Index, 2, cp2, rs2, err2, parser.EmptyLeftRecCtx())
 
@@ -186,7 +186,7 @@ func TestMemoizeShouldIncreaseLeftRecCtx(t *testing.T) {
 	parserIndex := 1
 	assert.Equal(t, leftRecCtx.Get(parserIndex), 0)
 
-	p := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		assert.Equal(t, leftRecCtx.Get(parserIndex), 1)
 		return parser.NoCurtailingParsers(), nil, nil
 	})
@@ -200,9 +200,9 @@ func TestMemoizeShouldReturnParserResult(t *testing.T) {
 	node := ast.NewTerminalNode("a", test.NewPosition(1), "a")
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(node, r).AsSet()
-	expectedErr := parser.NewError(test.NewPosition(1), "ERR1")
+	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return expectedCP, expectedRS, expectedErr
 	})
 	cp, rs, err := h.Memoize(p).Parse(parser.EmptyLeftRecCtx(), r)
@@ -218,10 +218,10 @@ func TestMemoizeShouldRememberResult(t *testing.T) {
 	node := ast.NewTerminalNode("a", test.NewPosition(1), "a")
 	expectedCP := data.NewIntSet(1)
 	expectedRS := parser.NewResult(node, r).AsSet()
-	expectedErr := parser.NewError(test.NewPosition(1), "ERR1")
+	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 
 	called := false
-	p := h.Memoize(parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := h.Memoize(parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		called = true
 		return expectedCP, expectedRS, expectedErr
 	}))
@@ -251,9 +251,9 @@ func TestMemoizeShouldCurtailResult(t *testing.T) {
 	})
 
 	called := false
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		called = true
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 	expectedCP := data.NewIntSet(1)
 	cp, rs, err := h.Memoize(p).Parse(ctx, r)

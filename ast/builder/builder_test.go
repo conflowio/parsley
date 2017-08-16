@@ -11,6 +11,7 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +37,7 @@ func TestAllNodesBuilderShouldIncludeAllNodes(t *testing.T) {
 		ast.NewTerminalNode("1", test.NewPosition(0), "1"),
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("TEST", nodes, interpreter)
@@ -50,7 +51,7 @@ func TestBinaryOperatorBuilderShouldBuildNode(t *testing.T) {
 		ast.NewTerminalNode("+", test.NewPosition(1), "+"),
 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
 	}
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, nil
 	})
 	expected := ast.NewNonTerminalNode("+", []ast.Node{nodes[0], nodes[2]}, interpreter)
@@ -71,7 +72,7 @@ func TestNilBuilderReturnsWithNil(t *testing.T) {
 }
 
 func TestFlattenBuilderShouldReturnWithFlattenNodes(t *testing.T) {
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, nil
 	})
 	nodes := []ast.Node{

@@ -7,7 +7,6 @@
 package parsley_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/reader/mocks"
 	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +28,7 @@ import (
 func ExampleParseText() {
 	add := combinator.Seq(
 		builder.BinaryOperation(
-			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 				value0, _ := nodes[0].Value(ctx)
 				value1, _ := nodes[1].Value(ctx)
 				return value0.(int) + value1.(int), nil
@@ -57,7 +57,7 @@ func ExampleParseText() {
 func ExampleEvaluateText() {
 	add := combinator.Seq(
 		builder.BinaryOperation(
-			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 				value0, _ := nodes[0].Value(ctx)
 				value1, _ := nodes[1].Value(ctx)
 				return value0.(int) + value1.(int), nil
@@ -79,7 +79,7 @@ func ExampleEvaluateText() {
 
 func TestParseShouldRunParserAndReturnNode(t *testing.T) {
 	expectedNode := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), "RES")
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(expectedNode, r).AsSet(), nil
 	})
 	node, err := parsley.ParseText([]byte("input"), true, s)
@@ -88,8 +88,8 @@ func TestParseShouldRunParserAndReturnNode(t *testing.T) {
 }
 
 func TestParseShouldHandleEmptyResult(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	node, err := parsley.ParseText([]byte("input"), true, s)
 	assert.Error(t, err)
@@ -98,7 +98,7 @@ func TestParseShouldHandleEmptyResult(t *testing.T) {
 }
 
 func TestParseShouldHandleNilNode(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet(), nil
 	})
 	node, err := parsley.ParseText([]byte(""), true, s)
@@ -109,7 +109,7 @@ func TestParseShouldHandleNilNode(t *testing.T) {
 func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 	expectedValue := "RES"
 	node := ast.NewTerminalNode("STRING", text.NewPosition(1, 2, 3), expectedValue)
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
@@ -119,11 +119,11 @@ func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 
 func TestEvaluateShouldPassContext(t *testing.T) {
 	ctx := "testctx"
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return ctx, nil
 	})
 	node := ast.NewNonTerminalNode("STRING", nil, interpreter)
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s, ctx)
@@ -132,8 +132,8 @@ func TestEvaluateShouldPassContext(t *testing.T) {
 }
 
 func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
 	assert.Error(t, err)
@@ -142,7 +142,7 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 }
 
 func TestEvaluateShouldHandleNilNode(t *testing.T) {
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet(), nil
 	})
 	value, err := parsley.EvaluateText([]byte(""), true, s, nil)
@@ -152,11 +152,11 @@ func TestEvaluateShouldHandleNilNode(t *testing.T) {
 
 func TestEvaluateShouldHandleInterpreterError(t *testing.T) {
 	randomChild := ast.NewTerminalNode("X", text.NewPosition(1, 2, 3), "X")
-	expectedErr := errors.New("ERR")
-	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	expectedErr := new(mocks.Error)
+	node := ast.NewNonTerminalNode("ERR", []ast.Node{randomChild}, ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, expectedErr
 	}))
-	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	s := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
 	value, err := parsley.EvaluateText([]byte("input"), true, s, nil)
@@ -168,7 +168,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 	input := "abbbbbbbbbbbbbbbbbbb"
 	h := parser.NewHistory()
 
-	concatNodes := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concatNodes := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		s := ""
 		for _, node := range nodes {
 			val, err := node.Value(ctx)
@@ -212,7 +212,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 
 	add = h.Memoize(combinator.Seq(
 		builder.BinaryOperation(
-			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+			ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 				value0, _ := nodes[0].Value(ctx)
 				value1, _ := nodes[1].Value(ctx)
 				return value0.(int) + value1.(int), nil
@@ -242,7 +242,7 @@ func TestSepBy(t *testing.T) {
 
 	add = h.Memoize(combinator.SepBy1(
 		"SUM", h, value, combinator.Choice("+ or -", terminal.Rune('+', "+"), terminal.Rune('-', "-")),
-		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 			sum := 0
 			modifier := 1
 			for _, node := range nodes {

@@ -18,11 +18,11 @@ import (
 
 // String matches a string literal enclosed in double quotes
 func String() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		matches, pos, ok := tr.ReadMatch("\"|`", false)
 		if !ok {
-			return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting string literal")
+			return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting string literal")
 		}
 		quote := matches[0]
 
@@ -37,7 +37,7 @@ func String() parser.Func {
 
 		endQuote, _, err := tr.ReadRune()
 		if err != nil || string(endQuote) != quote {
-			return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting '%s'", quote)
+			return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting '%s'", quote)
 		}
 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("STRING", pos, value), tr).AsSet(), nil
 	})

@@ -25,7 +25,7 @@ import (
 // Let's define a parser which accepts "a", an optional "b" and a "c" character.
 // The optional parser will result in a nil node so in the interpreter we have to handle that.
 func ExampleOptional() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			if node != nil {
@@ -51,7 +51,7 @@ func TestOptionalShouldReturnParserResult(t *testing.T) {
 
 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(1), res.AsSet(), nil
 	})
 
@@ -64,7 +64,7 @@ func TestOptionalShouldReturnParserResult(t *testing.T) {
 func TestOptionalShouldReturnEmptyResultIfParserFailed(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(1), nil, nil
 	})
 

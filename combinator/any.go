@@ -17,11 +17,11 @@ func Any(desc string, parsers ...parser.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		cur := r.Cursor()
 		cp := parser.NoCurtailingParsers()
 		var rs parser.ResultSet
-		var err parser.Error
+		var err reader.Error
 		for _, p := range parsers {
 			parser.Stat.RegisterCall()
 			cp2, rs2, err2 := p.Parse(leftRecCtx, r.Clone())
@@ -32,7 +32,7 @@ func Any(desc string, parsers ...parser.Parser) parser.Func {
 			}
 		}
 		if desc != "" && err != nil && err.Pos().Pos() == cur.Pos() {
-			err = parser.NewError(cur, "was expecting %s", desc)
+			err = reader.NewError(cur, "was expecting %s", desc)
 		}
 		return cp, rs, err
 	})

@@ -7,10 +7,11 @@
 package ast_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/reader/mocks"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,10 +33,10 @@ func TestTerminalNode(t *testing.T) {
 
 func TestNonTerminalNode(t *testing.T) {
 	expectedValue := 3
-	expectedErr := errors.New("E")
+	expectedErr := new(mocks.Error)
 	var actualCtx interface{}
 	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		actualCtx = ctx
 		actualNodes = nodes
 		return expectedValue, expectedErr
@@ -72,7 +73,7 @@ func TestNonTerminalNodeShouldGetPosFromFirstNonNilChild(t *testing.T) {
 
 func TestNonTerminalNodeValueShouldIncludeNilNodes(t *testing.T) {
 	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		actualNodes = nodes
 		return nil, nil
 	})
@@ -100,7 +101,7 @@ func TestNonTerminalNodeValueShouldReturnNilIfNoInterpreter(t *testing.T) {
 }
 
 func TestNonTerminalNodeValueShouldCallInterpreterEvenIfNoChildren(t *testing.T) {
-	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return 1, nil
 	})
 	node := ast.NewNonTerminalNode("+", []ast.Node{}, interpreterFunc)
@@ -110,7 +111,7 @@ func TestNonTerminalNodeValueShouldCallInterpreterEvenIfNoChildren(t *testing.T)
 }
 
 func TestNonTerminalNodeValueShouldReturnNilIfAllChildrenAreNil(t *testing.T) {
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, nil
 	})
 	nodes := []ast.Node{

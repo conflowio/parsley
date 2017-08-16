@@ -25,7 +25,7 @@ import (
 
 // Let's define a parser which accepts "a", "b", "c" characters in order.
 func ExampleSeq() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value(ctx)
@@ -46,7 +46,7 @@ func ExampleSeq() {
 
 // Let's define a parser which accepts any prefix of the "abc" string.
 func ExampleSeqTry() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			val, _ := node.Value(ctx)
@@ -66,7 +66,7 @@ func ExampleSeqTry() {
 }
 
 func TestSeqShouldPanicIfNoBuilder(t *testing.T) {
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), nil, nil
 	})
 	assert.Panics(t, func() {
@@ -88,7 +88,7 @@ func TestSeqShouldHandleOnlyOneParser(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", r.Cursor(), 'a'), r.Clone()).AsSet()
 	expectedCP := data.NewIntSet(1)
-	p1 := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return expectedCP, expectedRS, nil
 	})
 
@@ -107,14 +107,14 @@ func TestSeqShouldCombineParserResults(t *testing.T) {
 	parser.Stat.Reset()
 	r := test.NewReader(0, 1, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResultSet(
 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "a"), test.NewReader(1, 1, false, true)),
 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ab"), test.NewReader(2, 1, false, true)),
 		), nil
 	})
 	p2First := true
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		if p2First {
 			p2First = false
 			return parser.NoCurtailingParsers(), parser.NewResultSet(
@@ -162,12 +162,12 @@ func TestSeqShouldCombineParserResults(t *testing.T) {
 func TestSeqShouldHandleNilResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
 	cp, rs, err := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
@@ -188,12 +188,12 @@ func TestSeqTryShouldMatchLongestSequence(t *testing.T) {
 
 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), res.AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return parser.NoCurtailingParsers(), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
 	cp, rs, err := combinator.SeqTry(builder.All("TEST", nil), 1, p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
@@ -206,12 +206,12 @@ func TestSeqTryShouldMatchLongestSequence(t *testing.T) {
 func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
-		return data.NewIntSet(1, 2), nil, parser.NewError(test.NewPosition(1), "ERR1")
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return data.NewIntSet(1, 2), nil, reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
 	cp, _, _ := combinator.Seq(builder.Nil(), p1, p2).Parse(parser.EmptyLeftRecCtx(), r)
@@ -224,11 +224,11 @@ func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 func TestSeqShouldStopIfEOFTokenReached(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p1 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), r).AsSet(), nil
 	})
 
-	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	p2 := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), parser.NewResultSet(
 			parser.NewResult(ast.NewTerminalNode(ast.EOF, test.NewPosition(2), nil), test.NewReader(2, 0, false, true)),
 			parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'b'), test.NewReader(1, 1, false, true)),

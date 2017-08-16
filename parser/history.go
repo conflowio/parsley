@@ -16,7 +16,7 @@ import (
 type storedResult struct {
 	curtailingParsers data.IntSet
 	resultSet         ResultSet
-	err               Error
+	err               reader.Error
 	leftRecCtx        data.IntMap
 }
 
@@ -40,7 +40,7 @@ func (h *History) Reset() {
 }
 
 // RegisterResults registers a parser result for a certain position
-func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers data.IntSet, resultSet ResultSet, err Error, leftRecCtx data.IntMap) {
+func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers data.IntSet, resultSet ResultSet, err reader.Error, leftRecCtx data.IntMap) {
 	if _, ok := h.results[parserIndex]; !ok {
 		h.results[parserIndex] = make(map[int]storedResult)
 	}
@@ -48,7 +48,7 @@ func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers da
 }
 
 // GetResults return with a previously saved result
-func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (data.IntSet, ResultSet, Error, bool) {
+func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (data.IntSet, ResultSet, reader.Error, bool) {
 	storedResult, found := h.results[parserIndex][pos]
 	if !found {
 		return data.EmptyIntSet(), nil, nil, false
@@ -66,7 +66,7 @@ func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (
 // Memoize handles result cache and curtailing left recursion
 func (h *History) Memoize(p Parser) Func {
 	parserIndex := int(atomic.AddInt32(&h.parserIndex, 1))
-	return Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, Error) {
+	return Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error) {
 		cp, rs, err, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
 		if found {
 			return cp, rs, err

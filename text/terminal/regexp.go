@@ -21,7 +21,7 @@ import (
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
 func Regexp(desc string, regexp string, includeWhitespaces bool, groupIndex int, token string) parser.Func {
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch(regexp, includeWhitespaces); ok {
 			if groupIndex >= len(matches) {
@@ -32,6 +32,6 @@ func Regexp(desc string, regexp string, includeWhitespaces bool, groupIndex int,
 			}
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, matches[groupIndex]), r).AsSet(), nil
 		}
-		return parser.NoCurtailingParsers(), nil, parser.NewError(r.Cursor(), "was expecting %s", desc)
+		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting %s", desc)
 	})
 }

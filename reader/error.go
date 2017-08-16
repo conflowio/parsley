@@ -4,31 +4,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package parser
+package reader
 
 import (
 	"fmt"
-
-	"github.com/opsidian/parsley/reader"
 )
 
-// Error is a parser error interface
-type Error interface {
-	error
-	Cause() error
-	Msg() string
-	Pos() reader.Position
-}
-
-// err is a parser error
+// err is an error with a text position
 type err struct {
 	cause error
 	msg   string
-	pos   reader.Position
+	pos   Position
 }
 
-// NewError creates a new parser error instance
-func NewError(pos reader.Position, format string, values ...interface{}) Error {
+// NewError creates a new reader error instance
+func NewError(pos Position, format string, values ...interface{}) Error {
 	return err{
 		pos: pos,
 		msg: fmt.Sprintf(format, values...),
@@ -37,10 +27,10 @@ func NewError(pos reader.Position, format string, values ...interface{}) Error {
 
 // WrapError wraps the given error in a parser error
 // If the cause is already a parser error then WrapError returns the same error with an updated error message
-func WrapError(pos reader.Position, cause error, format string, values ...interface{}) Error {
-	if parserErr, ok := cause.(Error); ok {
-		pos = parserErr.Pos()
-		cause = parserErr.Cause()
+func WrapError(pos Position, cause error, format string, values ...interface{}) Error {
+	if readerErr, ok := cause.(Error); ok {
+		pos = readerErr.Pos()
+		cause = readerErr.Cause()
 	}
 	return err{
 		pos:   pos,
@@ -65,6 +55,6 @@ func (e err) Error() string {
 }
 
 // Pos returns with the error's position
-func (e err) Pos() reader.Position {
+func (e err) Pos() Position {
 	return e.pos
 }

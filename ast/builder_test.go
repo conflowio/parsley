@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func TestNodeBuilderFuncShouldCallFunction(t *testing.T) {
 		ast.NewTerminalNode("2", test.NewPosition(1), "2"),
 	}
 	var actualNodes []ast.Node
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		return nil, nil
 	})
 	expectedNode := ast.NewNonTerminalNode("TEST", nodes, interpreter)

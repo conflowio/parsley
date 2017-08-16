@@ -18,7 +18,7 @@ const EOF = "EOF"
 // Node represents an AST node
 type Node interface {
 	Token() string
-	Value(ctx interface{}) (interface{}, error)
+	Value(ctx interface{}) (interface{}, reader.Error)
 	Pos() reader.Position
 }
 
@@ -44,7 +44,7 @@ func (t TerminalNode) Token() string {
 }
 
 // Value returns with the value of the node
-func (t TerminalNode) Value(ctx interface{}) (interface{}, error) {
+func (t TerminalNode) Value(ctx interface{}) (interface{}, reader.Error) {
 	return t.value, nil
 }
 
@@ -92,7 +92,7 @@ func (n NonTerminalNode) Token() string {
 }
 
 // Value returns with the value of the node
-func (n NonTerminalNode) Value(ctx interface{}) (interface{}, error) {
+func (n NonTerminalNode) Value(ctx interface{}) (interface{}, reader.Error) {
 	if n.interpreter == nil {
 		return nil, nil
 	}

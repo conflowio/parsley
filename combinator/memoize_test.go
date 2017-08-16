@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var memoizeFunc = parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+var memoizeFunc = parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 	return data.EmptyIntSet(), nil, nil
 })
 
@@ -32,7 +32,7 @@ func (h *historyMock) Memoize(p parser.Parser) parser.Func {
 type parserMock struct {
 }
 
-func (p parserMock) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, parser.Error) {
+func (p parserMock) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 	return data.EmptyIntSet(), nil, nil
 }
 

@@ -25,7 +25,7 @@ import (
 // Using the Empty parser you can match expressions optionally.
 // Note: there is an Optional combinator for this purpose.
 func ExampleEmpty() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res string
 		for _, node := range nodes {
 			if node != nil {
