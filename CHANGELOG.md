@@ -1,3 +1,8 @@
+## 0.2.2
+
+IMPROVEMENTS:
+* Add parser.FuncFactory interface
+
 ## 0.2.1
 
 BUGFIXES:

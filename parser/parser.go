@@ -25,6 +25,11 @@ func (f Func) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, Resul
 	return f(leftRecCtx, r)
 }
 
+// FuncFactory defines an interface for creating parser functions
+type FuncFactory interface {
+	CreateParser() Func
+}
+
 // EmptyLeftRecCtx creates an empty left recursion context
 func EmptyLeftRecCtx() data.IntMap {
 	return data.EmptyIntMap()
