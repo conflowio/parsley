@@ -67,3 +67,19 @@ func TestWrapErrorShouldUpdateErrorMessageForParserError(t *testing.T) {
 	assert.Equal(t, "ERR 2", err2.Msg())
 	assert.Equal(t, "ERR 2 at POS 1", err2.Error())
 }
+
+func TestWrapErrorShouldFallbackToOriginalErrorMessage(t *testing.T) {
+	cause1 := errors.New("CAUSE 1")
+	pos1 := new(mocks.Position)
+	pos1.On("String").Return("POS 1")
+	err1 := reader.WrapError(pos1, cause1, "ERR 1")
+
+	pos2 := new(mocks.Position)
+	pos2.On("String").Return("POS 2")
+
+	err2 := reader.WrapError(pos2, err1, "")
+	assert.Equal(t, pos1, err2.Pos())
+	assert.Equal(t, cause1, err2.Cause())
+	assert.Equal(t, "ERR 1", err2.Msg())
+	assert.Equal(t, "ERR 1 at POS 1", err2.Error())
+}

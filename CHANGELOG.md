@@ -1,3 +1,8 @@
+## 0.2.3
+
+IMPROVEMENTS:
+* reader.WrapError keeps the original error message if empty string is given as message
+
 ## 0.2.2
 
 IMPROVEMENTS:

@@ -28,14 +28,18 @@ func NewError(pos Position, format string, values ...interface{}) Error {
 // WrapError wraps the given error in a parser error
 // If the cause is already a parser error then WrapError returns the same error with an updated error message
 func WrapError(pos Position, cause error, format string, values ...interface{}) Error {
+	msg := fmt.Sprintf(format, values...)
 	if readerErr, ok := cause.(Error); ok {
 		pos = readerErr.Pos()
 		cause = readerErr.Cause()
+		if format == "" {
+			msg = readerErr.Msg()
+		}
 	}
 	return err{
 		pos:   pos,
 		cause: cause,
-		msg:   fmt.Sprintf(format, values...),
+		msg:   msg,
 	}
 }
 
