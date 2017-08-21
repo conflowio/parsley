@@ -7,16 +7,33 @@
 package combinator
 
 import (
+	"sync/atomic"
+
+	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/reader"
 )
 
-type memoizer interface {
-	Memoize(p parser.Parser) parser.Func
-}
+var nextParserIndex int32
 
 // Memoize handles result cache and curtailing left recursion
-//
-// Deprecated: please use the Memoize method on the history object
-func Memoize(name string, h memoizer, p parser.Parser) parser.Func {
-	return h.Memoize(p)
+func Memoize(p parser.Parser) parser.Func {
+	parserIndex := int(atomic.AddInt32(&nextParserIndex, 1))
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		cp, rs, err, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
+		if found {
+			return cp, rs, err
+		}
+
+		if leftRecCtx.Get(parserIndex) > r.Remaining()+1 {
+			return data.NewIntSet(parserIndex), nil, nil
+		}
+
+		cp, rs, err = p.Parse(h, leftRecCtx.Inc(parserIndex), r)
+		leftRecCtx = leftRecCtx.Filter(cp)
+
+		h.RegisterResults(parserIndex, r.Cursor().Pos(), cp, rs, err, leftRecCtx)
+
+		return cp, rs, err
+	})
 }

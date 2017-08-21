@@ -46,7 +46,7 @@ var validTestCases = []TC{
 
 func TestFloatShouldReturnStartingPosition(t *testing.T) {
 	r := text.NewReader([]byte("1.23"), true)
-	_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+	_, res, err := terminal.Float().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
@@ -55,7 +55,7 @@ func TestFloatShouldReturnStartingPosition(t *testing.T) {
 func TestFloatShouldMatch(t *testing.T) {
 	for _, tc := range validTestCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Float().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res)
 		actual, _ := res[0].Node().Value(nil)
 		assert.Equal(t, tc.expected, actual)
@@ -81,7 +81,7 @@ func TestFloatShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Float().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Float().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)
 		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())

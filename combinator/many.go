@@ -15,14 +15,14 @@ import (
 
 // Many applies the  parser zero or more times
 func Many(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 0, -1).Parse(leftRecCtx, r)
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 0, -1).Parse(h, leftRecCtx, r)
 	})
 }
 
 // Many1 applies the parser one or more times
 func Many1(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 1, -1).Parse(leftRecCtx, r)
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 1, -1).Parse(h, leftRecCtx, r)
 	})
 }

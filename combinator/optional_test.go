@@ -10,14 +10,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,12 +37,13 @@ func ExampleOptional() {
 		return res, nil
 	})
 
-	s := combinator.Seq(builder.All("AB", concat),
+	p := combinator.Seq(builder.All("AB", concat),
 		terminal.Rune('a', "a"),
 		combinator.Optional(terminal.Rune('b', "b")),
 		terminal.Rune('c', "c"),
 	)
-	value, _ := parsley.EvaluateText([]byte("ac"), true, s, nil)
+	s := parsley.NewSentence(p)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ac
 }
@@ -51,11 +53,11 @@ func TestOptionalShouldReturnParserResult(t *testing.T) {
 
 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(1), res.AsSet(), nil
 	})
 
-	cp, rs, err := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Optional(p).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)
 	assert.Equal(t, parser.NewResultSet(res), rs)
 	assert.Nil(t, err)
@@ -64,11 +66,11 @@ func TestOptionalShouldReturnParserResult(t *testing.T) {
 func TestOptionalShouldReturnEmptyResultIfParserFailed(t *testing.T) {
 	r := test.NewReader(0, 2, false, false)
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(1), nil, nil
 	})
 
-	cp, rs, err := combinator.Optional(p).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.Optional(p).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)
 	assert.Equal(t, parser.NewResultSet(parser.NewResult(nil, r.Clone())), rs)
 	assert.Nil(t, err)

@@ -1,3 +1,15 @@
+## 0.3.0
+
+BACKWARDS INCOMPATIBILITIES:
+* Add history object to parser.Parse
+* Move Memoize back to the combinators
+* Move parsley package to a directory
+* Change top-level Parse/Evaluate methods
+* Remove parser.Stat, collect call statistics in history
+
+IMPROVEMENTS:
+* Add Sentence root parser
+
 ## 0.2.3
 
 IMPROVEMENTS:

@@ -25,9 +25,9 @@ func Seq(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
 		}
 		return nil
 	}
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		l := len(parsers)
-		return newRecursive(nodeBuilder, lookup, l, l).Parse(leftRecCtx, r)
+		return newRecursive(nodeBuilder, lookup, l, l).Parse(h, leftRecCtx, r)
 	})
 }
 
@@ -43,7 +43,7 @@ func SeqTry(nodeBuilder ast.NodeBuilder, min int, parsers ...parser.Parser) pars
 		}
 		return nil
 	}
-	return parser.Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(leftRecCtx, r)
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return newRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(h, leftRecCtx, r)
 	})
 }

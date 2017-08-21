@@ -23,12 +23,14 @@ func TestSuppressErrorShouldReturnParserResultWithoutError(t *testing.T) {
 
 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return data.NewIntSet(1), res.AsSet(), reader.NewError(test.NewPosition(1), "ERR1")
 	})
 
-	cp, rs, err := combinator.SuppressError(p).Parse(parser.EmptyLeftRecCtx(), r)
+	h := parser.NewHistory()
+	cp, rs, err := combinator.SuppressError(p).Parse(h, parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, data.NewIntSet(1), cp)
 	assert.Equal(t, parser.NewResultSet(res), rs)
 	assert.Nil(t, err)
+	assert.Equal(t, 0, h.CallCount())
 }

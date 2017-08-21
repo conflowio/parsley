@@ -10,13 +10,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,12 +37,13 @@ func ExampleEmpty() {
 		return res, nil
 	})
 
-	s := combinator.Seq(builder.All("AB", concat),
+	p := combinator.Seq(builder.All("ABC", concat),
 		terminal.Rune('a', "a"),
 		combinator.Choice("b or nothing", terminal.Rune('b', "b"), parser.Empty()),
 		terminal.Rune('c', "c"),
 	)
-	value, _ := parsley.EvaluateText([]byte("ac"), true, s, nil)
+	s := parsley.NewSentence(p)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ac
 }
@@ -49,7 +51,8 @@ func ExampleEmpty() {
 // Using the End parser you can make sure you fully match the input
 func ExampleEnd() {
 	s := combinator.Seq(builder.Select(0), terminal.Float(), parser.End())
-	value, _ := parsley.EvaluateText([]byte("1.23"), true, s, nil)
+	_, rs, _ := s.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), text.NewReader([]byte("1.23"), true))
+	value, _ := rs[0].Node().Value(nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: float64 1.23
 }
@@ -60,7 +63,7 @@ func assertCursor(t *testing.T, pos int, r reader.Reader) {
 
 func TestEmptyWillAlwaysReturnWithResult(t *testing.T) {
 	r := test.NewReader(1, 1, false, false)
-	_, res, err := parser.Empty()(parser.EmptyLeftRecCtx(), r)
+	_, res, err := parser.Empty()(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NewResult(nil, r).AsSet(), res)
 	assertCursor(t, 1, r)
 	assert.Nil(t, err)
@@ -68,7 +71,7 @@ func TestEmptyWillAlwaysReturnWithResult(t *testing.T) {
 
 func TestEndShouldMatchEOF(t *testing.T) {
 	r := test.NewReader(1, 1, true, false)
-	_, res, err := parser.End()(parser.EmptyLeftRecCtx(), r)
+	_, res, err := parser.End()(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode(ast.EOF, test.NewPosition(1), nil)
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
 	assertCursor(t, 1, r)
@@ -77,7 +80,7 @@ func TestEndShouldMatchEOF(t *testing.T) {
 
 func TestEndShouldNotMatchNotEOF(t *testing.T) {
 	r := test.NewReader(1, 1, false, false)
-	_, res, err := parser.End()(parser.EmptyLeftRecCtx(), r)
+	_, res, err := parser.End()(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	require.NotNil(t, err)
 	assert.Equal(t, test.NewPosition(1), err.Pos())

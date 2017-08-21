@@ -80,7 +80,7 @@ A parser has a simple interface:
 
 ```
 type Parser interface {
-	Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, Error)
+	Parse(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, Error)
 }
 ```
 
@@ -104,7 +104,7 @@ The following code will wrap the integer parser with a memoizer:
 
 ```
 h := parser.NewHistory()
-cachedParser := h.Memoize(terminal.Integer())
+cachedParser := combinator.Memoize(terminal.Integer())
 ```
 
 The history object will store the result cache and also track left recursion counts and curtailing parsers, so you should only create it once.

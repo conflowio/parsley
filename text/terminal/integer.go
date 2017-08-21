@@ -19,7 +19,7 @@ import (
 
 // Integer matches all integer numbers and zero with an optional -/+ sign
 func Integer() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch("[-+]?(?:[1-9][0-9]*|0[xX][0-9a-fA-F]+|0[0-7]*)", false); ok {
 			intValue, err := strconv.ParseInt(matches[0], 0, 0)

@@ -18,7 +18,7 @@ import (
 
 // String matches a string literal enclosed in double quotes
 func String() parser.Func {
-	return parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		matches, pos, ok := tr.ReadMatch("\"|`", false)
 		if !ok {

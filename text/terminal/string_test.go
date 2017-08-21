@@ -19,7 +19,7 @@ import (
 
 func TestStringShouldReturnQuotePosition(t *testing.T) {
 	r := text.NewReader([]byte(`"abc"`), true)
-	_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+	_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
@@ -57,7 +57,7 @@ func TestStringShouldMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
 		assert.Equal(t, tc.expected, actual)
@@ -80,7 +80,7 @@ func TestStringShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
 		require.NotNil(t, err)
 		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
@@ -100,7 +100,7 @@ func TestUnclosedStringLiteral(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.String().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
 		require.NotNil(t, err)
 		assert.Equal(t, tc.errPos, err.Pos())

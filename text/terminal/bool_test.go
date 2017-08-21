@@ -19,7 +19,7 @@ import (
 
 func TestBoolShouldReturnStartingPosition(t *testing.T) {
 	r := text.NewReader([]byte("true"), true)
-	_, res, err := terminal.Bool().Parse(parser.EmptyLeftRecCtx(), r)
+	_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
@@ -38,7 +38,7 @@ func TestBoolShouldMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Bool().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
 		assert.Equal(t, tc.expected, actual)
@@ -61,7 +61,7 @@ func TestBoolShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Bool().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)
 		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())

@@ -7,8 +7,6 @@
 package parser
 
 import (
-	"sync/atomic"
-
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/reader"
 )
@@ -22,21 +20,15 @@ type storedResult struct {
 
 // History records information about parser calls
 type History struct {
-	parserIndex int32
-	results     map[int]map[int]storedResult
+	callCount int
+	results   map[int]map[int]storedResult
 }
 
 // NewHistory creates a history instance
 func NewHistory() *History {
 	return &History{
-		parserIndex: 0,
-		results:     make(map[int]map[int]storedResult),
+		results: make(map[int]map[int]storedResult),
 	}
-}
-
-// Reset deletes the collected data
-func (h *History) Reset() {
-	h.results = make(map[int]map[int]storedResult)
 }
 
 // RegisterResults registers a parser result for a certain position
@@ -63,24 +55,12 @@ func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (
 	return storedResult.curtailingParsers, storedResult.resultSet, storedResult.err, true
 }
 
-// Memoize handles result cache and curtailing left recursion
-func (h *History) Memoize(p Parser) Func {
-	parserIndex := int(atomic.AddInt32(&h.parserIndex, 1))
-	return Func(func(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error) {
-		cp, rs, err, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
-		if found {
-			return cp, rs, err
-		}
+// RegisterCall registers a call
+func (h *History) RegisterCall() {
+	h.callCount++
+}
 
-		if leftRecCtx.Get(parserIndex) > r.Remaining()+1 {
-			return data.NewIntSet(parserIndex), nil, nil
-		}
-
-		cp, rs, err = p.Parse(leftRecCtx.Inc(parserIndex), r)
-		leftRecCtx = leftRecCtx.Filter(cp)
-
-		h.RegisterResults(parserIndex, r.Cursor().Pos(), cp, rs, err, leftRecCtx)
-
-		return cp, rs, err
-	})
+// CallCount returns with the call count
+func (h *History) CallCount() int {
+	return h.callCount
 }

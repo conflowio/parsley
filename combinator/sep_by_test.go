@@ -10,14 +10,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/reader"
 	"github.com/opsidian/parsley/test"
+	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,8 +28,6 @@ import (
 // The language would be left recursive, but using SepBy (which is using Many and Seq) we can avoid this.
 // The grammar is: S -> [I(,I)*], I -> any integer
 func ExampleSepBy() {
-	h := parser.NewHistory()
-
 	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		var res []int
 		for i := 0; i < len(nodes); i += 2 {
@@ -38,13 +37,14 @@ func ExampleSepBy() {
 		return res, nil
 	})
 
-	intList := combinator.SepBy("ARR", h, terminal.Integer(), terminal.Rune(',', "SEP"), interpreter)
-	s := combinator.Seq(builder.Select(1), terminal.Rune('[', "ARR_START"), intList, terminal.Rune(']', "ARR_END"))
+	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(',', "SEP"), interpreter)
+	p := combinator.Seq(builder.Select(1), terminal.Rune('[', "ARR_START"), intList, terminal.Rune(']', "ARR_END"))
+	s := parsley.NewSentence(p)
 
-	value1, _ := parsley.EvaluateText([]byte("[]"), true, s, nil)
+	value1, _, _ := s.Evaluate(text.NewReader([]byte("[]"), true), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
-	value2, _ := parsley.EvaluateText([]byte("[1, 2, 3]"), true, s, nil)
+	value2, _, _ := s.Evaluate(text.NewReader([]byte("[1, 2, 3]"), true), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 	// Output: []int []
 	// []int [1 2 3]
@@ -54,8 +54,6 @@ func ExampleSepBy() {
 // The language would be left recursive, but using SepBy1 (which is using Many and Seq) we can avoid this.
 // The grammar is: S -> I(+I)*, I -> any integer
 func ExampleSepBy1() {
-	h := parser.NewHistory()
-
 	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		sum := 0
 		for i := 0; i < len(nodes); i += 2 {
@@ -65,14 +63,12 @@ func ExampleSepBy1() {
 		return sum, nil
 	})
 
-	s := combinator.SepBy1("SUM", h, terminal.Integer(), terminal.Rune('+', "+"), interpreter)
-
-	value1, _ := parsley.EvaluateText([]byte("1"), true, s, nil)
+	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+', "+"), interpreter)
+	s := parsley.NewSentence(p)
+	value1, _, _ := s.Evaluate(text.NewReader([]byte("1"), true), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
-	h.Reset()
-
-	value2, _ := parsley.EvaluateText([]byte("1 + 2 + 3"), true, s, nil)
+	value2, _, _ := s.Evaluate(text.NewReader([]byte("1 + 2 + 3"), true), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 	// Output: int 1
 	// int 6
@@ -80,7 +76,6 @@ func ExampleSepBy1() {
 
 func TestSepByShouldCombineParserResults(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
-	h := parser.NewHistory()
 
 	pResults := []parser.ResultSet{
 		parser.NewResultSet(
@@ -106,7 +101,7 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
 			return parser.NoCurtailingParsers(), pResults[pi], nil
@@ -116,7 +111,7 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	sep := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { sepi++ }()
 		if sepi < len(sepResults) {
 			return parser.NoCurtailingParsers(), sepResults[sepi], nil
@@ -134,18 +129,19 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs, err := combinator.SepBy1("TEST", h, p, sep, interpreter).Parse(parser.EmptyLeftRecCtx(), r)
+	h := parser.NewHistory()
+	_, rs, err := combinator.SepBy1("TEST", p, sep, interpreter).Parse(h, parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 2)
 	val0, _ := rs[0].Node().Value(nil)
 	val1, _ := rs[1].Node().Value(nil)
 	assert.Equal(t, "a|,|c|", val0)
 	assert.Equal(t, "b|,|d|", val1)
 	assert.Nil(t, err)
+	assert.Equal(t, 13, h.CallCount())
 }
 
 func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
-	h := parser.NewHistory()
 
 	interpreter1 := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 		res := ""
@@ -184,7 +180,7 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	}
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { pi++ }()
 		if pi < len(pResults) {
 			return parser.NoCurtailingParsers(), pResults[pi], nil
@@ -194,7 +190,7 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	sep := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { sepi++ }()
 		if sepi < len(sepResults) {
 			return parser.NoCurtailingParsers(), sepResults[sepi], nil
@@ -212,7 +208,7 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs, _ := combinator.SepBy1("TEST", h, p, sep, interpreter2).Parse(parser.EmptyLeftRecCtx(), r)
+	_, rs, _ := combinator.SepBy1("TEST", p, sep, interpreter2).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	require.Len(t, rs, 1)
 	val0, _ := rs[0].Node().Value(nil)
 	assert.Equal(t, "a&b&|,|c&d&|", val0)
@@ -220,13 +216,12 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 
 func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
-	h := parser.NewHistory()
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs, err := combinator.SepBy("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.SepBy("TEST", p, p, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
 	require.NotNil(t, err)
@@ -235,13 +230,12 @@ func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 
 func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
-	h := parser.NewHistory()
 
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs, err := combinator.SepBy1("TEST", h, p, p, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, rs, err := combinator.SepBy1("TEST", p, p, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, parser.NoCurtailingParsers(), cp)
 	assert.Empty(t, rs)
 	require.NotNil(t, err)
@@ -250,10 +244,9 @@ func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {
 
 func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	r := test.NewReader(0, 1, false, false)
-	h := parser.NewHistory()
 
 	pi := 0
-	p := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { pi++ }()
 		if pi < 1 {
 			return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
@@ -263,7 +256,7 @@ func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 	})
 
 	sepi := 0
-	sep := parser.Func(func(ctx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+	sep := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		defer func() { sepi++ }()
 		if sepi < 1 {
 			return data.NewIntSet(1, 2), nil, nil
@@ -272,6 +265,6 @@ func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _, _ := combinator.SepBy1("TEST", h, p, sep, nil).Parse(parser.EmptyLeftRecCtx(), r)
+	cp, _, _ := combinator.SepBy1("TEST", p, sep, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
 }

@@ -19,7 +19,7 @@ import (
 
 func TestIntegerShouldReturnStartingPosition(t *testing.T) {
 	r := text.NewReader([]byte("1"), true)
-	_, res, err := terminal.Integer().Parse(parser.EmptyLeftRecCtx(), r)
+	_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), res[0].Node().Pos())
@@ -55,7 +55,7 @@ func TestIntegerShouldMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Integer().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
 		assert.Equal(t, tc.expected, actual)
@@ -76,7 +76,7 @@ func TestIntegerShouldNotMatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		r := text.NewReader([]byte(tc.input), true)
-		_, res, err := terminal.Integer().Parse(parser.EmptyLeftRecCtx(), r)
+		_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)
 		assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())

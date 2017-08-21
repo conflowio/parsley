@@ -12,7 +12,7 @@ type Parser struct {
 }
 
 // Parse provides a mock function with given fields: leftRecCtx, r
-func (_m *Parser) Parse(leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func (_m *Parser) Parse(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 	ret := _m.Called(leftRecCtx, r)
 
 	var r0 data.IntSet

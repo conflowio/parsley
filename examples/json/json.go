@@ -18,12 +18,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/opsidian/parsley"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 )
 
@@ -37,14 +38,12 @@ func main() {
 		panic(err)
 	}
 
-	h := parser.NewHistory()
-
 	var value parser.Func
 
 	array := combinator.Seq(
 		builder.Select(1),
 		terminal.Rune('[', "["),
-		combinator.SepBy("ARRAY", h, &value, terminal.Rune(',', ","), arrayInterpreter()),
+		combinator.SepBy("ARRAY", &value, terminal.Rune(',', ","), arrayInterpreter()),
 		terminal.Rune(']', "]"),
 	)
 
@@ -53,11 +52,11 @@ func main() {
 	object := combinator.Seq(
 		builder.Select(1),
 		terminal.Rune('{', "{"),
-		combinator.SepBy("OBJ", h, keyValue, terminal.Rune(',', ","), objectInterpreter()),
+		combinator.SepBy("OBJ", keyValue, terminal.Rune(',', ","), objectInterpreter()),
 		terminal.Rune('}', "}"),
 	)
 
-	value = h.Memoize(combinator.Any("value",
+	value = combinator.Memoize(combinator.Any("value",
 		terminal.String(),
 		terminal.Integer(),
 		terminal.Float(),
@@ -68,12 +67,12 @@ func main() {
 		terminal.Word("null", "NULL", nil),
 	))
 
-	s := combinator.Seq(builder.Select(0), object, parser.End())
-	res, err := parsley.EvaluateText(b, true, s, nil)
+	s := parsley.NewSentence(object)
+	res, h, err := s.Evaluate(text.NewReader(b, true), nil)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Parser calls: %d\n", parser.Stat.GetSumCallCount())
+	fmt.Printf("Parser calls: %d\n", h.CallCount())
 	fmt.Printf("%v\n", res)
 }
 

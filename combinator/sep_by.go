@@ -14,29 +14,27 @@ import (
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
-	return newSepBy(token, h, valueP, sepP, interpreter, 0).CreateParser()
+func SepBy(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
+	return newSepBy(token, valueP, sepP, interpreter, 0).CreateParser()
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy1(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return newSepBy(token, h, valueP, sepP, interpreter, 1).CreateParser()
+func SepBy1(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
+	return newSepBy(token, valueP, sepP, interpreter, 1).CreateParser()
 }
 
 type sepBy struct {
 	token       string
-	h           *parser.History
 	valueP      parser.Parser
 	sepP        parser.Parser
 	interpreter ast.Interpreter
 	min         int
 }
 
-func newSepBy(token string, h *parser.History, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int) sepBy {
+func newSepBy(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int) sepBy {
 	return sepBy{
 		token:       token,
-		h:           h,
 		valueP:      valueP,
 		sepP:        sepP,
 		interpreter: interpreter,
@@ -45,8 +43,8 @@ func newSepBy(token string, h *parser.History, valueP parser.Parser, sepP parser
 }
 
 func (s sepBy) CreateParser() parser.Func {
-	sepValue := s.h.Memoize(Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
-	sepValueMany := s.h.Memoize(Many(builder.Flatten(s.token, nil), sepValue))
+	sepValue := Memoize(Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
+	sepValueMany := Memoize(Many(builder.Flatten(s.token, nil), sepValue))
 	return SeqTry(s, s.min, s.valueP, sepValueMany)
 }
 
