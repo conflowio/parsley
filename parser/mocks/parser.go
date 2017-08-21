@@ -11,20 +11,20 @@ type Parser struct {
 	mock.Mock
 }
 
-// Parse provides a mock function with given fields: leftRecCtx, r
+// Parse provides a mock function with given fields: h, leftRecCtx, r
 func (_m *Parser) Parse(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-	ret := _m.Called(leftRecCtx, r)
+	ret := _m.Called(h, leftRecCtx, r)
 
 	var r0 data.IntSet
-	if rf, ok := ret.Get(0).(func(data.IntMap, reader.Reader) data.IntSet); ok {
-		r0 = rf(leftRecCtx, r)
+	if rf, ok := ret.Get(0).(func(*parser.History, data.IntMap, reader.Reader) data.IntSet); ok {
+		r0 = rf(h, leftRecCtx, r)
 	} else {
 		r0 = ret.Get(0).(data.IntSet)
 	}
 
 	var r1 parser.ResultSet
-	if rf, ok := ret.Get(1).(func(data.IntMap, reader.Reader) parser.ResultSet); ok {
-		r1 = rf(leftRecCtx, r)
+	if rf, ok := ret.Get(1).(func(*parser.History, data.IntMap, reader.Reader) parser.ResultSet); ok {
+		r1 = rf(h, leftRecCtx, r)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(parser.ResultSet)
@@ -32,8 +32,8 @@ func (_m *Parser) Parse(h *parser.History, leftRecCtx data.IntMap, r reader.Read
 	}
 
 	var r2 reader.Error
-	if rf, ok := ret.Get(2).(func(data.IntMap, reader.Reader) reader.Error); ok {
-		r2 = rf(leftRecCtx, r)
+	if rf, ok := ret.Get(2).(func(*parser.History, data.IntMap, reader.Reader) reader.Error); ok {
+		r2 = rf(h, leftRecCtx, r)
 	} else {
 		if ret.Get(2) != nil {
 			r2 = ret.Get(2).(reader.Error)

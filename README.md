@@ -124,7 +124,7 @@ We'll need the following components:
 ```
 add := combinator.Seq(
 	builder.BinaryOperation(
-		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, error) {
+		ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
 			value0, _ := nodes[0].Value(ctx)
 			value1, _ := nodes[1].Value(ctx)
 			return value0.(int) + value1.(int), nil
@@ -134,9 +134,8 @@ add := combinator.Seq(
 	terminal.Rune('+', "ADD"),
 	terminal.Integer(),
 )
-s := combinator.Seq(builder.Select(0), add, parser.End())
-
-value, err := parsley.EvaluateText([]byte("1 + 2"), true, s, nil)
+s := parsley.NewSentence(add)
+value, _, err := s.Evaluate(text.NewReader([]byte("1 + 2"), true), nil)
 if err != nil {
 	panic(err)
 }
@@ -165,6 +164,7 @@ Please more information about the available parsers and combinators please check
  - [data](data): int map and int set implementations
  - [examples](examples): examples for how to use this library
  - [parser](parser): the main parsing logic
+ - [parsley](parsley): the top-level parser/evaluate methods + root sentence
  - [reader](reader): interface definitions for an input reader
  - [text](text): text reader implementation
  - [text/terminal](text/terminal): common parsers for text literals (string literal, int, float, etc.)
