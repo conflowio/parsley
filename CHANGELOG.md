@@ -1,3 +1,8 @@
+## 0.3.1
+
+IMPROVEMENTS:
+* Add SepByOrValue and SepByOrValue1 combinators which will return the value node if only the value parser is matched
+
 ## 0.3.0
 
 BACKWARDS INCOMPATIBILITIES:

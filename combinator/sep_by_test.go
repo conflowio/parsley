@@ -75,8 +75,6 @@ func ExampleSepBy1() {
 }
 
 func TestSepByShouldCombineParserResults(t *testing.T) {
-	r := test.NewReader(0, 1, false, false)
-
 	pResults := []parser.ResultSet{
 		parser.NewResultSet(
 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(0), "a"), test.NewReader(1, 1, false, true)),
@@ -129,15 +127,27 @@ func TestSepByShouldCombineParserResults(t *testing.T) {
 		return res, nil
 	})
 
-	h := parser.NewHistory()
-	_, rs, err := combinator.SepBy1("TEST", p, sep, interpreter).Parse(h, parser.EmptyLeftRecCtx(), r)
-	require.Len(t, rs, 2)
-	val0, _ := rs[0].Node().Value(nil)
-	val1, _ := rs[1].Node().Value(nil)
-	assert.Equal(t, "a|,|c|", val0)
-	assert.Equal(t, "b|,|d|", val1)
-	assert.Nil(t, err)
-	assert.Equal(t, 13, h.CallCount())
+	parsers := []parser.Parser{
+		combinator.SepBy("TEST", p, sep, interpreter),
+		combinator.SepBy1("TEST", p, sep, interpreter),
+		combinator.SepByOrValue("TEST", p, sep, interpreter),
+		combinator.SepByOrValue1("TEST", p, sep, interpreter),
+	}
+
+	for _, p := range parsers {
+		pi = 0
+		sepi = 0
+		r := test.NewReader(0, 1, false, false)
+		h := parser.NewHistory()
+		_, rs, err := p.Parse(h, parser.EmptyLeftRecCtx(), r)
+		require.Len(t, rs, 2)
+		val0, _ := rs[0].Node().Value(nil)
+		val1, _ := rs[1].Node().Value(nil)
+		assert.Equal(t, "a|,|c|", val0)
+		assert.Equal(t, "b|,|d|", val1)
+		assert.Nil(t, err)
+		assert.Equal(t, 13, h.CallCount())
+	}
 }
 
 func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
@@ -208,10 +218,21 @@ func TestSepByShouldNotFlattenNonTerminals(t *testing.T) {
 		return res, nil
 	})
 
-	_, rs, _ := combinator.SepBy1("TEST", p, sep, interpreter2).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
-	require.Len(t, rs, 1)
-	val0, _ := rs[0].Node().Value(nil)
-	assert.Equal(t, "a&b&|,|c&d&|", val0)
+	parsers := []parser.Parser{
+		combinator.SepBy("TEST", p, sep, interpreter2),
+		combinator.SepBy1("TEST", p, sep, interpreter2),
+		combinator.SepByOrValue("TEST", p, sep, interpreter2),
+		combinator.SepByOrValue1("TEST", p, sep, interpreter2),
+	}
+
+	for _, p := range parsers {
+		pi = 0
+		sepi = 0
+		_, rs, _ := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		require.Len(t, rs, 1)
+		val0, _ := rs[0].Node().Value(nil)
+		assert.Equal(t, "a&b&|,|c&d&|", val0)
+	}
 }
 
 func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
@@ -221,11 +242,18 @@ func TestSepByShouldReturnEmptyResultIfNoMatch(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs, err := combinator.SepBy("TEST", p, p, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
-	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
-	require.NotNil(t, err)
-	assert.Equal(t, test.NewPosition(1), err.Pos())
+	parsers := []parser.Parser{
+		combinator.SepBy("TEST", p, p, nil),
+		combinator.SepByOrValue("TEST", p, p, nil),
+	}
+
+	for _, p := range parsers {
+		cp, rs, err := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		assert.Equal(t, parser.NoCurtailingParsers(), cp)
+		assert.Equal(t, parser.NewResult(ast.NewNonTerminalNode("TEST", nil, nil), r).AsSet(), rs)
+		require.NotNil(t, err)
+		assert.Equal(t, test.NewPosition(1), err.Pos())
+	}
 }
 
 func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {
@@ -235,11 +263,18 @@ func TestSepBy1ShouldReturnNilIfNoResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "TEST1")
 	})
 
-	cp, rs, err := combinator.SepBy1("TEST", p, p, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
-	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Empty(t, rs)
-	require.NotNil(t, err)
-	assert.Equal(t, test.NewPosition(1), err.Pos())
+	parsers := []parser.Parser{
+		combinator.SepBy1("TEST", p, p, nil),
+		combinator.SepByOrValue1("TEST", p, p, nil),
+	}
+
+	for _, p := range parsers {
+		cp, rs, err := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		assert.Equal(t, parser.NoCurtailingParsers(), cp)
+		assert.Empty(t, rs)
+		require.NotNil(t, err)
+		assert.Equal(t, test.NewPosition(1), err.Pos())
+	}
 }
 
 func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
@@ -265,6 +300,69 @@ func TestSepByShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 		}
 	})
 
-	cp, _, _ := combinator.SepBy1("TEST", p, sep, nil).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
-	assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
+	parsers := []parser.Parser{
+		combinator.SepBy("TEST", p, sep, nil),
+		combinator.SepBy1("TEST", p, sep, nil),
+		combinator.SepByOrValue("TEST", p, sep, nil),
+		combinator.SepByOrValue1("TEST", p, sep, nil),
+	}
+
+	for _, p := range parsers {
+		pi = 0
+		sepi = 0
+		cp, _, _ := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		assert.EqualValues(t, data.NewIntSet(0, 1, 2), cp)
+	}
+}
+
+func TestSepByShouldNotReturnValueIfOnlyOne(t *testing.T) {
+	r := test.NewReader(0, 1, false, false)
+	value := ast.NewTerminalNode("VALUE", test.NewPosition(0), "value")
+
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), parser.NewResult(value, r).AsSet(), nil
+	})
+
+	s := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, nil
+	})
+
+	expectedNode := ast.NewNonTerminalNode("TEST", []ast.Node{value}, nil)
+
+	parsers := []parser.Parser{
+		combinator.SepBy("TEST", p, s, nil),
+		combinator.SepBy1("TEST", p, s, nil),
+	}
+
+	for _, p := range parsers {
+		cp, rs, err := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		assert.Equal(t, parser.NoCurtailingParsers(), cp)
+		assert.Equal(t, parser.NewResult(expectedNode, r.Clone()).AsSet(), rs)
+		assert.Nil(t, err)
+	}
+}
+
+func TestSepByOrValueShouldReturnValueIfOnlyOne(t *testing.T) {
+	r := test.NewReader(0, 1, false, false)
+	value := ast.NewTerminalNode("VALUE", test.NewPosition(0), "value")
+
+	p := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), parser.NewResult(value, r).AsSet(), nil
+	})
+
+	s := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+		return parser.NoCurtailingParsers(), nil, nil
+	})
+
+	parsers := []parser.Parser{
+		combinator.SepByOrValue("TEST", p, s, nil),
+		combinator.SepByOrValue1("TEST", p, s, nil),
+	}
+
+	for _, p := range parsers {
+		cp, rs, err := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
+		assert.Equal(t, parser.NoCurtailingParsers(), cp)
+		assert.Equal(t, parser.NewResult(value, r.Clone()).AsSet(), rs)
+		assert.Nil(t, err)
+	}
 }

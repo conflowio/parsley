@@ -15,13 +15,27 @@ import (
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
-	return newSepBy(token, valueP, sepP, interpreter, 0).CreateParser()
+	return newSepBy(token, valueP, sepP, interpreter, 0, false).CreateParser()
+}
+
+// SepByOrValue applies the given value parser zero or more times separated by the separator parser
+// If there is only one value then the value node will be returned and the interpreter won't be used
+// It simply uses the Seq, SeqTry, Many and Memoize combinators.
+func SepByOrValue(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Func {
+	return newSepBy(token, valueP, sepP, interpreter, 0, true).CreateParser()
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
 func SepBy1(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
-	return newSepBy(token, valueP, sepP, interpreter, 1).CreateParser()
+	return newSepBy(token, valueP, sepP, interpreter, 1, false).CreateParser()
+}
+
+// SepByOrValue1 applies the given value parser one or more times separated by the separator parser
+// If there is only one value then the value node will be returned and the interpreter won't be used
+// It simply uses the Seq, SeqTry, Many and Memoize combinators.
+func SepByOrValue1(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter) parser.Parser {
+	return newSepBy(token, valueP, sepP, interpreter, 1, true).CreateParser()
 }
 
 type sepBy struct {
@@ -30,15 +44,17 @@ type sepBy struct {
 	sepP        parser.Parser
 	interpreter ast.Interpreter
 	min         int
+	returnValue bool
 }
 
-func newSepBy(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int) sepBy {
+func newSepBy(token string, valueP parser.Parser, sepP parser.Parser, interpreter ast.Interpreter, min int, returnValue bool) sepBy {
 	return sepBy{
 		token:       token,
 		valueP:      valueP,
 		sepP:        sepP,
 		interpreter: interpreter,
 		min:         min,
+		returnValue: returnValue,
 	}
 }
 
@@ -56,6 +72,9 @@ func (s sepBy) BuildNode(nodes []ast.Node) ast.Node {
 	children := []ast.Node{nodes[0]}
 	if len(nodes) > 1 && nodes[1] != nil {
 		node1 := nodes[1].(ast.NonTerminalNode)
+		if s.returnValue && len(node1.Children()) == 0 {
+			return nodes[0]
+		}
 		children = append(children, node1.Children()...)
 	}
 	return ast.NewNonTerminalNode(s.token, children, s.interpreter)
