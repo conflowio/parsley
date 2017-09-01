@@ -1,3 +1,9 @@
+## 0.3.2
+
+IMPROVEMENTS:
+
+* reader.WrapError() falls back to the cause's error message if no error message was given and the cause is not a reader error
+
 ## 0.3.1
 
 IMPROVEMENTS:

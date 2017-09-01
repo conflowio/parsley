@@ -32,9 +32,12 @@ func WrapError(pos Position, cause error, format string, values ...interface{}) 
 	if readerErr, ok := cause.(Error); ok {
 		pos = readerErr.Pos()
 		cause = readerErr.Cause()
-		if format == "" {
+		if msg == "" {
 			msg = readerErr.Msg()
 		}
+	}
+	if msg == "" {
+		msg = cause.Error()
 	}
 	return err{
 		pos:   pos,

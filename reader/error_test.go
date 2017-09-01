@@ -83,3 +83,12 @@ func TestWrapErrorShouldFallbackToOriginalErrorMessage(t *testing.T) {
 	assert.Equal(t, "ERR 1", err2.Msg())
 	assert.Equal(t, "ERR 1 at POS 1", err2.Error())
 }
+
+func TestWrapErrorShouldFallbackToCauseErrorMessage(t *testing.T) {
+	cause := errors.New("CAUSE 1")
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS 1")
+	err := reader.WrapError(pos, cause, "")
+	assert.Equal(t, "CAUSE 1", err.Msg())
+	assert.Equal(t, "CAUSE 1 at POS 1", err.Error())
+}
