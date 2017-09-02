@@ -8,6 +8,7 @@ package reader
 
 import (
 	"fmt"
+	"strings"
 )
 
 // err is an error with a text position
@@ -27,17 +28,23 @@ func NewError(pos Position, format string, values ...interface{}) Error {
 
 // WrapError wraps the given error in a parser error
 // If the cause is already a parser error then WrapError returns the same error with an updated error message
+// If format contains the "{{err}}" placeholder it will be replaced with the cause's error message
 func WrapError(pos Position, cause error, format string, values ...interface{}) Error {
 	msg := fmt.Sprintf(format, values...)
 	if readerErr, ok := cause.(Error); ok {
 		pos = readerErr.Pos()
 		cause = readerErr.Cause()
-		if msg == "" {
+		if msg != "" {
+			msg = strings.Replace(msg, "{{err}}", readerErr.Msg(), -1)
+		} else {
 			msg = readerErr.Msg()
 		}
-	}
-	if msg == "" {
-		msg = cause.Error()
+	} else {
+		if msg != "" {
+			msg = strings.Replace(msg, "{{err}}", cause.Error(), -1)
+		} else {
+			msg = cause.Error()
+		}
 	}
 	return err{
 		pos:   pos,
@@ -58,6 +65,9 @@ func (e err) Msg() string {
 
 // Error returns with the full error message including the position
 func (e err) Error() string {
+	if e.pos == nil {
+		return e.msg
+	}
 	return fmt.Sprintf("%s at %s", e.msg, e.pos)
 }
 

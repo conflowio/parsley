@@ -24,6 +24,13 @@ func TestNewError(t *testing.T) {
 	assert.Equal(t, "ERR at POS", err.Error())
 }
 
+func TestNewErrorWithoutPos(t *testing.T) {
+	err := reader.NewError(nil, "ERR")
+	assert.Nil(t, err.Pos())
+	assert.Equal(t, "ERR", err.Msg())
+	assert.Equal(t, "ERR", err.Error())
+}
+
 func TestNewErrorWithParams(t *testing.T) {
 	pos := new(mocks.Position)
 	pos.On("String").Return("POS")
@@ -91,4 +98,29 @@ func TestWrapErrorShouldFallbackToCauseErrorMessage(t *testing.T) {
 	err := reader.WrapError(pos, cause, "")
 	assert.Equal(t, "CAUSE 1", err.Msg())
 	assert.Equal(t, "CAUSE 1 at POS 1", err.Error())
+}
+
+func TestWrapErrorShouldReplaceErrPlaceholderFromErr(t *testing.T) {
+	cause := errors.New("CAUSE 1")
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS 1")
+	err := reader.WrapError(pos, cause, "ERROR: {{err}}")
+	assert.Equal(t, "ERROR: CAUSE 1", err.Msg())
+	assert.Equal(t, "ERROR: CAUSE 1 at POS 1", err.Error())
+}
+
+func TestWrapErrorShouldReplaceErrPlaceholderFromReaderErr(t *testing.T) {
+	pos := new(mocks.Position)
+	pos.On("String").Return("POS 1")
+	cause := reader.NewError(pos, "CAUSE 1")
+	err := reader.WrapError(nil, cause, "ERROR: {{err}}")
+	assert.Equal(t, "ERROR: CAUSE 1", err.Msg())
+	assert.Equal(t, "ERROR: CAUSE 1 at POS 1", err.Error())
+}
+
+func TestWrapErrorWithoutPos(t *testing.T) {
+	cause := errors.New("CAUSE 1")
+	err := reader.WrapError(nil, cause, "ERROR 1")
+	assert.Equal(t, "ERROR 1", err.Msg())
+	assert.Equal(t, "ERROR 1", err.Error())
 }
