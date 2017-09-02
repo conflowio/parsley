@@ -9,6 +9,8 @@ package text_test
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 	"testing"
 	"unicode/utf8"
 
@@ -25,12 +27,22 @@ func ExampleReader() {
 	// Output: ab
 }
 
-func TestPositionMethods(t *testing.T) {
+func TestNewPosition(t *testing.T) {
 	p := text.NewPosition(1, 2, 3)
+	assert.Equal(t, "", p.Filename())
 	assert.Equal(t, 1, p.Pos())
 	assert.Equal(t, 2, p.Line())
 	assert.Equal(t, 3, p.Col())
-	assert.NotEmpty(t, p.String())
+	assert.Equal(t, "2:3", p.String())
+}
+
+func TestNewFilePosition(t *testing.T) {
+	p := text.NewFilePosition("file.name", 1, 2, 3)
+	assert.Equal(t, "file.name", p.Filename())
+	assert.Equal(t, 1, p.Pos())
+	assert.Equal(t, 2, p.Line())
+	assert.Equal(t, 3, p.Col())
+	assert.Equal(t, "file.name:2:3", p.String())
 }
 
 func TestEmptyReader(t *testing.T) {
@@ -400,4 +412,25 @@ func TestIsEOFShouldIgnoreWhitespacesIfSet(t *testing.T) {
 func TestIsEOFShouldReturnFalseIfNotAtTheEnd(t *testing.T) {
 	r := text.NewReader([]byte(" "), false)
 	assert.False(t, r.IsEOF())
+}
+
+func TestNewFileReader(t *testing.T) {
+	tmpfile, err := ioutil.TempFile("", "text_reader_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	r, err := text.NewFileReader(tmpfile.Name(), true)
+	assert.Nil(t, err)
+	require.NotNil(t, r)
+	assert.Equal(t, text.NewFilePosition(tmpfile.Name(), 0, 1, 1), r.Cursor())
+	assert.Equal(t, 0, r.Remaining())
+	assert.True(t, r.IsEOF())
+}
+
+func TestNewFileReaderWithNonexistingFile(t *testing.T) {
+	r, err := text.NewFileReader("non-existing.file", true)
+	assert.Error(t, err)
+	assert.Nil(t, r)
 }

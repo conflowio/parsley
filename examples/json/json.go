@@ -15,7 +15,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/opsidian/parsley/ast"
@@ -33,7 +32,8 @@ func main() {
 	if len(os.Args) > 1 {
 		jsonFilePath = os.Args[1]
 	}
-	b, err := ioutil.ReadFile(jsonFilePath)
+
+	reader, err := text.NewFileReader(jsonFilePath, true)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,7 @@ func main() {
 	))
 
 	s := parsley.NewSentence(object)
-	res, h, err := s.Evaluate(text.NewReader(b, true), nil)
+	res, h, err := s.Evaluate(reader, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -20,8 +20,9 @@ func NewPosition(pos int) Position {
 	return Position{pos}
 }
 
-func (p Position) Pos() int       { return p.pos }
-func (p Position) String() string { return fmt.Sprintf("Pos{%d}", p.pos) }
+func (p Position) Filename() string { return "" }
+func (p Position) Pos() int         { return p.pos }
+func (p Position) String() string   { return fmt.Sprintf("Pos{%d}", p.pos) }
 
 type Reader struct {
 	cur       Position

@@ -9,6 +9,7 @@ package text
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"regexp"
 	"unicode/utf8"
 
@@ -17,14 +18,25 @@ import (
 
 // Position represents a token position. It also contains the line and column indexes.
 type Position struct {
-	pos  int
-	line int
-	col  int
+	filename string
+	pos      int
+	line     int
+	col      int
 }
 
 // NewPosition creates a new position instance
 func NewPosition(pos int, line int, col int) Position {
-	return Position{pos, line, col}
+	return Position{"", pos, line, col}
+}
+
+// NewFilePosition creates a new position instance with a filename
+func NewFilePosition(filename string, pos int, line int, col int) Position {
+	return Position{filename, pos, line, col}
+}
+
+// Filename returns with the file name if any
+func (p Position) Filename() string {
+	return p.filename
 }
 
 // Pos returns with the byte position
@@ -43,7 +55,10 @@ func (p Position) Col() int {
 }
 
 func (p Position) String() string {
-	return fmt.Sprintf("%d:%d", p.line, p.col)
+	if p.filename == "" {
+		return fmt.Sprintf("%d:%d", p.line, p.col)
+	}
+	return fmt.Sprintf("%s:%d:%d", p.filename, p.line, p.col)
 }
 
 // Reader defines a text input reader
@@ -65,6 +80,21 @@ func NewReader(b []byte, ignoreWhitespaces bool) *Reader {
 		ignoreWhitespaces: ignoreWhitespaces,
 		regexpCache:       make(map[string]*regexp.Regexp),
 	}
+}
+
+// NewFileReader creates a new reader instance which reads from a file
+func NewFileReader(filename string, ignoreWhitespaces bool) (*Reader, error) {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return &Reader{
+		b:                 b,
+		cur:               NewFilePosition(filename, 0, 1, 1),
+		charCount:         utf8.RuneCount(b),
+		ignoreWhitespaces: ignoreWhitespaces,
+		regexpCache:       make(map[string]*regexp.Regexp),
+	}, nil
 }
 
 // Clone creates a new reader with the same position

@@ -1,3 +1,10 @@
+## 0.3.3
+
+IMPROVEMENTS:
+
+* allow nil pos in reader errors, replace {{err}} placeholder in WrapError
+* add filename to position, add new file reader constructor
+
 ## 0.3.2
 
 IMPROVEMENTS:

@@ -13,6 +13,7 @@ import (
 
 // Position is a given position in the reader
 type Position interface {
+	Filename() string
 	Pos() int
 	fmt.Stringer
 }

@@ -8,6 +8,20 @@ type Position struct {
 	mock.Mock
 }
 
+// Filename provides a mock function with given fields:
+func (_m *Position) Filename() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Pos provides a mock function with given fields:
 func (_m *Position) Pos() int {
 	ret := _m.Called()
