@@ -1,3 +1,4 @@
 /debug.test
 /coverage.*
 /vendor
+profile.out
