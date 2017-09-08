@@ -16,6 +16,8 @@ import (
 	"github.com/opsidian/parsley/reader"
 )
 
+var whitespaceRegExp = regexp.MustCompile("^[ \n\r\t]+")
+
 // Position represents a token position. It also contains the line and column indexes.
 type Position struct {
 	filename string
@@ -250,7 +252,7 @@ func (r *Reader) String() string {
 }
 
 func (r *Reader) readWhitespaces() {
-	loc := r.getPattern("[ \n\r\t]+").FindIndex(r.b[r.cur.pos:])
+	loc := whitespaceRegExp.FindIndex(r.b[r.cur.pos:])
 	if loc == nil {
 		return
 	}
@@ -267,11 +269,11 @@ func (r *Reader) readWhitespaces() {
 	r.cur.pos += loc[1]
 }
 
-func (r *Reader) getPattern(expr string) (rc *regexp.Regexp) {
+func (r *Reader) getPattern(expr string) *regexp.Regexp {
 	rc, ok := r.regexpCache[expr]
 	if !ok {
 		rc = regexp.MustCompile("^(?:" + expr + ")")
 		r.regexpCache[expr] = rc
 	}
-	return
+	return rc
 }
