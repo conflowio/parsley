@@ -1,3 +1,14 @@
+## 0.4.0
+
+BACKWARDS INCOMPATIBILITIES:
+* Typo fix in some methods: peak -> peek
+
+IMPROVEMENTS:
+* Move precompiled whitespace regexp to a separate variable in text reader
+
+OTHER:
+* Fix example JSON parser + add comparison benchmarks against encoding/json
+
 ## 0.3.3
 
 IMPROVEMENTS:
