@@ -19,7 +19,7 @@ func Bool() parser.Func {
 	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		if matches, pos, ok := tr.ReadMatch("true|false", false); ok {
-			if _, ok := tr.PeakMatch("\\w+"); ok {
+			if _, ok := tr.PeekMatch("\\w+"); ok {
 				return parser.NoCurtailingParsers(), nil, reader.NewError(pos, "was expecting boolean")
 			}
 			val := false

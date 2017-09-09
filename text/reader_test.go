@@ -135,34 +135,34 @@ func TestReadRuneShouldFollowLinesAndColumns(t *testing.T) {
 	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
 }
 
-func TestPeakRuneShouldReturnWithASCIICharacter(t *testing.T) {
+func TestPeekRuneShouldReturnWithASCIICharacter(t *testing.T) {
 	r := text.NewReader([]byte("a"), true)
-	ch, size, err := r.PeakRune()
+	ch, size, err := r.PeekRune()
 	assert.Equal(t, 'a', ch)
 	assert.Equal(t, 1, size)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 }
 
-func TestPeakRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
+func TestPeekRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
 	r := text.NewReader([]byte("🍕"), true)
-	ch, size, err := r.PeakRune()
+	ch, size, err := r.PeekRune()
 	assert.Equal(t, '🍕', ch)
 	assert.Equal(t, 4, size)
 	assert.Nil(t, err)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
 }
 
-func TestPeakRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
+func TestPeekRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
 	var err error
 	r := text.NewReader([]byte(""), true)
-	_, _, err = r.PeakRune()
+	_, _, err = r.PeekRune()
 	assert.Exactly(t, io.EOF, err)
 }
 
-func TestPeakRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
+func TestPeekRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
 	r := text.NewReader([]byte("\xc3\x28"), true)
-	_, _, err := r.PeakRune()
+	_, _, err := r.PeekRune()
 	assert.Error(t, err)
 }
 
@@ -267,19 +267,19 @@ func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
 	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
 }
 
-func TestPeakMatchShouldMatchButNotMoveCursor(t *testing.T) {
+func TestPeekMatchShouldMatchButNotMoveCursor(t *testing.T) {
 	r := text.NewReader([]byte("abc"), true)
 	expectedPos := r.Cursor()
-	matches, ok := r.PeakMatch("\\w+")
+	matches, ok := r.PeekMatch("\\w+")
 	require.True(t, ok)
 	assert.Equal(t, 1, len(matches))
 	assert.Equal(t, "abc", matches[0])
 	assert.Equal(t, expectedPos, r.Cursor())
 }
 
-func TestPeakMatchShouldReturnMatchAndSubmatches(t *testing.T) {
+func TestPeekMatchShouldReturnMatchAndSubmatches(t *testing.T) {
 	r := text.NewReader([]byte("123abcDEF"), true)
-	matches, ok := r.PeakMatch("(\\d+)([a-z]+)([A-Z]+)")
+	matches, ok := r.PeekMatch("(\\d+)([a-z]+)([A-Z]+)")
 	require.True(t, ok)
 	assert.Equal(t, 4, len(matches))
 	assert.Equal(t, "123abcDEF", matches[0])
@@ -288,16 +288,16 @@ func TestPeakMatchShouldReturnMatchAndSubmatches(t *testing.T) {
 	assert.Equal(t, "DEF", matches[3])
 }
 
-func TestPeakMatchShouldReturnNilIfNoMatch(t *testing.T) {
+func TestPeekMatchShouldReturnNilIfNoMatch(t *testing.T) {
 	r := text.NewReader([]byte("123"), true)
-	matches, ok := r.PeakMatch("[a-z]+")
+	matches, ok := r.PeekMatch("[a-z]+")
 	assert.False(t, ok)
 	assert.Nil(t, matches)
 }
 
-func TestPeakMatchShouldNotIgnoreWhitespacesEvenIfSet(t *testing.T) {
+func TestPeekMatchShouldNotIgnoreWhitespacesEvenIfSet(t *testing.T) {
 	r := text.NewReader([]byte(" \r\n\tabc"), true)
-	matches, ok := r.PeakMatch("[a-z]+")
+	matches, ok := r.PeekMatch("[a-z]+")
 	assert.False(t, ok)
 	assert.Nil(t, matches)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())

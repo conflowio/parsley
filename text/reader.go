@@ -135,8 +135,8 @@ func (r *Reader) ReadRune() (ch rune, size int, err error) {
 	return
 }
 
-// PeakRune reads the next character but does not move the cursor
-func (r *Reader) PeakRune() (ch rune, size int, err error) {
+// PeekRune reads the next character but does not move the cursor
+func (r *Reader) PeekRune() (ch rune, size int, err error) {
 	if r.cur.pos >= len(r.b) {
 		return 0, 0, io.EOF
 	}
@@ -184,9 +184,9 @@ func (r *Reader) ReadMatch(expr string, includeWhitespaces bool) ([]string, read
 	return matches, pos, true
 }
 
-// PeakMatch reads a set of characters matching the given regular expression but doesn't move the cursor
+// PeekMatch reads a set of characters matching the given regular expression but doesn't move the cursor
 // Also it never ignores whitespaces
-func (r *Reader) PeakMatch(expr string) ([]string, bool) {
+func (r *Reader) PeekMatch(expr string) ([]string, bool) {
 	pos := r.cur.pos
 
 	loc := r.getPattern(expr).FindSubmatchIndex(r.b[pos:])

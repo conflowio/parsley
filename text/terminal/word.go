@@ -21,7 +21,7 @@ func Word(word string, token string, value interface{}) parser.Func {
 	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
 		tr := r.(*text.Reader)
 		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(word), false); ok {
-			if _, ok := tr.PeakMatch("\\w+"); ok {
+			if _, ok := tr.PeekMatch("\\w+"); ok {
 				return parser.NoCurtailingParsers(), nil, reader.NewError(pos, "was expecting \"%s\"", word)
 			}
 			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, value), r).AsSet(), nil
