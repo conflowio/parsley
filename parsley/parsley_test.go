@@ -39,7 +39,7 @@ func ExampleSentence_Parse() {
 		terminal.Integer(),
 	)
 	s := parsley.NewSentence(add)
-	node, _, err := s.Parse(text.NewReader([]byte("1 + 2"), true))
+	node, _, err := s.Parse(text.NewReader([]byte("1 + 2"), "", true))
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +67,7 @@ func ExampleSentence_Evaluate() {
 		terminal.Integer(),
 	)
 	s := parsley.NewSentence(add)
-	value, _, err := s.Evaluate(text.NewReader([]byte("1 + 2"), true), nil)
+	value, _, err := s.Evaluate(text.NewReader([]byte("1 + 2"), "", true), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +79,7 @@ func TestParseShouldRunParserAndReturnNode(t *testing.T) {
 	expectedNode := ast.NewTerminalNode("STRING", text.NewPosition(0, 1, 1), "RES")
 	p := terminal.Word("input", "STRING", "RES")
 	s := parsley.NewSentence(p)
-	node, _, err := s.Parse(text.NewReader([]byte("input"), true))
+	node, _, err := s.Parse(text.NewReader([]byte("input"), "", true))
 	assert.Equal(t, expectedNode, node)
 	assert.Nil(t, err)
 }
@@ -89,7 +89,7 @@ func TestParseShouldHandleEmptyResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	s := parsley.NewSentence(p)
-	node, _, err := s.Parse(text.NewReader([]byte("input"), true))
+	node, _, err := s.Parse(text.NewReader([]byte("input"), "", true))
 	assert.Error(t, err)
 	assert.Equal(t, "Failed to parse the input: encountered a test error at 1:3", err.Error())
 	assert.Nil(t, node)
@@ -100,7 +100,7 @@ func TestParseShouldHandleNilNode(t *testing.T) {
 		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet(), nil
 	})
 	s := parsley.NewSentence(p)
-	node, _, err := s.Parse(text.NewReader([]byte(""), true))
+	node, _, err := s.Parse(text.NewReader([]byte(""), "", true))
 	assert.Nil(t, err)
 	assert.Nil(t, node)
 }
@@ -109,7 +109,7 @@ func TestEvaluateShouldRunParserAndReturnValue(t *testing.T) {
 	expectedValue := "RES"
 	p := terminal.Word("input", "STRING", "RES")
 	s := parsley.NewSentence(p)
-	value, _, err := s.Evaluate(text.NewReader([]byte("input"), true), nil)
+	value, _, err := s.Evaluate(text.NewReader([]byte("input"), "", true), nil)
 	assert.Equal(t, expectedValue, value)
 	assert.Nil(t, err)
 }
@@ -125,7 +125,7 @@ func TestEvaluateShouldPassContext(t *testing.T) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
 	s := parsley.NewSentence(p)
-	value, _, err := s.Evaluate(text.NewReader([]byte("input"), true), ctx)
+	value, _, err := s.Evaluate(text.NewReader([]byte("input"), "", true), ctx)
 	assert.Equal(t, ctx, value)
 	assert.Nil(t, err)
 }
@@ -135,7 +135,7 @@ func TestEvaluateShouldHandleEmptyResult(t *testing.T) {
 		return parser.NoCurtailingParsers(), nil, reader.NewError(text.NewPosition(2, 1, 3), "encountered a test error")
 	})
 	s := parsley.NewSentence(p)
-	value, _, err := s.Evaluate(text.NewReader([]byte("input"), true), nil)
+	value, _, err := s.Evaluate(text.NewReader([]byte("input"), "", true), nil)
 	assert.Error(t, err)
 	assert.Equal(t, "Failed to parse the input: encountered a test error at 1:3", err.Error())
 	assert.Nil(t, value)
@@ -146,7 +146,7 @@ func TestEvaluateShouldHandleNilNode(t *testing.T) {
 		return parser.NoCurtailingParsers(), parser.NewResult(nil, r).AsSet(), nil
 	})
 	s := parsley.NewSentence(p)
-	value, _, err := s.Evaluate(text.NewReader([]byte(""), true), nil)
+	value, _, err := s.Evaluate(text.NewReader([]byte(""), "", true), nil)
 	assert.Nil(t, err)
 	assert.Nil(t, value)
 }
@@ -162,7 +162,7 @@ func TestEvaluateShouldHandleInterpreterError(t *testing.T) {
 		return parser.NoCurtailingParsers(), parser.NewResult(node, r).AsSet(), nil
 	})
 	s := parsley.NewSentence(p)
-	value, _, err := s.Evaluate(text.NewReader([]byte("input"), true), nil)
+	value, _, err := s.Evaluate(text.NewReader([]byte("input"), "", true), nil)
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, value)
 }
@@ -195,7 +195,7 @@ func TestDirectLeftRecursion(t *testing.T) {
 		terminal.Rune('a', "CHAR"),
 	))
 	s := parsley.NewSentence(a)
-	result, h, err := s.Evaluate(text.NewReader([]byte(input), true), nil)
+	result, h, err := s.Evaluate(text.NewReader([]byte(input), "", true), nil)
 	require.Nil(t, err)
 	assert.Equal(t, input, result)
 	assert.Equal(t, 318, h.CallCount())
@@ -223,7 +223,7 @@ func TestIndirectLeftRecursion(t *testing.T) {
 		value,
 	))
 	s := parsley.NewSentence(add)
-	result, h, err := s.Evaluate(text.NewReader([]byte(input), true), nil)
+	result, h, err := s.Evaluate(text.NewReader([]byte(input), "", true), nil)
 	require.Nil(t, err)
 	assert.Equal(t, 55, result)
 	assert.Equal(t, 3477, h.CallCount())
@@ -264,7 +264,7 @@ func TestSepBy(t *testing.T) {
 	))
 
 	s := parsley.NewSentence(value)
-	result, h, err := s.Evaluate(text.NewReader([]byte(input), true), nil)
+	result, h, err := s.Evaluate(text.NewReader([]byte(input), "", true), nil)
 	require.Nil(t, err)
 	assert.Equal(t, -5, result)
 	assert.Equal(t, 1242, h.CallCount())

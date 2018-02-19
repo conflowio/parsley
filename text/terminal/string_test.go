@@ -18,7 +18,7 @@ import (
 )
 
 func TestStringShouldReturnQuotePosition(t *testing.T) {
-	r := text.NewReader([]byte(`"abc"`), true)
+	r := text.NewReader([]byte(`"abc"`), "", true)
 	_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
@@ -56,7 +56,7 @@ func TestStringShouldMatch(t *testing.T) {
 		{"`" + `\U0001F355` + "`", `\U0001F355`, 12},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
@@ -79,7 +79,7 @@ func TestStringShouldNotMatch(t *testing.T) {
 		{"a"},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
 		require.NotNil(t, err)
@@ -99,7 +99,7 @@ func TestUnclosedStringLiteral(t *testing.T) {
 		{"`a", text.NewPosition(2, 1, 3)},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.String().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res, fmt.Sprintf("Should fail to parse: %s", tc.input))
 		require.NotNil(t, err)

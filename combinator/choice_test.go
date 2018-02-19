@@ -31,7 +31,7 @@ func ExampleChoice() {
 		terminal.Integer(),
 	)
 	s := parsley.NewSentence(number)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("1.23"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("1.23"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: float64 1.23
 }

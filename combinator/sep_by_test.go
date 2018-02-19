@@ -41,10 +41,10 @@ func ExampleSepBy() {
 	p := combinator.Seq(builder.Select(1), terminal.Rune('[', "ARR_START"), intList, terminal.Rune(']', "ARR_END"))
 	s := parsley.NewSentence(p)
 
-	value1, _, _ := s.Evaluate(text.NewReader([]byte("[]"), true), nil)
+	value1, _, _ := s.Evaluate(text.NewReader([]byte("[]"), "", true), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
-	value2, _, _ := s.Evaluate(text.NewReader([]byte("[1, 2, 3]"), true), nil)
+	value2, _, _ := s.Evaluate(text.NewReader([]byte("[1, 2, 3]"), "", true), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 	// Output: []int []
 	// []int [1 2 3]
@@ -65,10 +65,10 @@ func ExampleSepBy1() {
 
 	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+', "+"), interpreter)
 	s := parsley.NewSentence(p)
-	value1, _, _ := s.Evaluate(text.NewReader([]byte("1"), true), nil)
+	value1, _, _ := s.Evaluate(text.NewReader([]byte("1"), "", true), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
-	value2, _, _ := s.Evaluate(text.NewReader([]byte("1 + 2 + 3"), true), nil)
+	value2, _, _ := s.Evaluate(text.NewReader([]byte("1 + 2 + 3"), "", true), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 	// Output: int 1
 	// int 6

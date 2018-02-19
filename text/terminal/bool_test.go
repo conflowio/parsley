@@ -18,7 +18,7 @@ import (
 )
 
 func TestBoolShouldReturnStartingPosition(t *testing.T) {
-	r := text.NewReader([]byte("true"), true)
+	r := text.NewReader([]byte("true"), "", true)
 	_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
@@ -37,7 +37,7 @@ func TestBoolShouldMatch(t *testing.T) {
 		{"true xxx", true, 4},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
@@ -60,7 +60,7 @@ func TestBoolShouldNotMatch(t *testing.T) {
 		{"falsex"},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Bool().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)

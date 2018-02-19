@@ -18,7 +18,7 @@ import (
 )
 
 func TestRuneShouldMatchCharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), true)
+	r := text.NewReader([]byte("a"), "", true)
 	_, res, err := terminal.Rune('a', "A")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("A", text.NewPosition(0, 1, 1), 'a')
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -27,7 +27,7 @@ func TestRuneShouldMatchCharacter(t *testing.T) {
 }
 
 func TestRuneShouldNotUseSpecialChars(t *testing.T) {
-	r := text.NewReader([]byte("a"), true)
+	r := text.NewReader([]byte("a"), "", true)
 	_, res, err := terminal.Rune('.', ".")(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
@@ -36,7 +36,7 @@ func TestRuneShouldNotUseSpecialChars(t *testing.T) {
 }
 
 func TestRuneShouldMatchUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), true)
+	r := text.NewReader([]byte("🍕"), "", true)
 	_, res, err := terminal.Rune('🍕', "PIZZA")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("PIZZA", text.NewPosition(0, 1, 1), '🍕')
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -45,7 +45,7 @@ func TestRuneShouldMatchUnicodeCharacter(t *testing.T) {
 }
 
 func TestRuneShouldNotMatchCharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), true)
+	r := text.NewReader([]byte("a"), "", true)
 	_, res, err := terminal.Rune('b', "B")(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())

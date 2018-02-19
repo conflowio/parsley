@@ -7,6 +7,7 @@
 package text
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -74,10 +75,12 @@ type Reader struct {
 }
 
 // NewReader creates a new reader instance
-func NewReader(b []byte, ignoreWhitespaces bool) *Reader {
+// The Windows-style line endings (\r\n) are automatically replaced with Unix-style line endings (\n).
+func NewReader(b []byte, filename string, ignoreWhitespaces bool) *Reader {
+	b = bytes.Replace(b, []byte("\r\n"), []byte("\n"), -1)
 	return &Reader{
 		b:                 b,
-		cur:               NewPosition(0, 1, 1),
+		cur:               NewFilePosition(filename, 0, 1, 1),
 		charCount:         utf8.RuneCount(b),
 		ignoreWhitespaces: ignoreWhitespaces,
 		regexpCache:       make(map[string]*regexp.Regexp),
@@ -85,18 +88,14 @@ func NewReader(b []byte, ignoreWhitespaces bool) *Reader {
 }
 
 // NewFileReader creates a new reader instance which reads from a file
+// The Windows-style line endings (\r\n) are automatically replaced with Unix-style line endings (\n).
 func NewFileReader(filename string, ignoreWhitespaces bool) (*Reader, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	return &Reader{
-		b:                 b,
-		cur:               NewFilePosition(filename, 0, 1, 1),
-		charCount:         utf8.RuneCount(b),
-		ignoreWhitespaces: ignoreWhitespaces,
-		regexpCache:       make(map[string]*regexp.Regexp),
-	}, nil
+
+	return NewReader(b, filename, ignoreWhitespaces), nil
 }
 
 // Clone creates a new reader with the same position

@@ -135,7 +135,7 @@ add := combinator.Seq(
 	terminal.Integer(),
 )
 s := parsley.NewSentence(add)
-value, _, err := s.Evaluate(text.NewReader([]byte("1 + 2"), true), nil)
+value, _, err := s.Evaluate(text.NewReader([]byte("1 + 2"), "", true), nil)
 if err != nil {
 	panic(err)
 }

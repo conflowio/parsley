@@ -43,7 +43,7 @@ func ExampleEmpty() {
 		terminal.Rune('c', "c"),
 	)
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ac
 }
@@ -51,7 +51,7 @@ func ExampleEmpty() {
 // Using the End parser you can make sure you fully match the input
 func ExampleEnd() {
 	s := combinator.Seq(builder.Select(0), terminal.Float(), parser.End())
-	_, rs, _ := s.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), text.NewReader([]byte("1.23"), true))
+	_, rs, _ := s.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), text.NewReader([]byte("1.23"), "", true))
 	value, _ := rs[0].Node().Value(nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: float64 1.23

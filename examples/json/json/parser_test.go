@@ -18,13 +18,13 @@ func benchmarkParsleyJSON(b *testing.B, jsonFilePath string) {
 	}
 
 	s := parsley.NewSentence(json.NewParser())
-	r := text.NewReader(input, true)
+	r := text.NewReader(input, "", true)
 	if _, _, err = s.Evaluate(r, nil); err != nil {
 		b.Fatal(err)
 	}
 
 	for n := 0; n < b.N; n++ {
-		r := text.NewReader(input, true)
+		r := text.NewReader(input, "", true)
 		_, _, _ = s.Evaluate(r, nil)
 	}
 }

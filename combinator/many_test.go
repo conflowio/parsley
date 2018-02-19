@@ -36,7 +36,7 @@ func ExampleMany() {
 	})
 	p := combinator.Many(builder.All("a", concat), terminal.Rune('a', "A"))
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("aaaaa"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("aaaaa"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string aaaaa
 }
@@ -53,7 +53,7 @@ func ExampleMany1() {
 	})
 	p := combinator.Many1(builder.All("a", concat), terminal.Rune('a', "A"))
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("aaaaa"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("aaaaa"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string aaaaa
 }

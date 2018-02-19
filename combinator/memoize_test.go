@@ -49,7 +49,7 @@ func ExampleMemoize() {
 		),
 	))
 	s := parsley.NewSentence(a)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("abbbbbbbb"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("abbbbbbbb"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string abbbbbbbb
 }

@@ -18,7 +18,7 @@ import (
 )
 
 func TestRegexpShouldMatchPattern(t *testing.T) {
-	r := text.NewReader([]byte("abc123"), true)
+	r := text.NewReader([]byte("abc123"), "", true)
 	_, res, err := terminal.Regexp("letters", "[a-z]+", false, 0, "TEST")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(0, 1, 1), "abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -27,7 +27,7 @@ func TestRegexpShouldMatchPattern(t *testing.T) {
 }
 
 func TestRegexpShouldIgnoreWhitespaces(t *testing.T) {
-	r := text.NewReader([]byte("   abc123"), true)
+	r := text.NewReader([]byte("   abc123"), "", true)
 	_, res, err := terminal.Regexp("letters", "[a-z]+", false, 0, "TEST")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(3, 1, 4), "abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -36,7 +36,7 @@ func TestRegexpShouldIgnoreWhitespaces(t *testing.T) {
 }
 
 func TestRegexpShouldNotIgnoreWhitespaces(t *testing.T) {
-	r := text.NewReader([]byte("   abc123a"), true)
+	r := text.NewReader([]byte("   abc123a"), "", true)
 	_, res, err := terminal.Regexp("letters", "[ a-z]+", true, 0, "TEST")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("TEST", text.NewPosition(0, 1, 1), "   abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -45,7 +45,7 @@ func TestRegexpShouldNotIgnoreWhitespaces(t *testing.T) {
 }
 
 func TestRegexpShouldUseMatchIfTokenEmpty(t *testing.T) {
-	r := text.NewReader([]byte("abc123"), true)
+	r := text.NewReader([]byte("abc123"), "", true)
 	_, res, err := terminal.Regexp("letter", "[a-z]+", false, 0, "")(nil, parser.EmptyLeftRecCtx(), r)
 	expectedNode := ast.NewTerminalNode("abc", text.NewPosition(0, 1, 1), "abc")
 	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
@@ -54,7 +54,7 @@ func TestRegexpShouldUseMatchIfTokenEmpty(t *testing.T) {
 }
 
 func TestRegexpNotMatchingPattern(t *testing.T) {
-	r := text.NewReader([]byte("abc123"), true)
+	r := text.NewReader([]byte("abc123"), "", true)
 	_, res, err := terminal.Regexp("numbers", "[0-9]+", false, 0, "TEST")(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
@@ -63,6 +63,6 @@ func TestRegexpNotMatchingPattern(t *testing.T) {
 }
 
 func TestRegexpShouldPanicIfInvalidGroupIndex(t *testing.T) {
-	r := text.NewReader([]byte("abc123"), true)
+	r := text.NewReader([]byte("abc123"), "", true)
 	assert.Panics(t, func() { terminal.Regexp("letters", "[a-z]+", false, 1, "TEST")(nil, parser.EmptyLeftRecCtx(), r) })
 }

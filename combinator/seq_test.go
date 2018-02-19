@@ -41,7 +41,7 @@ func ExampleSeq() {
 		terminal.Rune('c', "c"),
 	)
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("abc"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("abc"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string abc
 }
@@ -63,7 +63,7 @@ func ExampleSeqTry() {
 		terminal.Rune('c', "c"),
 	)
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("ab"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("ab"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ab
 }

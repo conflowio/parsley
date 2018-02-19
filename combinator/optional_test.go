@@ -43,7 +43,7 @@ func ExampleOptional() {
 		terminal.Rune('c', "c"),
 	)
 	s := parsley.NewSentence(p)
-	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), true), nil)
+	value, _, _ := s.Evaluate(text.NewReader([]byte("ac"), "", true), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ac
 }

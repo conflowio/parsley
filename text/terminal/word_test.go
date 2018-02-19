@@ -18,14 +18,14 @@ import (
 )
 
 func TestWordShouldMatchExactString(t *testing.T) {
-	r := text.NewReader([]byte("foo bar"), true)
+	r := text.NewReader([]byte("foo bar"), "", true)
 	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Equal(t, res, parser.NewResult(ast.NewTerminalNode("TEST", text.NewPosition(0, 1, 1), 5), r).AsSet())
 	assert.Nil(t, err)
 }
 
 func TestWordShouldNotMatchWordPartially(t *testing.T) {
-	r := text.NewReader([]byte("foobar"), true)
+	r := text.NewReader([]byte("foobar"), "", true)
 	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	require.NotNil(t, err)
@@ -33,7 +33,7 @@ func TestWordShouldNotMatchWordPartially(t *testing.T) {
 }
 
 func TestWordShouldMatchOnlyGivenString(t *testing.T) {
-	r := text.NewReader([]byte("bar"), true)
+	r := text.NewReader([]byte("bar"), "", true)
 	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
 	assert.Nil(t, res)
 	require.NotNil(t, err)

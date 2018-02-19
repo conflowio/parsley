@@ -18,7 +18,7 @@ import (
 )
 
 func TestIntegerShouldReturnStartingPosition(t *testing.T) {
-	r := text.NewReader([]byte("1"), true)
+	r := text.NewReader([]byte("1"), "", true)
 	_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
@@ -54,7 +54,7 @@ func TestIntegerShouldMatch(t *testing.T) {
 		{"0xg", 0, 1}, // as 0xg is not a valid hexadecimal number only 0 should be parsed
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
@@ -75,7 +75,7 @@ func TestIntegerShouldNotMatch(t *testing.T) {
 		{"+"},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Integer().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)

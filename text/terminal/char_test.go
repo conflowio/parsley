@@ -18,7 +18,7 @@ import (
 )
 
 func TestCharShouldReturnQuotePosition(t *testing.T) {
-	r := text.NewReader([]byte("'a'"), true)
+	r := text.NewReader([]byte("'a'"), "", true)
 	_, res, err := terminal.Char().Parse(nil, parser.EmptyLeftRecCtx(), r)
 	require.NotNil(t, res)
 	assert.Nil(t, err)
@@ -51,7 +51,7 @@ func TestCharShouldMatch(t *testing.T) {
 		{`'\U0001F355'`, '🍕', 12},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Char().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.NotNil(t, res, fmt.Sprintf("Failed to parse: %s", tc.input))
 		actual, _ := res[0].Node().Value(nil)
@@ -74,7 +74,7 @@ func TestCharShouldNotMatch(t *testing.T) {
 		{`\x`},
 	}
 	for _, tc := range testCases {
-		r := text.NewReader([]byte(tc.input), true)
+		r := text.NewReader([]byte(tc.input), "", true)
 		_, res, err := terminal.Char().Parse(nil, parser.EmptyLeftRecCtx(), r)
 		require.Nil(t, res)
 		require.NotNil(t, err)
