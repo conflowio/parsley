@@ -1,3 +1,11 @@
+## 0.5.0
+
+BACKWARDS INCOMPATIBILITIES:
+* text.NewReader now expects a filename parameter
+
+IMPROVEMENTS:
+* Windows-style line endings (\r\n) are automatically replaced to Unix-style line endings (\n) in the text reader.
+
 ## 0.4.0
 
 BACKWARDS INCOMPATIBILITIES:
