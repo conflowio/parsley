@@ -9,270 +9,191 @@ package text
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"regexp"
 	"unicode/utf8"
 
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
-
-var whitespaceRegExp = regexp.MustCompile("^[ \n\r\t]+")
-
-// Position represents a token position. It also contains the line and column indexes.
-type Position struct {
-	filename string
-	pos      int
-	line     int
-	col      int
-}
-
-// NewPosition creates a new position instance
-func NewPosition(pos int, line int, col int) Position {
-	return Position{"", pos, line, col}
-}
-
-// NewFilePosition creates a new position instance with a filename
-func NewFilePosition(filename string, pos int, line int, col int) Position {
-	return Position{filename, pos, line, col}
-}
-
-// Filename returns with the file name if any
-func (p Position) Filename() string {
-	return p.filename
-}
-
-// Pos returns with the byte position
-func (p Position) Pos() int {
-	return p.pos
-}
-
-// Line returns with the line position
-func (p Position) Line() int {
-	return p.line
-}
-
-// Col returns with the column position
-func (p Position) Col() int {
-	return p.col
-}
-
-func (p Position) String() string {
-	if p.filename == "" {
-		return fmt.Sprintf("%d:%d", p.line, p.col)
-	}
-	return fmt.Sprintf("%s:%d:%d", p.filename, p.line, p.col)
-}
 
 // Reader defines a text input reader
 // For more efficient reading it provides methods for regexp matching.
 type Reader struct {
-	b                 []byte
-	cur               Position
-	charCount         int
-	ignoreWhitespaces bool
-	regexpCache       map[string]*regexp.Regexp
+	file        *File
+	regexpCache map[string]*regexp.Regexp
 }
 
 // NewReader creates a new reader instance
 // The Windows-style line endings (\r\n) are automatically replaced with Unix-style line endings (\n).
-func NewReader(b []byte, filename string, ignoreWhitespaces bool) *Reader {
-	b = bytes.Replace(b, []byte("\r\n"), []byte("\n"), -1)
+func NewReader(file *File) *Reader {
 	return &Reader{
-		b:                 b,
-		cur:               NewFilePosition(filename, 0, 1, 1),
-		charCount:         utf8.RuneCount(b),
-		ignoreWhitespaces: ignoreWhitespaces,
-		regexpCache:       make(map[string]*regexp.Regexp),
+		file:        file,
+		regexpCache: map[string]*regexp.Regexp{},
 	}
 }
 
-// NewFileReader creates a new reader instance which reads from a file
-// The Windows-style line endings (\r\n) are automatically replaced with Unix-style line endings (\n).
-func NewFileReader(filename string, ignoreWhitespaces bool) (*Reader, error) {
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
+// ReadRune matches any of the given runes
+func (r *Reader) ReadRune(pos int, runes ...rune) (int, rune, bool) { // nolint
+	if pos >= r.file.len {
+		return pos, 0, false
 	}
 
-	return NewReader(b, filename, ignoreWhitespaces), nil
-}
-
-// Clone creates a new reader with the same position
-func (r *Reader) Clone() reader.Reader {
-	return &Reader{
-		b:                 r.b,
-		cur:               r.cur,
-		charCount:         r.charCount,
-		ignoreWhitespaces: r.ignoreWhitespaces,
-		regexpCache:       r.regexpCache,
-	}
-}
-
-// ReadRune reads the next character
-func (r *Reader) ReadRune() (ch rune, size int, err error) {
-	if r.cur.pos >= len(r.b) {
-		return 0, 0, io.EOF
-	}
-	if c := r.b[r.cur.pos]; c < utf8.RuneSelf {
-		ch = rune(c)
-		size = 1
-	} else {
-		ch, size = utf8.DecodeRune(r.b[r.cur.pos:])
-		if ch == utf8.RuneError {
-			return 0, 0, fmt.Errorf("invalid UTF-8 byte sequence encountered at %s", r.cur)
-		}
-	}
-	r.cur.pos += size
-	r.charCount--
-	if ch != '\n' {
-		r.cur.col++
-	} else {
-		r.cur.line++
-		r.cur.col = 1
-	}
-	return
-}
-
-// PeekRune reads the next character but does not move the cursor
-func (r *Reader) PeekRune() (ch rune, size int, err error) {
-	if r.cur.pos >= len(r.b) {
-		return 0, 0, io.EOF
-	}
-	if c := r.b[r.cur.pos]; c < utf8.RuneSelf {
-		ch = rune(c)
-		size = 1
-	} else {
-		ch, size = utf8.DecodeRune(r.b[r.cur.pos:])
-		if ch == utf8.RuneError {
-			return 0, 0, fmt.Errorf("invalid UTF-8 byte sequence encountered at %s", r.cur)
-		}
-	}
-	return
-}
-
-// ReadMatch reads a set of characters matching the given regular expression
-func (r *Reader) ReadMatch(expr string, includeWhitespaces bool) ([]string, reader.Position, bool) {
-	cur := r.cur
-	if r.ignoreWhitespaces && !includeWhitespaces {
-		r.readWhitespaces()
+	if len(runes) == 0 {
+		panic("MatchRune() should not be called with an empty rune list")
 	}
 
-	loc := r.getPattern(expr).FindSubmatchIndex(r.b[r.cur.pos:])
-	if loc == nil {
-		r.cur = cur
-		return nil, nil, false
-	}
-	pos := r.cur
-	matches := make([]string, len(loc)/2)
-	for i := 0; i < len(loc)/2; i++ {
-		matches[i] = string(r.b[r.cur.pos+loc[i*2] : r.cur.pos+loc[i*2+1]])
-	}
-
-	r.cur.pos += loc[1]
-	for _, ch := range matches[0] {
-		r.charCount--
-		if ch != '\n' {
-			r.cur.col++
+	for _, runeValue := range runes {
+		if runeValue < utf8.RuneSelf {
+			if int8(runeValue) == int8(r.file.data[pos]) {
+				return pos + 1, runeValue, true
+			}
 		} else {
-			r.cur.line++
-			r.cur.col = 1
+			nextRune, width := utf8.DecodeRune(r.file.data[pos:])
+			if nextRune == runeValue {
+				return pos + width, runeValue, true
+			}
 		}
 	}
 
-	return matches, pos, true
+	return pos, 0, false
 }
 
-// PeekMatch reads a set of characters matching the given regular expression but doesn't move the cursor
-// Also it never ignores whitespaces
-func (r *Reader) PeekMatch(expr string) ([]string, bool) {
-	pos := r.cur.pos
-
-	loc := r.getPattern(expr).FindSubmatchIndex(r.b[pos:])
-	if loc == nil {
-		return nil, false
+// MatchString matches the given string
+func (r *Reader) MatchString(pos int, str string) (int, bool) {
+	if str == "" {
+		panic("MatchString() should not be called with an empty string")
 	}
 
-	matches := make([]string, len(loc)/2)
-	for i := 0; i < len(loc)/2; i++ {
-		matches[i] = string(r.b[pos+loc[i*2] : pos+loc[i*2+1]])
+	if len(str) > len(r.file.data)-pos {
+		return pos, false
 	}
 
-	return matches, true
+	if bytes.HasPrefix(r.file.data[pos:], []byte(str)) {
+		return pos + len(str), true
+	}
+	return pos, false
+}
+
+// MatchWord matches the given word
+// It's different from MatchString() as it checks that the next character is not a word character
+func (r *Reader) MatchWord(pos int, word string) (int, bool) {
+	if word == "" {
+		panic("MatchWord() should not be called with an empty string")
+	}
+
+	if len(word) > len(r.file.data)-pos {
+		return pos, false
+	}
+
+	for i, b := range []byte(word) {
+		if b >= utf8.RuneSelf {
+			panic("MatchWord() should not be called with UTF8 strings")
+		}
+		if b != r.file.data[pos+i] {
+			return pos, false
+		}
+	}
+
+	if len(r.file.data)-pos-len(word) == 0 || !isWordCharacter(r.file.data[pos+len(word)]) {
+		return pos + len(word), true
+	}
+	return pos, false
+}
+
+// ReadRegexp matches part of the input based on the given regular expression
+// and returns with the full match
+func (r *Reader) ReadRegexp(pos int, expr string) (int, []byte) {
+	if pos >= r.file.len {
+		return pos, nil
+	}
+
+	indices := r.getPattern(expr).FindIndex(r.file.data[pos:])
+	if indices == nil {
+		return pos, nil
+	}
+
+	return pos + indices[1], r.file.data[pos : pos+indices[1]]
+}
+
+// ReadRegexpSubmatch matches part of the input based on the given regular expression
+// and returns with all capturing groups
+func (r *Reader) ReadRegexpSubmatch(pos int, expr string) (int, [][]byte) {
+	if pos >= r.file.len {
+		return pos, nil
+	}
+
+	matches := r.getPattern(expr).FindSubmatch(r.file.data[pos:])
+	if matches == nil {
+		return pos, nil
+	}
+
+	return pos + len(matches[0]), matches
 }
 
 // Readf uses the given function to match the next token
-func (r *Reader) Readf(f func(b []byte) (string, int, bool), includeWhitespaces bool) (string, reader.Position, bool) {
-	if r.ignoreWhitespaces && !includeWhitespaces {
-		r.readWhitespaces()
+func (r *Reader) Readf(pos int, f func(b []byte) ([]byte, int)) (int, []byte) {
+	if pos >= r.file.len {
+		return pos, nil
 	}
 
-	pos := r.cur
-	value, l, ok := f(r.b[r.cur.pos:])
-	if !ok {
-		return "", nil, false
-	}
-	if l != 0 {
-		str := string(r.b[r.cur.pos : r.cur.pos+l])
-		for _, ch := range str {
-			r.charCount--
-			if ch != '\n' {
-				r.cur.col++
-			} else {
-				r.cur.line++
-				r.cur.col = 1
-			}
+	value, nextPos := f(r.file.data[pos:])
+	if nextPos == 0 {
+		if value != nil {
+			panic("no value should be returned if next position is zero")
 		}
-		r.cur.pos += l
+		return pos, nil
 	}
-	return value, pos, true
+
+	if nextPos < len(value) || pos+nextPos > r.file.len {
+		panic("invalid length was returned by the custom reader function")
+	}
+
+	return pos + nextPos, value
 }
 
 // Remaining returns with the remaining character count
-func (r *Reader) Remaining() int {
-	return r.charCount
-}
-
-// Cursor returns with the cursor's position
-func (r *Reader) Cursor() reader.Position {
-	return r.cur
+func (r *Reader) Remaining(pos int) int {
+	return r.file.len - pos
 }
 
 // IsEOF returns true if we reached the end of the buffer
-func (r *Reader) IsEOF() bool {
-	if r.ignoreWhitespaces {
-		r.readWhitespaces()
-	}
-	return r.cur.pos >= len(r.b)
+func (r *Reader) IsEOF(pos int) bool {
+	return pos >= r.file.len
 }
 
-func (r *Reader) String() string {
-	return fmt.Sprintf("R{%s}", r.cur)
+// MatchWhitespaces reads all the whitespaces
+func (r *Reader) MatchWhitespaces(pos int) int {
+	for pos < r.file.len && isWhitespaceCharacter(r.file.data[pos]) {
+		pos++
+	}
+	return pos
 }
 
-func (r *Reader) readWhitespaces() {
-	loc := whitespaceRegExp.FindIndex(r.b[r.cur.pos:])
-	if loc == nil {
-		return
-	}
-
-	for _, ch := range r.b[r.cur.pos : r.cur.pos+loc[1]] {
-		r.charCount--
-		if ch != '\n' {
-			r.cur.col++
-		} else {
-			r.cur.line++
-			r.cur.col = 1
-		}
-	}
-	r.cur.pos += loc[1]
+// Pos returns with the current position
+func (r *Reader) Pos(pos int) parsley.Pos {
+	return r.file.Pos(pos)
 }
 
 func (r *Reader) getPattern(expr string) *regexp.Regexp {
 	rc, ok := r.regexpCache[expr]
 	if !ok {
 		rc = regexp.MustCompile("^(?:" + expr + ")")
+
+		if rc.Match(nil) {
+			panic(fmt.Errorf("'%s' is not allowed to match an empty input", expr))
+		}
+
 		r.regexpCache[expr] = rc
 	}
 	return rc
+}
+
+func isWordCharacter(b byte) bool {
+	return 'a' <= b && b <= 'z' ||
+		'A' <= b && b <= 'Z' ||
+		'0' <= b && b <= '9' ||
+		b == '_'
+}
+
+func isWhitespaceCharacter(b byte) bool {
+	return b == '\t' || b == '\n' || b == '\f' || b == ' '
 }
