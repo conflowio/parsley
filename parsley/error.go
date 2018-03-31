@@ -13,56 +13,62 @@ import (
 )
 
 // Error is an error with a position
-type Error struct {
-	err error
-	pos Position
+type Error interface {
+	error
+	Cause() error
+	Pos() Position
+}
+
+type err struct {
+	cause error
+	pos   Position
 }
 
 // NewError creates a new error with the given position
 // If the passed error is already a parsley.Error it returns the original error
 // as it should have already the correct position.
-func NewError(err error, pos Position) *Error {
-	if e, ok := err.(*Error); ok {
+func NewError(cause error, pos Position) Error {
+	if e, ok := cause.(*err); ok {
 		return e
 	}
-	return &Error{
-		err: err,
-		pos: pos,
+	return &err{
+		cause: cause,
+		pos:   pos,
 	}
 }
 
 // Cause returns with the original error
-func (e *Error) Cause() error {
-	return e.err
+func (e *err) Cause() error {
+	return e.cause
 }
 
 // Error returns with the full error message including the position
-func (e *Error) Error() string {
+func (e *err) Error() string {
 	if e.pos == nil {
-		return e.err.Error()
+		return e.cause.Error()
 	}
 
 	if e.pos == NilPosition {
-		return e.err.Error()
+		return e.cause.Error()
 	}
 
-	return fmt.Sprintf("%s at %s", e.err.Error(), e.pos.String())
+	return fmt.Sprintf("%s at %s", e.cause.Error(), e.pos.String())
 }
 
 // Pos returns with the error's position
-func (e *Error) Pos() Position {
+func (e *err) Pos() Position {
 	return e.pos
 }
 
 // WrapError wraps the given error in a error
 // If format contains the "{{err}}" placeholder it will be replaced with the original error message
-func WrapError(err *Error, format string, values ...interface{}) *Error {
+func WrapError(e Error, format string, values ...interface{}) Error {
 	msg := fmt.Sprintf(format, values...)
 	if msg == "" {
-		return err
+		return e
 	}
-	return &Error{
-		err: errors.New(strings.Replace(msg, "{{err}}", err.Cause().Error(), -1)),
-		pos: err.Pos(),
+	return &err{
+		cause: errors.New(strings.Replace(msg, "{{err}}", e.Cause().Error(), -1)),
+		pos:   e.Pos(),
 	}
 }

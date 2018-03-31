@@ -12,7 +12,7 @@ import (
 var _ = Describe("Error", func() {
 
 	var (
-		err   *parsley.Error
+		err   parsley.Error
 		cause error
 		pos   parsley.Position
 	)
@@ -28,7 +28,7 @@ var _ = Describe("Error", func() {
 	})
 
 	It("implements error", func() {
-		var _ error = &parsley.Error{}
+		var _ error = err
 	})
 
 	Describe("NewError()", func() {
@@ -85,8 +85,8 @@ var _ = Describe("Error", func() {
 var _ = Describe("WrapError", func() {
 
 	var (
-		err    *parsley.Error
-		cause  *parsley.Error
+		err    parsley.Error
+		cause  parsley.Error
 		pos    parsley.Position
 		format string
 		values []interface{}
