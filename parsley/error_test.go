@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
 var _ = Describe("Error", func() {
@@ -14,13 +13,12 @@ var _ = Describe("Error", func() {
 	var (
 		err   parsley.Error
 		cause error
-		pos   parsley.Position
+		pos   parsley.Pos
 	)
 
 	BeforeEach(func() {
 		cause = errors.New("some error")
-		pos = &parsleyfakes.FakePosition{}
-		pos.(*parsleyfakes.FakePosition).StringReturns("testpos")
+		pos = parsley.Pos(1)
 	})
 
 	JustBeforeEach(func() {
@@ -34,7 +32,7 @@ var _ = Describe("Error", func() {
 	Describe("NewError()", func() {
 		Context("when created with the same error type", func() {
 			BeforeEach(func() {
-				cause = parsley.NewError(errors.New("some error"), &parsleyfakes.FakePosition{})
+				cause = parsley.NewError(errors.New("some error"), parsley.Pos(2))
 			})
 
 			It("should return the original error instead creating a new one", func() {
@@ -56,23 +54,13 @@ var _ = Describe("Error", func() {
 	})
 
 	Describe("Error()", func() {
-		It("returns with a formatted error message", func() {
-			Expect(err.Error()).To(Equal("some error at testpos"))
+		It("returns with the original error message", func() {
+			Expect(err.Error()).To(Equal("some error"))
 		})
 
 		Context("when created with NilPosition", func() {
 			BeforeEach(func() {
-				pos = parsley.NilPosition
-			})
-
-			It("returns with the error message without a position", func() {
-				Expect(err.Error()).To(Equal("some error"))
-			})
-		})
-
-		Context("when created with nil position", func() {
-			BeforeEach(func() {
-				pos = nil
+				pos = parsley.NilPos
 			})
 
 			It("returns with the error message without a position", func() {
@@ -87,18 +75,16 @@ var _ = Describe("WrapError", func() {
 	var (
 		err    parsley.Error
 		cause  parsley.Error
-		pos    parsley.Position
+		pos    parsley.Pos
 		format string
 		values []interface{}
 	)
 
 	BeforeEach(func() {
-		pos = &parsleyfakes.FakePosition{}
-		pos.(*parsleyfakes.FakePosition).StringReturns("testpos")
+		pos = parsley.Pos(1)
 		cause = parsley.NewError(errors.New("some error"), pos)
 		format = "I wrap {{err}} as a %s"
 		values = []interface{}{"test"}
-		pos.(*parsleyfakes.FakePosition).StringReturns("testpos")
 	})
 
 	JustBeforeEach(func() {
@@ -111,10 +97,7 @@ var _ = Describe("WrapError", func() {
 
 	It("should replace {{err}} and the placeholders in the error message", func() {
 		Expect(err.Cause()).To(MatchError("I wrap some error as a test"))
-	})
-
-	It("should return with a wrapped error message and position", func() {
-		Expect(err.Error()).To(Equal("I wrap some error as a test at testpos"))
+		Expect(err.Error()).To(Equal("I wrap some error as a test"))
 	})
 
 	Context("when the error is not wrapped in a message", func() {

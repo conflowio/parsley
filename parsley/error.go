@@ -16,18 +16,18 @@ import (
 type Error interface {
 	error
 	Cause() error
-	Pos() Position
+	Pos() Pos
 }
 
 type err struct {
 	cause error
-	pos   Position
+	pos   Pos
 }
 
 // NewError creates a new error with the given position
 // If the passed error is already a parsley.Error it returns the original error
 // as it should have already the correct position.
-func NewError(cause error, pos Position) Error {
+func NewError(cause error, pos Pos) Error {
 	if e, ok := cause.(*err); ok {
 		return e
 	}
@@ -44,19 +44,11 @@ func (e *err) Cause() error {
 
 // Error returns with the full error message including the position
 func (e *err) Error() string {
-	if e.pos == nil {
-		return e.cause.Error()
-	}
-
-	if e.pos == NilPosition {
-		return e.cause.Error()
-	}
-
-	return fmt.Sprintf("%s at %s", e.cause.Error(), e.pos.String())
+	return e.cause.Error()
 }
 
 // Pos returns with the error's position
-func (e *err) Pos() Position {
+func (e *err) Pos() Pos {
 	return e.pos
 }
 
