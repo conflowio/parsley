@@ -17,14 +17,13 @@ import (
 	"github.com/opsidian/parsley/text/terminal"
 )
 
-var _ = Describe("Bool", func() {
+var _ = Describe("Substring", func() {
 
-	var p = terminal.Bool("true", "false")
+	var p = terminal.Substring("FOO", "foo", 42)
 
-	Context("when called with an empty true/false value", func() {
+	Context("when called with an empty string", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Bool("", "false") }).To(Panic())
-			Expect(func() { terminal.Bool("true", "") }).To(Panic())
+			Expect(func() { terminal.Substring("FOO", "", 42) }).To(Panic())
 		})
 	})
 
@@ -35,17 +34,15 @@ var _ = Describe("Bool", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("BOOL"))
+			Expect(node.Token()).To(Equal("FOO"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(endPos))
 		},
-		Entry("true beginning", "true ---", 0, true, parsley.Pos(1), 4),
-		Entry("false beginning", "false ---", 0, false, parsley.Pos(1), 5),
-		Entry("true middle", "--- true ---", 4, true, parsley.Pos(5), 8),
-		Entry("false middle", "--- false ---", 4, false, parsley.Pos(5), 9),
-		Entry("true end", "--- true", 4, true, parsley.Pos(5), 8),
-		Entry("false end", "--- false", 4, false, parsley.Pos(5), 9),
+		Entry(`foo beginning`, `foo`, 0, 42, parsley.Pos(1), 3),
+		Entry(`foo middle`, `--- foo ---`, 4, 42, parsley.Pos(5), 7),
+		Entry(`foo end`, `--- foo`, 4, 42, parsley.Pos(5), 7),
+		Entry(`prefix`, `foobar`, 0, 42, parsley.Pos(1), 3),
 	)
 
 	DescribeTable("should not match",
@@ -53,18 +50,12 @@ var _ = Describe("Bool", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
-			Expect(err).To(MatchError("was expecting true or false"))
+			Expect(err).To(MatchError("was expecting \"foo\""))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", "", 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry("truex", "truex", 0, parsley.Pos(1)),
-		Entry("falsex", "falsex", 0, parsley.Pos(1)),
-		Entry("tru", "tru", 0, parsley.Pos(1)),
-		Entry("fals", "fals", 0, parsley.Pos(1)),
-		Entry("True", "True", 0, parsley.Pos(1)),
-		Entry("False", "False", 0, parsley.Pos(1)),
+		Entry("empty", ``, 0, parsley.Pos(1)),
+		Entry("pos test", `--- bar`, 4, parsley.Pos(5)),
+		Entry("partial", `fo`, 0, parsley.Pos(1)),
 	)
-
 })

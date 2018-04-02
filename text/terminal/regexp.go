@@ -11,8 +11,7 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
@@ -20,18 +19,21 @@ import (
 // The desc variable is used for error messages, so it should be descriptive and make sense in the sentence "was expecting %s".
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
-func Regexp(desc string, regexp string, includeWhitespaces bool, groupIndex int, token string) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Regexp(token string, desc string, regexp string, groupIndex int) parsley.ParserFunc {
+	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		if matches, pos, ok := tr.ReadMatch(regexp, includeWhitespaces); ok {
-			if groupIndex >= len(matches) {
-				panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
+		if groupIndex == 0 {
+			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
+				return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, string(match), r.Pos(pos), readerPos)}, nil
 			}
-			if token == "" {
-				token = matches[groupIndex]
+		} else {
+			if readerPos, matches := tr.ReadRegexpSubmatch(pos, regexp); matches != nil {
+				if groupIndex >= len(matches) {
+					panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
+				}
+				return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, string(matches[groupIndex]), r.Pos(pos), readerPos)}, nil
 			}
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, matches[groupIndex]), r).AsSet(), nil
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting %s", desc)
+		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
 	})
 }

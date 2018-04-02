@@ -7,48 +7,49 @@
 package terminal_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestRuneShouldMatchCharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), "", true)
-	_, res, err := terminal.Rune('a', "A")(nil, parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode("A", text.NewPosition(0, 1, 1), 'a')
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
-	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
-	assert.Nil(t, err)
-}
+var _ = Describe("Rune", func() {
 
-func TestRuneShouldNotUseSpecialChars(t *testing.T) {
-	r := text.NewReader([]byte("a"), "", true)
-	_, res, err := terminal.Rune('.', ".")(nil, parser.EmptyLeftRecCtx(), r)
-	assert.Nil(t, res)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-	require.NotNil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
-}
+	var p = terminal.Rune("FOO", "+ or -", '+', '-')
 
-func TestRuneShouldMatchUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), "", true)
-	_, res, err := terminal.Rune('🍕', "PIZZA")(nil, parser.EmptyLeftRecCtx(), r)
-	expectedNode := ast.NewTerminalNode("PIZZA", text.NewPosition(0, 1, 1), '🍕')
-	assert.Equal(t, parser.NewResult(expectedNode, r).AsSet(), res)
-	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
-	assert.Nil(t, err)
-}
+	DescribeTable("should match",
+		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
+			r := text.NewReader(text.NewFile("textfile", []byte(input)))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			Expect(err).ToNot(HaveOccurred())
+			node := res[0].(*ast.TerminalNode)
+			Expect(node.Token()).To(Equal("FOO"))
+			Expect(node.Value(nil)).To(Equal(value))
+			Expect(node.Pos()).To(Equal(nodePos))
+			Expect(node.ReaderPos()).To(Equal(endPos))
+		},
+		Entry(`+ beginning`, `+ ---`, 0, '+', parsley.Pos(1), 1),
+		Entry(`+ middle`, `--- + ---`, 4, '+', parsley.Pos(5), 5),
+		Entry(`+ end`, `--- +`, 4, '+', parsley.Pos(5), 5),
+		Entry(`-`, `-`, 0, '-', parsley.Pos(1), 1),
+	)
 
-func TestRuneShouldNotMatchCharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), "", true)
-	_, res, err := terminal.Rune('b', "B")(nil, parser.EmptyLeftRecCtx(), r)
-	assert.Nil(t, res)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-	require.NotNil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
-}
+	DescribeTable("should not match",
+		func(input string, startPos int, errPos parsley.Pos) {
+			r := text.NewReader(text.NewFile("textfile", []byte(input)))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			Expect(err).To(MatchError("was expecting + or -"))
+			Expect(err.Pos()).To(Equal(errPos))
+			Expect(res).To(BeNil())
+		},
+		Entry("empty", ``, 0, parsley.Pos(1)),
+		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
+		Entry("x", `x`, 0, parsley.Pos(1)),
+	)
+})

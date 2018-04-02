@@ -7,22 +7,19 @@
 package terminal
 
 import (
-	"regexp"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Rune matches the given character
-func Rune(char rune, token string) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Rune(token string, desc string, runes ...rune) parsley.ParserFunc {
+	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(string(char)), false); ok {
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, char), r).AsSet(), nil
+		if readerPos, ch, found := tr.ReadRune(pos, runes...); found {
+			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, ch, r.Pos(pos), readerPos)}, nil
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting '%s'", string(char))
+		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
 	})
 }

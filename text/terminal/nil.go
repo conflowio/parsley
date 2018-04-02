@@ -7,25 +7,24 @@
 package terminal
 
 import (
-	"strconv"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
-// Float matches a float literal
-func Float() parsley.ParserFunc {
+// Nil matches a nil literal
+func Nil(nilStr string) parsley.ParserFunc {
+	if nilStr == "" {
+		panic("Nil() should not be called with an empty nil string")
+	}
+
 	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
-			val, err := strconv.ParseFloat(string(result), 64)
-			if err != nil {
-				return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "invalid float value encountered")
-			}
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("FLOAT", val, r.Pos(pos), readerPos)}, nil
+		if readerPos, found := tr.MatchWord(pos, nilStr); found {
+			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("NIL", nil, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting float value")
+
+		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s", nilStr)
 	})
 }

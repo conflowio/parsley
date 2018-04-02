@@ -17,35 +17,31 @@ import (
 	"github.com/opsidian/parsley/text/terminal"
 )
 
-var _ = Describe("Bool", func() {
+var _ = Describe("Nil", func() {
 
-	var p = terminal.Bool("true", "false")
+	var p = terminal.Nil("nil")
 
-	Context("when called with an empty true/false value", func() {
+	Context("when called with an empty nil value", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Bool("", "false") }).To(Panic())
-			Expect(func() { terminal.Bool("true", "") }).To(Panic())
+			Expect(func() { terminal.Nil("") }).To(Panic())
 		})
 	})
 
 	DescribeTable("should match",
-		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
+		func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("BOOL"))
-			Expect(node.Value(nil)).To(Equal(value))
+			Expect(node.Token()).To(Equal("NIL"))
+			Expect(node.Value(nil)).To(BeNil())
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(endPos))
 		},
-		Entry("true beginning", "true ---", 0, true, parsley.Pos(1), 4),
-		Entry("false beginning", "false ---", 0, false, parsley.Pos(1), 5),
-		Entry("true middle", "--- true ---", 4, true, parsley.Pos(5), 8),
-		Entry("false middle", "--- false ---", 4, false, parsley.Pos(5), 9),
-		Entry("true end", "--- true", 4, true, parsley.Pos(5), 8),
-		Entry("false end", "--- false", 4, false, parsley.Pos(5), 9),
+		Entry("nil beginning", "nil ---", 0, parsley.Pos(1), 3),
+		Entry("nil middle", "--- nil ---", 4, parsley.Pos(5), 7),
+		Entry("nil end", "--- nil", 4, parsley.Pos(5), 7),
 	)
 
 	DescribeTable("should not match",
@@ -53,18 +49,15 @@ var _ = Describe("Bool", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
-			Expect(err).To(MatchError("was expecting true or false"))
+			Expect(err).To(MatchError("was expecting nil"))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", "", 0, parsley.Pos(1)),
 		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry("truex", "truex", 0, parsley.Pos(1)),
-		Entry("falsex", "falsex", 0, parsley.Pos(1)),
-		Entry("tru", "tru", 0, parsley.Pos(1)),
-		Entry("fals", "fals", 0, parsley.Pos(1)),
-		Entry("True", "True", 0, parsley.Pos(1)),
-		Entry("False", "False", 0, parsley.Pos(1)),
+		Entry("nilx", "truex", 0, parsley.Pos(1)),
+		Entry("ni", "ni", 0, parsley.Pos(1)),
+		Entry("Nil", "Nil", 0, parsley.Pos(1)),
 	)
 
 })
