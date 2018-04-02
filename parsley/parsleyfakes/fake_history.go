@@ -9,14 +9,14 @@ import (
 )
 
 type FakeHistory struct {
-	SaveResultStub        func(parserIndex int, pos int, result parsley.Result)
+	SaveResultStub        func(parserIndex int, pos int, result *parsley.Result)
 	saveResultMutex       sync.RWMutex
 	saveResultArgsForCall []struct {
 		parserIndex int
 		pos         int
-		result      parsley.Result
+		result      *parsley.Result
 	}
-	GetResultStub        func(parserIndex int, pos int, leftRecCtx data.IntMap) (parsley.Result, bool)
+	GetResultStub        func(parserIndex int, pos int, leftRecCtx data.IntMap) (*parsley.Result, bool)
 	getResultMutex       sync.RWMutex
 	getResultArgsForCall []struct {
 		parserIndex int
@@ -24,11 +24,11 @@ type FakeHistory struct {
 		leftRecCtx  data.IntMap
 	}
 	getResultReturns struct {
-		result1 parsley.Result
+		result1 *parsley.Result
 		result2 bool
 	}
 	getResultReturnsOnCall map[int]struct {
-		result1 parsley.Result
+		result1 *parsley.Result
 		result2 bool
 	}
 	RegisterCallStub        func()
@@ -47,12 +47,12 @@ type FakeHistory struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeHistory) SaveResult(parserIndex int, pos int, result parsley.Result) {
+func (fake *FakeHistory) SaveResult(parserIndex int, pos int, result *parsley.Result) {
 	fake.saveResultMutex.Lock()
 	fake.saveResultArgsForCall = append(fake.saveResultArgsForCall, struct {
 		parserIndex int
 		pos         int
-		result      parsley.Result
+		result      *parsley.Result
 	}{parserIndex, pos, result})
 	fake.recordInvocation("SaveResult", []interface{}{parserIndex, pos, result})
 	fake.saveResultMutex.Unlock()
@@ -67,13 +67,13 @@ func (fake *FakeHistory) SaveResultCallCount() int {
 	return len(fake.saveResultArgsForCall)
 }
 
-func (fake *FakeHistory) SaveResultArgsForCall(i int) (int, int, parsley.Result) {
+func (fake *FakeHistory) SaveResultArgsForCall(i int) (int, int, *parsley.Result) {
 	fake.saveResultMutex.RLock()
 	defer fake.saveResultMutex.RUnlock()
 	return fake.saveResultArgsForCall[i].parserIndex, fake.saveResultArgsForCall[i].pos, fake.saveResultArgsForCall[i].result
 }
 
-func (fake *FakeHistory) GetResult(parserIndex int, pos int, leftRecCtx data.IntMap) (parsley.Result, bool) {
+func (fake *FakeHistory) GetResult(parserIndex int, pos int, leftRecCtx data.IntMap) (*parsley.Result, bool) {
 	fake.getResultMutex.Lock()
 	ret, specificReturn := fake.getResultReturnsOnCall[len(fake.getResultArgsForCall)]
 	fake.getResultArgsForCall = append(fake.getResultArgsForCall, struct {
@@ -104,24 +104,24 @@ func (fake *FakeHistory) GetResultArgsForCall(i int) (int, int, data.IntMap) {
 	return fake.getResultArgsForCall[i].parserIndex, fake.getResultArgsForCall[i].pos, fake.getResultArgsForCall[i].leftRecCtx
 }
 
-func (fake *FakeHistory) GetResultReturns(result1 parsley.Result, result2 bool) {
+func (fake *FakeHistory) GetResultReturns(result1 *parsley.Result, result2 bool) {
 	fake.GetResultStub = nil
 	fake.getResultReturns = struct {
-		result1 parsley.Result
+		result1 *parsley.Result
 		result2 bool
 	}{result1, result2}
 }
 
-func (fake *FakeHistory) GetResultReturnsOnCall(i int, result1 parsley.Result, result2 bool) {
+func (fake *FakeHistory) GetResultReturnsOnCall(i int, result1 *parsley.Result, result2 bool) {
 	fake.GetResultStub = nil
 	if fake.getResultReturnsOnCall == nil {
 		fake.getResultReturnsOnCall = make(map[int]struct {
-			result1 parsley.Result
+			result1 *parsley.Result
 			result2 bool
 		})
 	}
 	fake.getResultReturnsOnCall[i] = struct {
-		result1 parsley.Result
+		result1 *parsley.Result
 		result2 bool
 	}{result1, result2}
 }

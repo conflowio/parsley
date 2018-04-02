@@ -8,51 +8,44 @@ package parser
 
 import (
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
-
-type storedResult struct {
-	curtailingParsers data.IntSet
-	resultSet         ResultSet
-	err               reader.Error
-	leftRecCtx        data.IntMap
-}
 
 // History records information about parser calls
 type History struct {
 	callCount int
-	results   map[int]map[int]storedResult
+	results   map[int]map[int]*parsley.Result
 }
 
 // NewHistory creates a history instance
 func NewHistory() *History {
 	return &History{
-		results: make(map[int]map[int]storedResult),
+		results: make(map[int]map[int]*parsley.Result),
 	}
 }
 
-// RegisterResults registers a parser result for a certain position
-func (h *History) RegisterResults(parserIndex int, pos int, curtailingParsers data.IntSet, resultSet ResultSet, err reader.Error, leftRecCtx data.IntMap) {
+// SaveResult registers a parser result for a certain position
+func (h *History) SaveResult(parserIndex int, pos int, result *parsley.Result) {
 	if _, ok := h.results[parserIndex]; !ok {
-		h.results[parserIndex] = make(map[int]storedResult)
+		h.results[parserIndex] = make(map[int]*parsley.Result)
 	}
-	h.results[parserIndex][pos] = storedResult{curtailingParsers, resultSet, err, leftRecCtx}
+	h.results[parserIndex][pos] = result
 }
 
-// GetResults return with a previously saved result
-func (h *History) GetResults(parserIndex int, pos int, leftRecCtx data.IntMap) (data.IntSet, ResultSet, reader.Error, bool) {
-	storedResult, found := h.results[parserIndex][pos]
+// GetResult return with a previously saved result
+func (h *History) GetResult(parserIndex int, pos int, leftRecCtx data.IntMap) (*parsley.Result, bool) {
+	result, found := h.results[parserIndex][pos]
 	if !found {
-		return data.EmptyIntSet(), nil, nil, false
+		return nil, false
 	}
 
-	for key := range storedResult.leftRecCtx.Keys() {
-		if storedResult.leftRecCtx.Get(key) > leftRecCtx.Get(key) {
-			return data.EmptyIntSet(), nil, nil, false
+	for key := range result.LeftRecCtx.Keys() {
+		if result.LeftRecCtx.Get(key) > leftRecCtx.Get(key) {
+			return nil, false
 		}
 	}
 
-	return storedResult.curtailingParsers, storedResult.resultSet, storedResult.err, true
+	return result, true
 }
 
 // RegisterCall registers a call
