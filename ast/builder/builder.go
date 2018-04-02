@@ -8,65 +8,40 @@
 package builder
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/parsley"
 )
 
-// Select returns with a node builder function which returns with the node at the given index
-func Select(i int) ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		if i >= len(nodes) {
-			panic(fmt.Sprintf("Node index is out of bounds: %d", i))
-		}
-		return nodes[i]
-	})
-}
-
 // All returns with a node builder function for including all nodes for interpretation
-func All(token string, interpreter ast.Interpreter) ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		return ast.NewNonTerminalNode(
-			token,
-			nodes,
-			interpreter,
-		)
+func All(token string, interpreter parsley.Interpreter) parsley.NodeBuilder {
+	return ast.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
+		return ast.NewNonTerminalNode(token, nodes).Bind(interpreter)
 	})
 }
 
 // BinaryOperation returns with a node builder function for building binary operator nodes
-func BinaryOperation(interpreter ast.Interpreter) ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
+func BinaryOperation(interpreter parsley.Interpreter) parsley.NodeBuilder {
+	return ast.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
 		if len(nodes) != 3 {
-			panic("BinaryOperatorBuilder should receive exactly three nodes")
+			panic("BinaryOperation builder should receive exactly three nodes")
 		}
-		return ast.NewNonTerminalNode(
-			nodes[1].Token(),
-			[]ast.Node{nodes[0], nodes[2]},
-			interpreter,
-		)
+		return ast.NewNonTerminalNode(nodes[1].Token(), []parsley.Node{nodes[0], nodes[2]}).Bind(interpreter)
 	})
 }
 
-// Nil returns with a node builder function which always returns with nil
-func Nil() ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		return nil
-	})
-}
-
-// Flatten returns with a node builder function which puts all nodes and their direct children flattened in a new node
-func Flatten(token string, interpreter ast.Interpreter) ast.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []ast.Node) ast.Node {
-		var children []ast.Node
+// Flatten returns with a node builder function which puts all nodes and their direct children
+// flattened in a new node
+func Flatten(token string, interpreter parsley.Interpreter) parsley.NodeBuilder {
+	return ast.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
+		var children []parsley.Node
 		for _, node := range nodes {
 			switch n := node.(type) {
-			case ast.TerminalNode:
+			case *ast.TerminalNode:
 				children = append(children, n)
-			case ast.NonTerminalNode:
+			case *ast.NonTerminalNode:
 				children = append(children, n.Children()...)
 			}
 		}
-		return ast.NewNonTerminalNode(token, children, interpreter)
+		return ast.NewNonTerminalNode(token, children).Bind(interpreter)
 	})
 }

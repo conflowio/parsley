@@ -6,15 +6,12 @@
 
 package ast
 
-// NodeBuilder defines an interface to build a node from multiple nodes
-type NodeBuilder interface {
-	BuildNode([]Node) Node
-}
+import "github.com/opsidian/parsley/parsley"
 
 // NodeBuilderFunc defines a helper to implement the NodeBuilder interface with functions
-type NodeBuilderFunc func([]Node) Node
+type NodeBuilderFunc func([]parsley.Node) parsley.Node
 
 // BuildNode combines the given nodes into a single node
-func (f NodeBuilderFunc) BuildNode(nodes []Node) Node {
+func (f NodeBuilderFunc) BuildNode(nodes []parsley.Node) parsley.Node {
 	return f(nodes)
 }
