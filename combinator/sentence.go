@@ -7,11 +7,13 @@
 package combinator
 
 import (
+	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
-// Optional returns the parser's matches or an empty match if it fails
-func Optional(p parsley.Parser) parsley.ParserFunc {
-	return Choice("", p, parser.Empty())
+// Sentence matches the given parser until the end of input
+func Sentence(p parsley.Parser) parsley.ParserFunc {
+	return Seq(builder.All("ROOT", interpreter.Select(0)), p, parser.End())
 }

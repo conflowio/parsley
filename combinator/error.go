@@ -8,14 +8,13 @@ package combinator
 
 import (
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
 // SuppressError removes the error from the parser result
-func SuppressError(p parser.Parser) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		cp, rs, _ := p.Parse(h, leftRecCtx, r)
+func SuppressError(p parsley.Parser) parsley.ParserFunc {
+	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+		cp, rs, _ := p.Parse(h, leftRecCtx, r, pos)
 		return cp, rs, nil
 	})
 }

@@ -9,24 +9,23 @@ package combinator
 import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
 // recursive is a recursive and-type combinator
 type recursive struct {
-	nodeBuilder       ast.NodeBuilder
-	parserLookUp      func(i int) parser.Parser
+	nodeBuilder       parsley.NodeBuilder
+	parserLookUp      func(i int) parsley.Parser
 	min               int
 	max               int
 	curtailingParsers data.IntSet
-	resultSet         parser.ResultSet
-	err               reader.Error
-	nodes             []ast.Node
+	result            []parsley.Node
+	err               parsley.Error
+	nodes             []parsley.Node
 }
 
 // newRecursive creates a new recursive combinator
-func newRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.Parser, min int, max int) *recursive {
+func newRecursive(nodeBuilder parsley.NodeBuilder, parserLookUp func(i int) parsley.Parser, min int, max int) *recursive {
 	if nodeBuilder == nil {
 		panic("Node builder can not be nil!")
 	}
@@ -35,27 +34,27 @@ func newRecursive(nodeBuilder ast.NodeBuilder, parserLookUp func(i int) parser.P
 		parserLookUp:      parserLookUp,
 		min:               min,
 		max:               max,
-		curtailingParsers: parser.NoCurtailingParsers(),
-		resultSet:         parser.ResultSet{},
-		nodes:             []ast.Node{},
+		curtailingParsers: data.EmptyIntSet(),
+		result:            []parsley.Node{},
+		nodes:             []parsley.Node{},
 	}
 }
 
 // Parse runs the recursive parser
-func (rp *recursive) Parse(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-	rp.parse(0, h, leftRecCtx, r, true)
-	return rp.curtailingParsers, rp.resultSet, rp.err
+func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	rp.parse(0, h, leftRecCtx, r, pos, true)
+	return rp.curtailingParsers, rp.result, rp.err
 }
 
-func (rp *recursive) parse(depth int, h *parser.History, leftRecCtx data.IntMap, r reader.Reader, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
-	var rs parser.ResultSet
-	var err reader.Error
+	var nodes []parsley.Node
+	var err parsley.Error
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
 		h.RegisterCall()
-		cp, rs, err = nextParser.Parse(h, leftRecCtx, r.Clone())
-		if err != nil && (rp.err == nil || err.Pos().Pos() >= rp.err.Pos().Pos()) {
+		cp, nodes, err = nextParser.Parse(h, leftRecCtx, r, pos)
+		if err != nil && (rp.err == nil || err.Pos() >= rp.err.Pos()) {
 			rp.err = err
 		}
 	}
@@ -64,33 +63,33 @@ func (rp *recursive) parse(depth int, h *parser.History, leftRecCtx data.IntMap,
 		rp.curtailingParsers = rp.curtailingParsers.Union(cp)
 	}
 
-	if len(rs) > 0 {
-		for i, result := range rs {
+	if len(nodes) > 0 {
+		for i, node := range nodes {
 			if len(rp.nodes) < depth+1 {
-				rp.nodes = append(rp.nodes, result.Node())
+				rp.nodes = append(rp.nodes, node)
 			} else {
-				rp.nodes[depth] = result.Node()
+				rp.nodes[depth] = node
 			}
-			if i > 0 || result.Reader().Cursor().Pos() > r.Cursor().Pos() {
-				leftRecCtx = parser.EmptyLeftRecCtx()
+			if i > 0 || node.ReaderPos() > pos {
+				leftRecCtx = data.EmptyIntMap()
 				mergeCurtailingParsers = false
 			}
-			if rp.parse(depth+1, h, leftRecCtx, result.Reader().Clone(), mergeCurtailingParsers) {
+			if rp.parse(depth+1, h, leftRecCtx, r, node.ReaderPos(), mergeCurtailingParsers) {
 				return true
 			}
 		}
 	}
-	if len(rs) == 0 {
+	if len(nodes) == 0 {
 		if depth >= rp.min && (rp.max == -1 || depth <= rp.max) {
 			if depth > 0 {
-				nodesCopy := make([]ast.Node, depth)
+				nodesCopy := make([]parsley.Node, depth)
 				copy(nodesCopy[0:depth], rp.nodes[0:depth])
-				rp.resultSet.Append(parser.NewResult(rp.nodeBuilder.BuildNode(nodesCopy), r))
+				rp.result = append(rp.result, rp.nodeBuilder.BuildNode(nodesCopy))
 				if rp.nodes[depth-1] != nil && rp.nodes[depth-1].Token() == ast.EOF {
 					return true
 				}
 			} else { // It's an empty result
-				rp.resultSet.Append(parser.NewResult(rp.nodeBuilder.BuildNode(nil), r))
+				rp.result = append(rp.result, rp.nodeBuilder.BuildNode(nil))
 			}
 		}
 	}

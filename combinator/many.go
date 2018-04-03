@@ -7,22 +7,22 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
 // Many applies the  parser zero or more times
-func Many(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 0, -1).Parse(h, leftRecCtx, r)
+func Many(nodeBuilder parsley.NodeBuilder, p parsley.Parser) parsley.ParserFunc {
+	f := func(i int) parsley.Parser { return p }
+	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+		return newRecursive(nodeBuilder, f, 0, -1).Parse(h, leftRecCtx, r, pos)
 	})
 }
 
 // Many1 applies the parser one or more times
-func Many1(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 1, -1).Parse(h, leftRecCtx, r)
+func Many1(nodeBuilder parsley.NodeBuilder, p parsley.Parser) parsley.ParserFunc {
+	f := func(i int) parsley.Parser { return p }
+	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+		return newRecursive(nodeBuilder, f, 1, -1).Parse(h, leftRecCtx, r, pos)
 	})
 }
