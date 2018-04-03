@@ -6,22 +6,21 @@
 
 package data
 
+// EmptyIntMap is the empty map
+var EmptyIntMap = IntMap{make(map[int]int)}
+
 // IntMap is an immutable int-int map
 type IntMap struct {
 	data map[int]int
 }
 
 // NewIntMap creates a new IntMap instance
+// TODO: return a pointer
 func NewIntMap(data map[int]int) IntMap {
 	if data == nil {
 		return IntMap{make(map[int]int)}
 	}
 	return IntMap{data}
-}
-
-// EmptyIntMap returns with an empty int map
-func EmptyIntMap() IntMap {
-	return IntMap{make(map[int]int)}
 }
 
 func (i IntMap) clone() IntMap {

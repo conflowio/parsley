@@ -10,7 +10,8 @@ import (
 	"sort"
 )
 
-var emptyIntSet = NewIntSet()
+// EmptyIntSet is the empty set
+var EmptyIntSet = NewIntSet()
 
 // IntSet is a sorted immutable integer set
 type IntSet struct {
@@ -18,17 +19,13 @@ type IntSet struct {
 }
 
 // NewIntSet creates a new integer set
+// TODO: return a pointer
 func NewIntSet(values ...int) IntSet {
 	i := IntSet{make([]int, 0, len(values))}
 	for _, val := range values {
 		i.insertValue(val)
 	}
 	return i
-}
-
-// EmptyIntSet returns with the empty int set
-func EmptyIntSet() IntSet {
-	return emptyIntSet
 }
 
 // Len returns with the length of the set

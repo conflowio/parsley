@@ -25,8 +25,7 @@ func TestNewIntMapShouldCreateMapWithGivenData(t *testing.T) {
 }
 
 func TestEmptyIntMapReturnsWithAnEmptyIntMap(t *testing.T) {
-	i := EmptyIntMap()
-	assert.Equal(t, map[int]int{}, i.data)
+	assert.Equal(t, map[int]int{}, EmptyIntMap.data)
 }
 
 func TestInc(t *testing.T) {
