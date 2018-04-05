@@ -161,11 +161,20 @@ func (r *Reader) IsEOF(pos int) bool {
 }
 
 // MatchWhitespaces reads all the whitespaces
-func (r *Reader) MatchWhitespaces(pos int) int {
-	for pos < r.file.len && isWhitespaceCharacter(r.file.data[pos]) {
-		pos++
+func (r *Reader) MatchWhitespaces(pos int, newLine bool) (int, bool) {
+	found := false
+	if newLine {
+		for pos < r.file.len && (r.file.data[pos] == '\t' || r.file.data[pos] == '\n' || r.file.data[pos] == '\f' || r.file.data[pos] == ' ') {
+			found = true
+			pos++
+		}
+	} else {
+		for pos < r.file.len && (r.file.data[pos] == ' ' || r.file.data[pos] == '\t') {
+			found = true
+			pos++
+		}
 	}
-	return pos
+	return pos, found
 }
 
 // Pos returns with the current position
@@ -192,8 +201,4 @@ func isWordCharacter(b byte) bool {
 		'A' <= b && b <= 'Z' ||
 		'0' <= b && b <= '9' ||
 		b == '_'
-}
-
-func isWhitespaceCharacter(b byte) bool {
-	return b == '\t' || b == '\n' || b == '\f' || b == ' '
 }
