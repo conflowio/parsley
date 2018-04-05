@@ -19,16 +19,6 @@ func All(token string, interpreter parsley.Interpreter) parsley.NodeBuilder {
 	})
 }
 
-// BinaryOperation returns with a node builder function for building binary operator nodes
-func BinaryOperation(interpreter parsley.Interpreter) parsley.NodeBuilder {
-	return ast.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
-		if len(nodes) != 3 {
-			panic("BinaryOperation builder should receive exactly three nodes")
-		}
-		return ast.NewNonTerminalNode(nodes[1].Token(), []parsley.Node{nodes[0], nodes[2]}).Bind(interpreter)
-	})
-}
-
 // Flatten returns with a node builder function which puts all nodes and their direct children
 // flattened in a new node
 func Flatten(token string, interpreter parsley.Interpreter) parsley.NodeBuilder {
