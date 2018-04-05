@@ -19,11 +19,11 @@ import (
 
 var _ = Describe("Word", func() {
 
-	var p = terminal.Word("FOO", "foo", 42)
+	var p = terminal.Word("foo", 42)
 
 	Context("when called with an empty word", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Word("FOO", "", 42) }).To(Panic())
+			Expect(func() { terminal.Word("", 42) }).To(Panic())
 		})
 	})
 
@@ -34,7 +34,7 @@ var _ = Describe("Word", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("FOO"))
+			Expect(node.Token()).To(Equal("WORD"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(endPos))
