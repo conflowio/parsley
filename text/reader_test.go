@@ -37,37 +37,21 @@ var _ = Describe("Reader", func() {
 	})
 
 	Describe("ReadRune()", func() {
-		Context("when no rune is passed", func() {
-			It("should panic", func() {
-				Expect(func() { r.ReadRune(0) }).To(Panic())
-			})
-		})
-
 		It("should match the next ASCII rune", func() {
-			pos, match, found := r.ReadRune(0, 'a')
+			pos, found := r.ReadRune(0, 'a')
 			Expect(pos).To(Equal(1))
-			Expect(match).To(Equal('a'))
-			Expect(found).To(BeTrue())
-		})
-
-		It("should match one of the ASCII runes", func() {
-			pos, match, found := r.ReadRune(0, 'b', 'a')
-			Expect(pos).To(Equal(1))
-			Expect(match).To(Equal('a'))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should not match a different rune", func() {
-			pos, match, found := r.ReadRune(0, 'b')
+			pos, found := r.ReadRune(0, 'b')
 			Expect(pos).To(Equal(0))
-			Expect(match).To(Equal(rune(0)))
 			Expect(found).To(BeFalse())
 		})
 
 		It("should match an ASCII rune at the end", func() {
-			pos, match, found := r.ReadRune(6, 'f')
+			pos, found := r.ReadRune(6, 'f')
 			Expect(pos).To(Equal(7))
-			Expect(match).To(Equal('f'))
 			Expect(found).To(BeTrue())
 		})
 
@@ -77,32 +61,22 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should match the next UTF8 rune", func() {
-				pos, match, found := r.ReadRune(0, '🍕')
+				pos, found := r.ReadRune(0, '🍕')
 				Expect(pos).To(Equal(4))
-				Expect(match).To(Equal('🍕'))
-				Expect(found).To(BeTrue())
-			})
-
-			It("should match one of the UTF8 runes", func() {
-				pos, match, found := r.ReadRune(0, '🍺', '🍕')
-				Expect(pos).To(Equal(4))
-				Expect(match).To(Equal('🍕'))
 				Expect(found).To(BeTrue())
 			})
 
 			It("should match a UTF8 rune at the end", func() {
-				pos, match, found := r.ReadRune(9, '🍺')
+				pos, found := r.ReadRune(9, '🍺')
 				Expect(pos).To(Equal(13))
-				Expect(match).To(Equal('🍺'))
 				Expect(found).To(BeTrue())
 			})
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, match, found := r.ReadRune(7, 'f')
+				pos, found := r.ReadRune(7, 'f')
 				Expect(pos).To(Equal(7))
-				Expect(match).To(Equal(rune(0)))
 				Expect(found).To(BeFalse())
 			})
 		})

@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Rune", func() {
 
-	var p = terminal.Rune("FOO", "+ or -", '+', '-')
+	var p = terminal.Rune('+')
 
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
@@ -28,7 +28,7 @@ var _ = Describe("Rune", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("FOO"))
+			Expect(node.Token()).To(Equal("+"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(endPos))
@@ -36,7 +36,6 @@ var _ = Describe("Rune", func() {
 		Entry(`+ beginning`, `+ ---`, 0, '+', parsley.Pos(1), 1),
 		Entry(`+ middle`, `--- + ---`, 4, '+', parsley.Pos(5), 5),
 		Entry(`+ end`, `--- +`, 4, '+', parsley.Pos(5), 5),
-		Entry(`-`, `-`, 0, '-', parsley.Pos(1), 1),
 	)
 
 	DescribeTable("should not match",
@@ -44,7 +43,7 @@ var _ = Describe("Rune", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
-			Expect(err).To(MatchError("was expecting + or -"))
+			Expect(err).To(MatchError(`was expecting "+"`))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())
 		},

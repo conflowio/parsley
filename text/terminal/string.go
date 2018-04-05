@@ -16,20 +16,24 @@ import (
 )
 
 // String matches a string literal enclosed in double quotes
-func String(quotes ...rune) parsley.ParserFunc {
-	if len(quotes) == 0 {
-		panic("String() should not be called with empty quote list")
-	}
-
+func String(allowBackquote bool) parsley.ParserFunc {
 	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		readerPos, quote, found := tr.ReadRune(pos, quotes...)
+		quote := '"'
+		readerPos, found := tr.ReadRune(pos, quote)
+		if !found {
+			if allowBackquote {
+				quote = '`'
+				readerPos, found = tr.ReadRune(pos, quote)
+			}
+		}
+
 		if !found {
 			return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting string literal")
 		}
 
 		// check for empty string
-		readerPos, _, found = tr.ReadRune(readerPos, quote)
+		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
 			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("STRING", "", r.Pos(pos), readerPos)}, nil
 		}
@@ -41,7 +45,7 @@ func String(quotes ...rune) parsley.ParserFunc {
 			readerPos, value = tr.Readf(readerPos, unquoteString)
 		}
 
-		readerPos, _, found = tr.ReadRune(readerPos, quote)
+		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
 			return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(readerPos), "was expecting '%s'", string(quote))
 		}

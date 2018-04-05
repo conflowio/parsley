@@ -31,30 +31,24 @@ func NewReader(file *File) *Reader {
 	}
 }
 
-// ReadRune matches any of the given runes
-func (r *Reader) ReadRune(pos int, runes ...rune) (int, rune, bool) { // nolint
+// ReadRune matches the given rune
+func (r *Reader) ReadRune(pos int, ch rune) (int, bool) { // nolint
 	if pos >= r.file.len {
-		return pos, 0, false
+		return pos, false
 	}
 
-	if len(runes) == 0 {
-		panic("MatchRune() should not be called with an empty rune list")
-	}
-
-	for _, runeValue := range runes {
-		if runeValue < utf8.RuneSelf {
-			if int8(runeValue) == int8(r.file.data[pos]) {
-				return pos + 1, runeValue, true
-			}
-		} else {
-			nextRune, width := utf8.DecodeRune(r.file.data[pos:])
-			if nextRune == runeValue {
-				return pos + width, runeValue, true
-			}
+	if ch < utf8.RuneSelf {
+		if int8(ch) == int8(r.file.data[pos]) {
+			return pos + 1, true
+		}
+	} else {
+		nextRune, width := utf8.DecodeRune(r.file.data[pos:])
+		if nextRune == ch {
+			return pos + width, true
 		}
 	}
 
-	return pos, 0, false
+	return pos, false
 }
 
 // MatchString matches the given string

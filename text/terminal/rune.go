@@ -14,12 +14,12 @@ import (
 )
 
 // Rune matches the given character
-func Rune(token string, desc string, runes ...rune) parsley.ParserFunc {
+func Rune(ch rune) parsley.ParserFunc {
 	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		if readerPos, ch, found := tr.ReadRune(pos, runes...); found {
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, ch, r.Pos(pos), readerPos)}, nil
+		if readerPos, found := tr.ReadRune(pos, ch); found {
+			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(string(ch), ch, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
+		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %q", string(ch))
 	})
 }
