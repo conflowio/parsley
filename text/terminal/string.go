@@ -29,13 +29,13 @@ func String(allowBackquote bool) parsley.ParserFunc {
 		}
 
 		if !found {
-			return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting string literal")
+			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting string literal")
 		}
 
 		// check for empty string
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("STRING", "", r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("STRING", "", r.Pos(pos), readerPos)}, nil
 		}
 
 		var value []byte
@@ -47,9 +47,9 @@ func String(allowBackquote bool) parsley.ParserFunc {
 
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
-			return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(readerPos), "was expecting '%s'", string(quote))
+			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "was expecting '%s'", string(quote))
 		}
-		return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("STRING", string(value), r.Pos(pos), readerPos)}, nil
+		return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("STRING", string(value), r.Pos(pos), readerPos)}, nil
 	})
 }
 

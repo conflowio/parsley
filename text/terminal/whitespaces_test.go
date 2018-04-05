@@ -26,8 +26,8 @@ var _ = Describe("Whitespaces", func() {
 		DescribeTable("should match",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res[0].(*ast.TerminalNode)
 				Expect(node.Token()).To(Equal("WS"))
@@ -44,8 +44,8 @@ var _ = Describe("Whitespaces", func() {
 		DescribeTable("should not match",
 			func(input string, startPos int, errPos parsley.Pos) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).To(MatchError("was expecting one or more whitespaces"))
 				Expect(err.Pos()).To(Equal(errPos))
 				Expect(res).To(BeNil())
@@ -64,8 +64,8 @@ var _ = Describe("Whitespaces", func() {
 		DescribeTable("should match (with new lines)",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res[0].(*ast.TerminalNode)
 				Expect(node.Token()).To(Equal("WS"))
@@ -81,8 +81,8 @@ var _ = Describe("Whitespaces", func() {
 		DescribeTable("should not match (with new lines)",
 			func(input string, startPos int, errPos parsley.Pos) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).To(MatchError("was expecting one or more whitespaces"))
 				Expect(err.Pos()).To(Equal(errPos))
 				Expect(res).To(BeNil())

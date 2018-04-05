@@ -22,10 +22,10 @@ func Float() parsley.ParserFunc {
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
 			val, err := strconv.ParseFloat(string(result), 64)
 			if err != nil {
-				return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "invalid float value encountered")
+				return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "invalid float value encountered")
 			}
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("FLOAT", val, r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("FLOAT", val, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting float value")
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting float value")
 	})
 }

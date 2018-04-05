@@ -24,16 +24,16 @@ func Regexp(token string, desc string, regexp string, groupIndex int) parsley.Pa
 		tr := r.(*text.Reader)
 		if groupIndex == 0 {
 			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
-				return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, string(match), r.Pos(pos), readerPos)}, nil
+				return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode(token, string(match), r.Pos(pos), readerPos)}, nil
 			}
 		} else {
 			if readerPos, matches := tr.ReadRegexpSubmatch(pos, regexp); matches != nil {
 				if groupIndex >= len(matches) {
 					panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
 				}
-				return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, string(matches[groupIndex]), r.Pos(pos), readerPos)}, nil
+				return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode(token, string(matches[groupIndex]), r.Pos(pos), readerPos)}, nil
 			}
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
 	})
 }

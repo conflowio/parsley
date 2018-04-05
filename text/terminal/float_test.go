@@ -24,8 +24,8 @@ var _ = Describe("Float", func() {
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FLOAT"))
@@ -60,8 +60,8 @@ var _ = Describe("Float", func() {
 	DescribeTable("should not match",
 		func(input string, startPos int, errPos parsley.Pos) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("was expecting float value"))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())
@@ -82,8 +82,8 @@ var _ = Describe("Float", func() {
 		It("should trow an error", func() {
 			input := "1.2e3456"
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, 0)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("invalid float value encountered"))
 			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
 			Expect(res).To(BeNil())

@@ -26,8 +26,8 @@ func Integer() parsley.ParserFunc {
 				// This should never happen
 				panic(fmt.Sprintf("Could not convert %s to integer", string(result)))
 			}
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("INT", int(intValue), r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("INT", int(intValue), r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting integer value")
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting integer value")
 	})
 }

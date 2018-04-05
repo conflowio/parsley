@@ -22,8 +22,8 @@ func Word(token string, word string, value interface{}) parsley.ParserFunc {
 	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, word); found {
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode(token, value, r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode(token, value, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting \"%s\"", word)
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting \"%s\"", word)
 	})
 }

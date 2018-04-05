@@ -30,9 +30,9 @@ func Char() parsley.ParserFunc {
 				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
 			}
 			if err == nil {
-				return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos)}, nil
+				return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos)}, nil
 			}
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting char literal")
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting char literal")
 	})
 }

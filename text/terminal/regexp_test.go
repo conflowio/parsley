@@ -26,7 +26,7 @@ var _ = Describe("Regexp", func() {
 		It("should panic", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
 			p := terminal.Regexp("FOO", "foo", "f*", 0)
-			Expect(func() { p.Parse(nil, data.EmptyIntMap(), r, 0) }).To(Panic())
+			Expect(func() { p.Parse(nil, data.EmptyIntMap, r, 0) }).To(Panic())
 		})
 	})
 
@@ -34,15 +34,15 @@ var _ = Describe("Regexp", func() {
 		It("should panic", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
 			p := terminal.Regexp("FOO", "foo", "f(o+)", 2)
-			Expect(func() { p.Parse(nil, data.EmptyIntMap(), r, 0) }).To(Panic())
+			Expect(func() { p.Parse(nil, data.EmptyIntMap, r, 0) }).To(Panic())
 		})
 	})
 
 	DescribeTable("full match - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
@@ -58,8 +58,8 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("full match - should not match",
 		func(input string, startPos int, errPos parsley.Pos) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("was expecting foo"))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())
@@ -71,8 +71,8 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("submatch - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
@@ -88,8 +88,8 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("submatch - should not match",
 		func(input string, startPos int, errPos parsley.Pos) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("was expecting foo"))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())

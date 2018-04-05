@@ -6,7 +6,9 @@ import (
 
 	encoding_json "encoding/json"
 
+	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/examples/json/json"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
@@ -17,15 +19,17 @@ func benchmarkParsleyJSON(b *testing.B, jsonFilePath string) {
 		b.Fatal(err)
 	}
 
-	s := parsley.NewSentence(json.NewParser())
-	r := text.NewReader(input, "", true)
-	if _, _, err = s.Evaluate(r, nil); err != nil {
+	s := combinator.Sentence(json.NewParser())
+	f := text.NewFile("test", input[0:len(input)-1])
+	r := text.NewReader(f)
+	h := parser.NewHistory()
+	if _, err = parsley.Evaluate(h, r, s, nil); err != nil {
 		b.Fatal(err)
 	}
 
 	for n := 0; n < b.N; n++ {
-		r := text.NewReader(input, "", true)
-		_, _, _ = s.Evaluate(r, nil)
+		h := parser.NewHistory()
+		_, _ = parsley.Evaluate(h, r, s, nil)
 	}
 }
 

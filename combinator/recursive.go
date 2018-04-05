@@ -34,7 +34,7 @@ func newRecursive(nodeBuilder parsley.NodeBuilder, parserLookUp func(i int) pars
 		parserLookUp:      parserLookUp,
 		min:               min,
 		max:               max,
-		curtailingParsers: data.EmptyIntSet(),
+		curtailingParsers: data.EmptyIntSet,
 		result:            []parsley.Node{},
 		nodes:             []parsley.Node{},
 	}
@@ -71,7 +71,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 				rp.nodes[depth] = node
 			}
 			if i > 0 || node.ReaderPos() > pos {
-				leftRecCtx = data.EmptyIntMap()
+				leftRecCtx = data.EmptyIntMap
 				mergeCurtailingParsers = false
 			}
 			if rp.parse(depth+1, h, leftRecCtx, r, node.ReaderPos(), mergeCurtailingParsers) {

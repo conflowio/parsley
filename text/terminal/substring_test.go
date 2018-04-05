@@ -30,8 +30,8 @@ var _ = Describe("Substring", func() {
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res[0].(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
@@ -48,8 +48,8 @@ var _ = Describe("Substring", func() {
 	DescribeTable("should not match",
 		func(input string, startPos int, errPos parsley.Pos) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap(), r, startPos)
-			Expect(curtailingParsers).To(Equal(data.EmptyIntSet()))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("was expecting \"foo\""))
 			Expect(err.Pos()).To(Equal(errPos))
 			Expect(res).To(BeNil())

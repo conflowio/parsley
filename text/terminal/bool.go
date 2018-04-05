@@ -22,11 +22,11 @@ func Bool(trueStr string, falseStr string) parsley.ParserFunc {
 	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("BOOL", true, r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("BOOL", true, r.Pos(pos), readerPos)}, nil
 		}
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
-			return data.EmptyIntSet(), []parsley.Node{ast.NewTerminalNode("BOOL", false, r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("BOOL", false, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet(), nil, parsley.NewError(r.Pos(pos), "was expecting %s or %s", trueStr, falseStr)
+		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting %s or %s", trueStr, falseStr)
 	})
 }

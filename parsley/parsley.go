@@ -12,7 +12,7 @@ import "github.com/opsidian/parsley/data"
 // If there are multiple possible parse trees only the first one is returned.
 func Parse(h History, r Reader, s Parser) (Node, Error) {
 	h.RegisterCall()
-	_, nodes, err := s.Parse(h, data.EmptyIntMap(), r, 0)
+	_, nodes, err := s.Parse(h, data.EmptyIntMap, r, 0)
 	if len(nodes) == 0 {
 		return nil, WrapError(err, "Failed to parse the input: {{err}}")
 	}
