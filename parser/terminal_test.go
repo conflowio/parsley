@@ -23,6 +23,10 @@ var _ = Describe("Empty", func() {
 		h = &parsleyfakes.FakeHistory{}
 	})
 
+	It("should have no name", func() {
+		Expect(p.Name()).To(BeEmpty())
+	})
+
 	It("should return with a nil node", func() {
 		curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 0)
 		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
@@ -45,6 +49,10 @@ var _ = Describe("End", func() {
 		h = &parsleyfakes.FakeHistory{}
 	})
 
+	It("should have a name", func() {
+		Expect(p.Name()).ToNot(BeEmpty())
+	})
+
 	Context("when at the end of the input", func() {
 		It("should return with an EOF node", func() {
 			r.IsEOFReturns(true)
@@ -61,17 +69,13 @@ var _ = Describe("End", func() {
 	})
 
 	Context("when not at the end of the input", func() {
-		It("should return with an error", func() {
+		It("should return with a nil result", func() {
 			r.IsEOFReturns(false)
 			r.PosReturns(parsley.Pos(2))
 			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(BeNil())
-			Expect(err).To(MatchError("was expecting the end of input"))
-
-			Expect(r.PosCallCount()).To(Equal(1))
-			pos := r.PosArgsForCall(0)
-			Expect(pos).To(Equal(1))
+			Expect(err).To(BeNil())
 		})
 	})
 
