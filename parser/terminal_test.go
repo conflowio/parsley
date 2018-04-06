@@ -27,10 +27,10 @@ var _ = Describe("Empty", func() {
 		Expect(p.Name()).To(BeEmpty())
 	})
 
-	It("should return with a nil node", func() {
-		curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 0)
+	It("should return with an empty node", func() {
+		curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
 		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-		Expect(res).To(Equal([]parsley.Node{nil}))
+		Expect(res).To(Equal(ast.EmptyNode(1)))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -59,7 +59,7 @@ var _ = Describe("End", func() {
 			r.PosReturns(parsley.Pos(2))
 			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(res).To(Equal([]parsley.Node{ast.NewTerminalNode("EOF", nil, parsley.Pos(2), 1)}))
+			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), 1)))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(r.PosCallCount()).To(Equal(1))

@@ -9,6 +9,7 @@ package parser_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -23,13 +24,13 @@ var _ = Describe("Func", func() {
 		expectedReader := &parsleyfakes.FakeReader{}
 		expectedPos := 2
 		expectedCurtailingParsers := data.NewIntSet(1)
-		expectedNodes := []parsley.Node{nil}
+		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), 1)
 		expectedErr := parsley.NewError(parsley.Pos(1), "testerr")
 		var actualHistory parsley.History
 		var actualLeftRecCtx data.IntMap
 		var actualReader parsley.Reader
 		var actualPos int
-		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 			actualHistory = h
 			actualLeftRecCtx = leftRecCtx
 			actualReader = r

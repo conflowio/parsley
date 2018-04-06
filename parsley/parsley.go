@@ -6,20 +6,22 @@
 
 package parsley
 
-import "github.com/opsidian/parsley/data"
+import (
+	"github.com/opsidian/parsley/data"
+)
 
 // Parse parses the given input and returns with the root node of the AST. It expects a reader and the root parser.
 // If there are multiple possible parse trees only the first one is returned.
 func Parse(h History, r Reader, s Parser) (Node, Error) {
 	h.RegisterCall()
-	_, nodes, err := s.Parse(h, data.EmptyIntMap, r, 0)
-	if len(nodes) == 0 {
+	_, node, err := s.Parse(h, data.EmptyIntMap, r, 0)
+	if err != nil {
 		return nil, WrapError(err, "Failed to parse the input: {{err}}")
 	}
-	if nodes[0] == nil {
-		return nil, nil
+	if node == nil {
+		return nil, NewError(r.Pos(0), "Failed to parse the input: was expecting %s", s.Name())
 	}
-	return nodes[0], nil
+	return node, nil
 }
 
 // Evaluate parses the given input and evaluates it. It expects a reader, the root parser and the evaluation context.

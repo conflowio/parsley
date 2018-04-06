@@ -7,7 +7,7 @@ import (
 // Parser defines a parser interface
 //go:generate counterfeiter . Parser
 type Parser interface {
-	Parse(h History, leftRecCtx data.IntMap, r Reader, pos int) (data.IntSet, []Node, Error)
+	Parse(h History, leftRecCtx data.IntMap, r Reader, pos int) (data.IntSet, Node, Error)
 	Name() string
 }
 
@@ -15,7 +15,7 @@ type Parser interface {
 type Result struct {
 	LeftRecCtx        data.IntMap
 	CurtailingParsers data.IntSet
-	Nodes             []Node
+	Node              Node
 	Err               Error
 }
 
