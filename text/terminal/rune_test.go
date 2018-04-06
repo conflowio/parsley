@@ -21,6 +21,10 @@ var _ = Describe("Rune", func() {
 
 	var p = terminal.Rune('+')
 
+	It("should have a name", func() {
+		Expect(p.Name()).To(Equal(`"+"`))
+	})
+
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
@@ -39,16 +43,14 @@ var _ = Describe("Rune", func() {
 	)
 
 	DescribeTable("should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError(`was expecting "+"`))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", ``, 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry("x", `x`, 0, parsley.Pos(1)),
+		Entry("empty", ``, 0),
+		Entry("x", `x`, 0),
 	)
 })

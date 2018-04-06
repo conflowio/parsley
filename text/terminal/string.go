@@ -11,13 +11,14 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // String matches a string literal enclosed in double quotes
-func String(allowBackquote bool) parsley.ParserFunc {
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+func String(allowBackquote bool) *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		quote := '"'
 		readerPos, found := tr.ReadRune(pos, quote)
@@ -29,7 +30,7 @@ func String(allowBackquote bool) parsley.ParserFunc {
 		}
 
 		if !found {
-			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting string literal")
+			return data.EmptyIntSet, nil, nil
 		}
 
 		// check for empty string
@@ -50,7 +51,7 @@ func String(allowBackquote bool) parsley.ParserFunc {
 			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "was expecting '%s'", string(quote))
 		}
 		return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("STRING", string(value), r.Pos(pos), readerPos)}, nil
-	})
+	}).WithName("string value")
 }
 
 func unquoteString(b []byte) ([]byte, int) {

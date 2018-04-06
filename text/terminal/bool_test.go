@@ -21,6 +21,10 @@ var _ = Describe("Bool", func() {
 
 	var p = terminal.Bool("true", "false")
 
+	It("should have a name", func() {
+		Expect(p.Name()).To(Equal("true or false"))
+	})
+
 	Context("when called with an empty true/false value", func() {
 		It("should panic", func() {
 			Expect(func() { terminal.Bool("", "false") }).To(Panic())
@@ -49,22 +53,20 @@ var _ = Describe("Bool", func() {
 	)
 
 	DescribeTable("should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting true or false"))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", "", 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry("truex", "truex", 0, parsley.Pos(1)),
-		Entry("falsex", "falsex", 0, parsley.Pos(1)),
-		Entry("tru", "tru", 0, parsley.Pos(1)),
-		Entry("fals", "fals", 0, parsley.Pos(1)),
-		Entry("True", "True", 0, parsley.Pos(1)),
-		Entry("False", "False", 0, parsley.Pos(1)),
+		Entry("empty", "", 0),
+		Entry("truex", "truex", 0),
+		Entry("falsex", "falsex", 0),
+		Entry("tru", "tru", 0),
+		Entry("fals", "fals", 0),
+		Entry("True", "True", 0),
+		Entry("False", "False", 0),
 	)
 
 })

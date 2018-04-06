@@ -22,6 +22,10 @@ var _ = Describe("Regexp", func() {
 	var p1 = terminal.Regexp("FOO", "foo", "fo+", 0)
 	var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1)
 
+	It("should have a name", func() {
+		Expect(p1.Name()).To(Equal("foo"))
+	})
+
 	Context("when regexp matches an empty string", func() {
 		It("should panic", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
@@ -56,16 +60,15 @@ var _ = Describe("Regexp", func() {
 	)
 
 	DescribeTable("full match - should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting foo"))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", ``, 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
+		Entry("empty", ``, 0),
+		Entry("other", `bar`, 0),
 	)
 
 	DescribeTable("submatch - should match",
@@ -86,15 +89,14 @@ var _ = Describe("Regexp", func() {
 	)
 
 	DescribeTable("submatch - should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting foo"))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", ``, 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
+		Entry("empty", ``, 0),
+		Entry("other", `bar`, 0),
 	)
 })

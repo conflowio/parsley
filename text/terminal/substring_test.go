@@ -21,6 +21,10 @@ var _ = Describe("Substring", func() {
 
 	var p = terminal.Substring("FOO", "foo", 42)
 
+	It("should have a name", func() {
+		Expect(p.Name()).To(Equal(`"foo"`))
+	})
+
 	Context("when called with an empty string", func() {
 		It("should panic", func() {
 			Expect(func() { terminal.Substring("FOO", "", 42) }).To(Panic())
@@ -46,16 +50,14 @@ var _ = Describe("Substring", func() {
 	)
 
 	DescribeTable("should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting \"foo\""))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", ``, 0, parsley.Pos(1)),
-		Entry("pos test", `--- bar`, 4, parsley.Pos(5)),
-		Entry("partial", `fo`, 0, parsley.Pos(1)),
+		Entry("empty", ``, 0),
+		Entry("partial", `fo`, 0),
 	)
 })

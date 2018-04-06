@@ -7,32 +7,43 @@
 package terminal
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Char matches a character literal enclosed in single quotes
-func Char() parsley.ParserFunc {
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+func Char() *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		readerPos, res := tr.ReadRegexp(
-			pos, "'(.|\\\\[abfnrtv]|\\\\x[0-9a-fA-F]{2,2}|\\\\u[0-9a-fA-F]{4,4}|\\\\U[0-9a-fA-F]{8,8})'",
-		)
-		if res != nil {
-			value, _, tail, err := strconv.UnquoteChar(string(res[1:len(res)-1]), '"')
-			if tail != "" {
-				// This should never happen
-				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
-			}
-			if err == nil {
-				return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos)}, nil
-			}
+		readerPos, found := tr.ReadRune(pos, '\'')
+		if !found {
+			return data.EmptyIntSet, nil, nil
 		}
-		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting char literal")
-	})
+
+		readerPos, res := tr.ReadRegexp(
+			readerPos, `\\[abfnrtv']|\\x[0-9a-fA-F]{2,2}|\\u[0-9a-fA-F]{4,4}|\\U[0-9a-fA-F]{8,8}|[^']`,
+		)
+		if res == nil {
+			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "was expecting one character")
+		}
+
+		readerPos, found = tr.ReadRune(readerPos, '\'')
+		if !found {
+			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "was expecting \"'\"")
+		}
+
+		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
+		if tail != "" || err != nil {
+			spew.Dump(tail, err)
+			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "invalid character value")
+		}
+
+		return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos)}, nil
+	}).WithName("char value")
 }

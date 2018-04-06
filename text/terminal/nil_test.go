@@ -21,6 +21,10 @@ var _ = Describe("Nil", func() {
 
 	var p = terminal.Nil("nil")
 
+	It("should have a name", func() {
+		Expect(p.Name()).To(Equal("nil"))
+	})
+
 	Context("when called with an empty nil value", func() {
 		It("should panic", func() {
 			Expect(func() { terminal.Nil("") }).To(Panic())
@@ -45,19 +49,17 @@ var _ = Describe("Nil", func() {
 	)
 
 	DescribeTable("should not match",
-		func(input string, startPos int, errPos parsley.Pos) {
+		func(input string, startPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting nil"))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", "", 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry("nilx", "truex", 0, parsley.Pos(1)),
-		Entry("ni", "ni", 0, parsley.Pos(1)),
-		Entry("Nil", "Nil", 0, parsley.Pos(1)),
+		Entry("empty", "", 0),
+		Entry("nilx", "truex", 0),
+		Entry("ni", "ni", 0),
+		Entry("Nil", "Nil", 0),
 	)
 
 })

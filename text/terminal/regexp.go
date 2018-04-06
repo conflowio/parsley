@@ -11,16 +11,17 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Regexp matches the given regular expression
-// The desc variable is used for error messages, so it should be descriptive and make sense in the sentence "was expecting %s".
+// The name variable is used for error messages, so it should be descriptive and make sense in the sentence "was expecting %s".
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
-func Regexp(token string, desc string, regexp string, groupIndex int) parsley.ParserFunc {
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+func Regexp(token string, name string, regexp string, groupIndex int) *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if groupIndex == 0 {
 			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
@@ -34,6 +35,6 @@ func Regexp(token string, desc string, regexp string, groupIndex int) parsley.Pa
 				return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode(token, string(matches[groupIndex]), r.Pos(pos), readerPos)}, nil
 			}
 		}
-		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting %s", desc)
-	})
+		return data.EmptyIntSet, nil, nil
+	}).WithName(name)
 }

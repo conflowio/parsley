@@ -7,19 +7,22 @@
 package terminal
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Bool matches a bool literal: true or false
-func Bool(trueStr string, falseStr string) parsley.ParserFunc {
+func Bool(trueStr string, falseStr string) *parser.NamedFunc {
 	if trueStr == "" || falseStr == "" {
 		panic("Bool() should not be called with an empty true/false string")
 	}
 
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
 			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("BOOL", true, r.Pos(pos), readerPos)}, nil
@@ -27,6 +30,6 @@ func Bool(trueStr string, falseStr string) parsley.ParserFunc {
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
 			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("BOOL", false, r.Pos(pos), readerPos)}, nil
 		}
-		return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "was expecting %s or %s", trueStr, falseStr)
-	})
+		return data.EmptyIntSet, nil, nil
+	}).WithName(fmt.Sprintf("%s or %s", trueStr, falseStr))
 }

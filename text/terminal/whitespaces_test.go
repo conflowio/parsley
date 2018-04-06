@@ -42,18 +42,16 @@ var _ = Describe("Whitespaces", func() {
 		)
 
 		DescribeTable("should not match",
-			func(input string, startPos int, errPos parsley.Pos) {
+			func(input string, startPos int) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
 				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(err).To(MatchError("was expecting one or more whitespaces"))
-				Expect(err.Pos()).To(Equal(errPos))
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
 			},
-			Entry("empty", "", 0, parsley.Pos(1)),
-			Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-			Entry("not whitespace", `a`, 0, parsley.Pos(1)),
-			Entry("new line", `\n\t`, 0, parsley.Pos(1)),
+			Entry("empty", "", 0),
+			Entry("not whitespace", `a`, 0),
+			Entry("new line", `\n\t`, 0),
 		)
 	})
 
@@ -79,17 +77,15 @@ var _ = Describe("Whitespaces", func() {
 		)
 
 		DescribeTable("should not match (with new lines)",
-			func(input string, startPos int, errPos parsley.Pos) {
+			func(input string, startPos int) {
 				r := text.NewReader(text.NewFile("textfile", []byte(input)))
 				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(err).To(MatchError("was expecting one or more whitespaces"))
-				Expect(err.Pos()).To(Equal(errPos))
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
 			},
-			Entry("empty", "", 0, parsley.Pos(1)),
-			Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-			Entry("not whitespace", `a`, 0, parsley.Pos(1)),
+			Entry("empty", "", 0),
+			Entry("not whitespace", `a`, 0),
 		)
 	})
 

@@ -21,6 +21,10 @@ var _ = Describe("Char", func() {
 
 	var p = terminal.Char()
 
+	It("should have a name", func() {
+		Expect(p.Name()).ToNot(BeEmpty())
+	})
+
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
@@ -36,6 +40,9 @@ var _ = Describe("Char", func() {
 		Entry(`'a' beginning`, `'a'`, 0, 'a', parsley.Pos(1), 3),
 		Entry(`'a' middle`, `--- 'a' ---`, 4, 'a', parsley.Pos(5), 7),
 		Entry(`'a' end`, `--- 'a'`, 4, 'a', parsley.Pos(5), 7),
+
+		Entry(`quote`, `'\''`, 0, '\'', parsley.Pos(1), 4),
+		Entry(`double quote`, `'"'`, 0, '"', parsley.Pos(1), 3),
 
 		Entry(`' '`, `' '`, 0, ' ', parsley.Pos(1), 3),
 		Entry(`'🍕'`, `'🍕'`, 0, '🍕', parsley.Pos(1), 6),
@@ -55,21 +62,31 @@ var _ = Describe("Char", func() {
 	)
 
 	DescribeTable("should not match",
+		func(input string, startPos int) {
+			r := text.NewReader(text.NewFile("textfile", []byte(input)))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(BeNil())
+		},
+		Entry("empty", ``, 0),
+		Entry(`x`, `x`, 0),
+		Entry(`"a"`, `"a"`, 0),
+		Entry(`\x`, `\x`, 0),
+		Entry(`\u`, `\u`, 0),
+	)
+
+	DescribeTable("should error",
 		func(input string, startPos int, errPos parsley.Pos) {
 			r := text.NewReader(text.NewFile("textfile", []byte(input)))
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).To(MatchError("was expecting char literal"))
-			Expect(err.Pos()).To(Equal(errPos))
+			Expect(err).To(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
-		Entry("empty", ``, 0, parsley.Pos(1)),
-		Entry("pos test", `--- x`, 4, parsley.Pos(5)),
-		Entry(`x`, `x`, 0, parsley.Pos(1)),
-		Entry(`''`, `''`, 0, parsley.Pos(1)),
-		Entry(`'aa'`, `'aa'`, 0, parsley.Pos(1)),
-		Entry(`"a"`, `"a"`, 0, parsley.Pos(1)),
-		Entry(`'\x'`, `\x`, 0, parsley.Pos(1)),
-		Entry(`'\u'`, `\u`, 0, parsley.Pos(1)),
+		Entry("only start quote", `'`, 0, parsley.Pos(1)),
+		Entry("empty quotes", `''`, 0, parsley.Pos(2)),
+		Entry("no end quote", `'a`, 0, parsley.Pos(3)),
+		Entry("multiple characters", `'aa'`, 0, parsley.Pos(3)),
 	)
 })
