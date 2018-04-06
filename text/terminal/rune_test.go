@@ -31,7 +31,7 @@ var _ = Describe("Rune", func() {
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res[0].(*ast.TerminalNode)
+			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("+"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))

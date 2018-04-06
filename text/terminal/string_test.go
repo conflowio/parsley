@@ -35,7 +35,7 @@ var _ = Describe("String", func() {
 				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
-				node := res[0].(*ast.TerminalNode)
+				node := res.(*ast.TerminalNode)
 				Expect(node.Token()).To(Equal("STRING"))
 				Expect(node.Value(nil)).To(Equal(value))
 				Expect(node.Pos()).To(Equal(nodePos))
@@ -106,7 +106,7 @@ var _ = Describe("String", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte(`"foo"`)))
 			_, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res).ToNot(BeEmpty())
+			Expect(res).ToNot(BeNil())
 		})
 
 		It("should not match backquoted strings", func() {

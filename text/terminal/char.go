@@ -9,7 +9,6 @@ package terminal
 import (
 	"strconv"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -19,7 +18,7 @@ import (
 
 // Char matches a character literal enclosed in single quotes
 func Char() *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		readerPos, found := tr.ReadRune(pos, '\'')
 		if !found {
@@ -40,10 +39,9 @@ func Char() *parser.NamedFunc {
 
 		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
 		if tail != "" || err != nil {
-			spew.Dump(tail, err)
 			return data.EmptyIntSet, nil, parsley.NewError(r.Pos(readerPos), "invalid character value")
 		}
 
-		return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos)}, nil
+		return data.EmptyIntSet, ast.NewTerminalNode("CHAR", value, r.Pos(pos), readerPos), nil
 	}).WithName("char value")
 }

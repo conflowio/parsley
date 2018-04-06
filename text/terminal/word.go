@@ -22,10 +22,10 @@ func Word(word string, value interface{}) *parser.NamedFunc {
 		panic("Word() should not be called with empty word")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, word); found {
-			return data.EmptyIntSet, []parsley.Node{ast.NewTerminalNode("WORD", value, r.Pos(pos), readerPos)}, nil
+			return data.EmptyIntSet, ast.NewTerminalNode("WORD", value, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil
 	}).WithName(fmt.Sprintf("%q", word))

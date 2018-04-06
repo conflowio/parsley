@@ -37,7 +37,7 @@ var _ = Describe("Nil", func() {
 			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res[0].(*ast.TerminalNode)
+			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("NIL"))
 			Expect(node.Value(nil)).To(BeNil())
 			Expect(node.Pos()).To(Equal(nodePos))

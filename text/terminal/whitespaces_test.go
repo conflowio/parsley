@@ -29,10 +29,10 @@ var _ = Describe("Whitespaces", func() {
 				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
-				node := res[0].(*ast.TerminalNode)
-				Expect(node.Token()).To(Equal("WS"))
+				node := res.(ast.EmptyNode)
+				Expect(node.Token()).To(Equal("EMPTY"))
 				Expect(node.Value(nil)).To(BeNil())
-				Expect(node.Pos()).To(Equal(nodePos))
+				Expect(node.Pos()).To(Equal(parsley.NilPos))
 				Expect(node.ReaderPos()).To(Equal(endPos))
 			},
 			Entry("ws beginning", " \t---", 0, parsley.Pos(1), 2),
@@ -65,10 +65,10 @@ var _ = Describe("Whitespaces", func() {
 				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
-				node := res[0].(*ast.TerminalNode)
-				Expect(node.Token()).To(Equal("WS"))
+				node := res.(ast.EmptyNode)
+				Expect(node.Token()).To(Equal("EMPTY"))
 				Expect(node.Value(nil)).To(BeNil())
-				Expect(node.Pos()).To(Equal(nodePos))
+				Expect(node.Pos()).To(Equal(parsley.NilPos))
 				Expect(node.ReaderPos()).To(Equal(endPos))
 			},
 			Entry("ws beginning", " \t\n\f---", 0, parsley.Pos(1), 4),
