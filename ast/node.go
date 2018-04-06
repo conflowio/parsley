@@ -12,6 +12,9 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
+// NIL is the nil token
+const NIL = "NIL"
+
 // EOF is the end of file token
 const EOF = "EOF"
 
@@ -131,4 +134,99 @@ func (n *NonTerminalNode) ReaderPos() int {
 // String returns with a string representation of the node
 func (n *NonTerminalNode) String() string {
 	return fmt.Sprintf("NT{%s, %s, %d, %d}", n.token, n.children, n.pos, n.readerPos)
+}
+
+// NodeList contains a list of nodes, should be used when a parser returns with multiple results
+type NodeList []parsley.Node
+
+// Token returns with NODE_LIST
+func (nl NodeList) Token() string {
+	return "NODE_LIST"
+}
+
+// Value returns with the value of the first result
+func (nl NodeList) Value(ctx interface{}) (interface{}, parsley.Error) {
+	if len(nl) > 0 {
+		return nl[0].Value(ctx)
+	}
+	return nil, nil
+}
+
+// Pos returns the value of the first pos (all nodes should have the same position)
+func (nl NodeList) Pos() parsley.Pos {
+	if len(nl) > 0 {
+		return nl[0].Pos()
+	}
+	return parsley.NilPos
+}
+
+// ReaderPos should not be called on a NodeList
+func (nl NodeList) ReaderPos() int {
+	panic("ReaderPos() should not be called on NodeList")
+}
+
+// Append appends a new node to the list
+func (nl *NodeList) Append(node parsley.Node) {
+	switch v := node.(type) {
+	case NodeList:
+		for _, node := range v {
+			nl.Append(node)
+		}
+	case EmptyNode:
+		for _, node := range *nl {
+			if node == v {
+				return
+			}
+		}
+		*nl = append(*nl, v)
+	default:
+		*nl = append(*nl, v)
+	}
+}
+
+// EmptyNode represents an empty node
+type EmptyNode int
+
+// Token returns with EMPTY
+func (e EmptyNode) Token() string {
+	return NIL
+}
+
+// Value returns with nil
+func (e EmptyNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return nil, nil
+}
+
+// Pos returns with NilPosition
+func (e EmptyNode) Pos() parsley.Pos {
+	return parsley.NilPos
+}
+
+// ReaderPos returns the reader position
+func (e EmptyNode) ReaderPos() int {
+	return int(e)
+}
+
+// String returns with a string representation of the node
+func (e EmptyNode) String() string {
+	return "NIL"
+}
+
+// AppendNode appends
+func AppendNode(n1, n2 parsley.Node) parsley.Node {
+	if n1 == nil {
+		return n2
+	}
+	if n2 == nil {
+		return n1
+	}
+	switch n := n1.(type) {
+	case NodeList:
+		n.Append(n2)
+		return n
+	default:
+		nl := NodeList([]parsley.Node{n1})
+		nl.Append(n2)
+		return nl
+	}
 }

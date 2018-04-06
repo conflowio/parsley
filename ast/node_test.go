@@ -6,120 +6,177 @@
 
 package ast_test
 
-// import (
-// 	"testing"
-//
-// 	"github.com/opsidian/parsley/ast"
-// 	"github.com/opsidian/parsley/reader"
-// 	"github.com/opsidian/parsley/reader/mocks"
-// 	"github.com/opsidian/parsley/test"
-// 	"github.com/stretchr/testify/assert"
-// )
-//
-// func TestTerminalNode(t *testing.T) {
-// 	pos := test.NewPosition(1)
-// 	node := ast.NewTerminalNode("TOKEN", pos, "VALUE")
-// 	assert.Equal(t, "TOKEN", node.Token())
-// 	assert.Equal(t, pos, node.Pos())
-// 	actualVal, actualErr := node.Value(nil)
-// 	assert.Equal(t, "VALUE", actualVal)
-// 	assert.Nil(t, actualErr)
-//
-// 	assert.Equal(t, "T{VALUE, Pos{1}}", node.String())
-//
-// 	node = ast.NewTerminalNode("TOKEN", pos, nil)
-// 	assert.Equal(t, "T{TOKEN, Pos{1}}", node.String())
-// }
-//
-// func TestNonTerminalNode(t *testing.T) {
-// 	expectedValue := 3
-// 	expectedErr := new(mocks.Error)
-// 	var actualCtx interface{}
-// 	var actualNodes []ast.Node
-// 	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, parsley.Error) {
-// 		actualCtx = ctx
-// 		actualNodes = nodes
-// 		return expectedValue, expectedErr
-// 	})
-//
-// 	ctx := "textctx"
-// 	nodes := []ast.Node{
-// 		ast.NewTerminalNode("1", test.NewPosition(0), 1),
-// 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
-// 	}
-//
-// 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
-// 	assert.Equal(t, "+", node.Token())
-// 	assert.Equal(t, nodes, node.Children())
-// 	assert.Equal(t, test.NewPosition(0), node.Pos())
-// 	actualVal, actualErr := node.Value(ctx)
-// 	assert.Equal(t, ctx, actualCtx)
-// 	assert.Equal(t, nodes, actualNodes)
-// 	assert.Equal(t, expectedValue, actualVal)
-// 	assert.Equal(t, expectedErr, actualErr)
-//
-// 	assert.Equal(t, "NT{+, [T{1, Pos{0}} T{2, Pos{2}}]}", node.String())
-// }
-//
-// func TestNonTerminalNodeShouldGetPosFromFirstNonNilChild(t *testing.T) {
-// 	nodes := []ast.Node{
-// 		nil,
-// 		ast.NewTerminalNode("1", test.NewPosition(0), 1),
-// 	}
-//
-// 	node := ast.NewNonTerminalNode("TEST", nodes, nil)
-// 	assert.Equal(t, test.NewPosition(0), node.Pos())
-// }
-//
-// func TestNonTerminalNodeValueShouldIncludeNilNodes(t *testing.T) {
-// 	var actualNodes []ast.Node
-// 	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, parsley.Error) {
-// 		actualNodes = nodes
-// 		return nil, nil
-// 	})
-//
-// 	nodes := []ast.Node{
-// 		ast.NewTerminalNode("1", test.NewPosition(0), 1),
-// 		nil,
-// 		ast.NewTerminalNode("2", test.NewPosition(2), 2),
-// 	}
-//
-// 	node := ast.NewNonTerminalNode("+", nodes, interpreterFunc)
-// 	node.Value(nil)
-// 	assert.Equal(t, nodes, actualNodes)
-// }
-//
-// func TestNonTerminalNodeValueShouldReturnNilIfNoInterpreter(t *testing.T) {
-// 	nodes := []ast.Node{
-// 		ast.NewTerminalNode("1", test.NewPosition(0), 1),
-// 	}
-//
-// 	node := ast.NewNonTerminalNode("+", nodes, nil)
-// 	val, err := node.Value(nil)
-// 	assert.Nil(t, val)
-// 	assert.Nil(t, err)
-// }
-//
-// func TestNonTerminalNodeValueShouldCallInterpreterEvenIfNoChildren(t *testing.T) {
-// 	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, parsley.Error) {
-// 		return 1, nil
-// 	})
-// 	node := ast.NewNonTerminalNode("+", []ast.Node{}, interpreterFunc)
-// 	val, err := node.Value(nil)
-// 	assert.Equal(t, 1, val)
-// 	assert.Nil(t, err)
-// }
-//
-// func TestNonTerminalNodeValueShouldReturnNilIfAllChildrenAreNil(t *testing.T) {
-// 	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, parsley.Error) {
-// 		return nil, nil
-// 	})
-// 	nodes := []ast.Node{
-// 		nil,
-// 		nil,
-// 	}
-// 	node := ast.NewNonTerminalNode("+", nodes, interpreter)
-// 	val, err := node.Value(nil)
-// 	assert.Nil(t, val)
-// 	assert.Nil(t, err)
-// }
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/parsley/parsleyfakes"
+)
+
+var _ = Describe("NodeList", func() {
+
+	var (
+		nl, nl2        ast.NodeList
+		n1, n2, n3, n4 *parsleyfakes.FakeNode
+	)
+
+	BeforeEach(func() {
+		n1 = &parsleyfakes.FakeNode{}
+		n1.TokenReturns("n1")
+		n2 = &parsleyfakes.FakeNode{}
+		n2.TokenReturns("n2")
+		n3 = &parsleyfakes.FakeNode{}
+		n3.TokenReturns("n3")
+		n4 = &parsleyfakes.FakeNode{}
+		n4.TokenReturns("n4")
+
+		nl2 = ast.NodeList([]parsley.Node{n3, n4})
+	})
+
+	It("should have a non-empty token", func() {
+		Expect(nl.Token()).ToNot(BeEmpty())
+	})
+
+	Describe("Value", func() {
+		Context("when empty", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{})
+			})
+			It("should return nil", func() {
+				Expect(nl.Value(nil)).To(BeNil())
+			})
+		})
+
+		Context("when not empty", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{n1, n2})
+			})
+			It("should return the value of the first item", func() {
+				err := parsley.NewError(parsley.Pos(1), "some error")
+				n1.ValueReturns("res", err)
+
+				ctx := "foo"
+				val, err := nl.Value(ctx)
+				Expect(val).To(Equal("res"))
+				Expect(err).To(MatchError(err))
+
+				Expect(n1.ValueCallCount()).To(Equal(1))
+				passedCtx := n1.ValueArgsForCall(0)
+				Expect(passedCtx).To(Equal(ctx))
+
+				Expect(n2.ValueCallCount()).To(Equal(0))
+			})
+		})
+	})
+
+	Describe("Pos", func() {
+		Context("when empty", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{})
+			})
+			It("should return nil position", func() {
+				Expect(nl.Pos()).To(Equal(parsley.NilPos))
+			})
+		})
+
+		Context("when not empty", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{n1, n2})
+				n1.PosReturns(parsley.Pos(1))
+				n2.PosReturns(parsley.Pos(2))
+			})
+			It("should return the position of the first item", func() {
+				Expect(nl.Pos()).To(Equal(n1.Pos()))
+			})
+		})
+	})
+
+	Describe("Append", func() {
+		Context("when empty", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{})
+			})
+
+			It("should append a new item", func() {
+				nl.Append(n1)
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1})))
+			})
+
+			It("should append a new item list", func() {
+				nl.Append(nl2)
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n3, n4})))
+			})
+		})
+
+		Context("when already has items", func() {
+			BeforeEach(func() {
+				nl = ast.NodeList([]parsley.Node{n1})
+			})
+
+			It("should append a new item", func() {
+				nl.Append(n2)
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1, n2})))
+			})
+
+			It("should append a new item list", func() {
+				nl.Append(nl2)
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1, n3, n4})))
+			})
+
+			It("should only append an empty node once", func() {
+				nl.Append(ast.EmptyNode(1))
+				nl.Append(ast.EmptyNode(1))
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1, ast.EmptyNode(1)})))
+			})
+		})
+	})
+
+	Describe("ReaderPos", func() {
+		It("should panic", func() {
+			Expect(func() { nl.ReaderPos() }).To(Panic())
+		})
+	})
+
+})
+
+var _ = Describe("AppendNode", func() {
+
+	var (
+		n1, n2, n3, n4 *parsleyfakes.FakeNode
+	)
+
+	BeforeEach(func() {
+		n1 = &parsleyfakes.FakeNode{}
+		n1.TokenReturns("n1")
+		n2 = &parsleyfakes.FakeNode{}
+		n2.TokenReturns("n2")
+		n3 = &parsleyfakes.FakeNode{}
+		n3.TokenReturns("n3")
+		n4 = &parsleyfakes.FakeNode{}
+		n4.TokenReturns("n4")
+	})
+
+	DescribeTable("result",
+		func(n1 parsley.Node, n2 parsley.Node, res parsley.Node) {
+			if res != nil {
+				Expect(ast.AppendNode(n1, n2)).To(Equal(res))
+			} else {
+				Expect(ast.AppendNode(n1, n2)).To(BeNil())
+			}
+		},
+		Entry("nil + nil", nil, nil, nil),
+		Entry("node + nil", n1, nil, n1),
+		Entry("nil + node", nil, n1, n1),
+		Entry("node + node", n1, n2, ast.NodeList([]parsley.Node{n1, n2})),
+		Entry("node + list", n1, ast.NodeList([]parsley.Node{n2, n3}), ast.NodeList([]parsley.Node{n1, n2, n3})),
+		Entry("list + node", ast.NodeList([]parsley.Node{n1, n2}), n3, ast.NodeList([]parsley.Node{n1, n2, n3})),
+		Entry(
+			"list + list",
+			ast.NodeList([]parsley.Node{n1, n2}),
+			ast.NodeList([]parsley.Node{n3, n4}),
+			ast.NodeList([]parsley.Node{n1, n2, n3, n4}),
+		),
+	)
+})
