@@ -12,6 +12,6 @@ import (
 )
 
 // Optional returns the parser's matches or an empty match if it fails
-func Optional(p parsley.Parser) parsley.ParserFunc {
+func Optional(p parsley.Parser) *parser.NamedFunc {
 	return Choice("", p, parser.Empty())
 }

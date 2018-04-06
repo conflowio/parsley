@@ -40,7 +40,7 @@ package combinator_test
 // 		return res, nil
 // 	})
 //
-// 	var a parsley.ParserFunc
+// 	var a parser.Func
 // 	a = combinator.Memoize(combinator.Any("a or ab",
 // 		terminal.Rune('a', "CHAR"),
 // 		combinator.Seq(builder.All("AB", concat),
@@ -172,7 +172,7 @@ package combinator_test
 // 	parserIndex := 1
 // 	assert.Equal(t, leftRecCtx.Get(parserIndex), 0)
 //
-// 	p := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		assert.Equal(t, leftRecCtx.Get(parserIndex), 1)
 // 		return parser.NoCurtailingParsers(), nil, nil
 // 	})
@@ -187,7 +187,7 @@ package combinator_test
 // 	expectedRS := parser.NewResult(node, r).AsSet()
 // 	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 //
-// 	p := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return expectedCP, expectedRS, expectedErr
 // 	})
 // 	cp, rs, err := combinator.Memoize(p).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
@@ -205,7 +205,7 @@ package combinator_test
 // 	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 //
 // 	called := false
-// 	p := combinator.Memoize(parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		called = true
 // 		return expectedCP, expectedRS, expectedErr
 // 	}))
@@ -230,8 +230,8 @@ package combinator_test
 // 	r := test.NewReader(0, 1, false, false)
 //
 // 	callCount := 0
-// 	var p parsley.ParserFunc
-// 	p = combinator.Memoize(parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	var p parser.Func
+// 	p = combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		callCount++
 // 		return (&p).Parse(h, leftRecCtx, r)
 // 	}))

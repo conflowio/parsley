@@ -69,7 +69,7 @@ package combinator_test
 // }
 //
 // func TestSeqShouldPanicIfNoBuilder(t *testing.T) {
-// 	p := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, nil
 // 	})
 // 	assert.Panics(t, func() {
@@ -91,7 +91,7 @@ package combinator_test
 // 	r := test.NewReader(0, 1, false, false)
 // 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", r.Cursor(), 'a'), r).AsSet()
 // 	expectedCP := data.NewIntSet(1)
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return expectedCP, expectedRS, nil
 // 	})
 //
@@ -113,14 +113,14 @@ package combinator_test
 // func TestSeqShouldCombineParserResults(t *testing.T) {
 // 	r := test.NewReader(0, 1, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), parser.NewResultSet(
 // 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "a"), test.NewReader(1, 1, false, true)),
 // 			parser.NewResult(ast.NewTerminalNode("STR", test.NewPosition(1), "ab"), test.NewReader(2, 1, false, true)),
 // 		), nil
 // 	})
 // 	p2First := true
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		if p2First {
 // 			p2First = false
 // 			return parser.NoCurtailingParsers(), parser.NewResultSet(
@@ -170,11 +170,11 @@ package combinator_test
 // func TestSeqShouldHandleNilResults(t *testing.T) {
 // 	r := test.NewReader(0, 1, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet(), nil
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 // 	})
 //
@@ -196,11 +196,11 @@ package combinator_test
 //
 // 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), res.AsSet(), nil
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 // 	})
 //
@@ -214,11 +214,11 @@ package combinator_test
 // func TestSeqShouldMergeCurtailReasonsIfEmptyResult(t *testing.T) {
 // 	r := test.NewReader(0, 1, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return data.NewIntSet(0, 1), parser.NewResult(nil, r).AsSet(), nil
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return data.NewIntSet(1, 2), nil, reader.NewError(test.NewPosition(1), "ERR1")
 // 	})
 //
@@ -232,11 +232,11 @@ package combinator_test
 // func TestSeqShouldStopIfEOFTokenReached(t *testing.T) {
 // 	r := test.NewReader(0, 2, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), r).AsSet(), nil
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), parser.NewResultSet(
 // 			parser.NewResult(ast.NewTerminalNode(ast.EOF, test.NewPosition(2), nil), test.NewReader(2, 0, false, true)),
 // 			parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'b'), test.NewReader(1, 1, false, true)),

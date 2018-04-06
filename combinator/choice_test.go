@@ -47,7 +47,7 @@ package combinator_test
 // 	expectedCP := data.NewIntSet(1)
 // 	expectedRS := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'x'), r).AsSet()
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return expectedCP, expectedRS, nil
 // 	})
 //
@@ -64,15 +64,15 @@ package combinator_test
 //
 // 	var res parser.Result
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR1")
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return data.NewIntSet(1), parser.NewResultSet(), reader.NewError(test.NewPosition(2), "ERR2")
 // 	})
 //
-// 	p3 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p3 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		res = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST"), test.NewReader(1, 1, false, true))
 // 		return data.NewIntSet(2), res.AsSet(), nil
 // 	})
@@ -95,12 +95,12 @@ package combinator_test
 //
 // 	var res1, res2 parser.Result
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		res1 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST"), test.NewReader(1, 1, false, true))
 // 		return parser.NoCurtailingParsers(), res1.AsSet(), nil
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		res2 = parser.NewResult(ast.NewTerminalNode("STRING", test.NewPosition(0), "TEST2"), test.NewReader(1, 1, false, true))
 // 		return parser.NoCurtailingParsers(), res2.AsSet(), nil
 // 	})
@@ -116,11 +116,11 @@ package combinator_test
 // func TestChoiceMayReturnEmptyResult(t *testing.T) {
 // 	r := test.NewReader(0, 2, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(2), "ERR1")
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(1), "ERR2")
 // 	})
 //
@@ -135,11 +135,11 @@ package combinator_test
 // func TestChoiceShouldReturnCustomErrorIfNoParserAdvanced(t *testing.T) {
 // 	r := test.NewReader(0, 2, false, false)
 //
-// 	p1 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p1 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(0), "ERR1")
 // 	})
 //
-// 	p2 := parsley.ParserFunc(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p2 := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return parser.NoCurtailingParsers(), nil, reader.NewError(test.NewPosition(0), "ERR2")
 // 	})
 //

@@ -9,19 +9,20 @@ package combinator
 import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parsley.ParserFunc {
+func SepBy(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parser.Func {
 	return newSepBy(token, valueP, sepP, interpreter, 0, false).CreateParser()
 }
 
 // SepByOrValue applies the given value parser zero or more times separated by the separator parser
 // If there is only one value then the value node will be returned and the interpreter won't be used
 // It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepByOrValue(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parsley.ParserFunc {
+func SepByOrValue(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parser.Func {
 	return newSepBy(token, valueP, sepP, interpreter, 0, true).CreateParser()
 }
 
@@ -58,7 +59,7 @@ func newSepBy(token string, valueP parsley.Parser, sepP parsley.Parser, interpre
 	}
 }
 
-func (s sepBy) CreateParser() parsley.ParserFunc {
+func (s sepBy) CreateParser() parser.Func {
 	sepValue := Memoize(Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
 	sepValueMany := Memoize(Many(builder.Flatten(s.token, nil), sepValue))
 	return SeqTry(s, s.min, s.valueP, sepValueMany)

@@ -14,6 +14,6 @@ import (
 )
 
 // Sentence matches the given parser until the end of input
-func Sentence(p parsley.Parser) parsley.ParserFunc {
+func Sentence(p parsley.Parser) parser.Func {
 	return Seq(builder.All("ROOT", interpreter.Select(0)), p, parser.End())
 }

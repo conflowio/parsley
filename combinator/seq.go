@@ -8,12 +8,13 @@ package combinator
 
 import (
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // Seq tries to apply all parsers after each other matching effectively a sequence of tokens and returns with all
 // combinations of the results. Only matches are returned where all parsers were applied successfully.
-func Seq(nodeBuilder parsley.NodeBuilder, parsers ...parsley.Parser) parsley.ParserFunc {
+func Seq(nodeBuilder parsley.NodeBuilder, parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
@@ -23,7 +24,7 @@ func Seq(nodeBuilder parsley.NodeBuilder, parsers ...parsley.Parser) parsley.Par
 		}
 		return nil
 	}
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		l := len(parsers)
 		return newRecursive(nodeBuilder, lookup, l, l).Parse(h, leftRecCtx, r, pos)
 	})
@@ -31,7 +32,7 @@ func Seq(nodeBuilder parsley.NodeBuilder, parsers ...parsley.Parser) parsley.Par
 
 // SeqTry tries to apply all parsers after each other matching effectively the longest possible sequences of
 // tokens and returns with all combinations of the results.
-func SeqTry(nodeBuilder parsley.NodeBuilder, min int, parsers ...parsley.Parser) parsley.ParserFunc {
+func SeqTry(nodeBuilder parsley.NodeBuilder, min int, parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
@@ -41,7 +42,7 @@ func SeqTry(nodeBuilder parsley.NodeBuilder, min int, parsers ...parsley.Parser)
 		}
 		return nil
 	}
-	return parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 		return newRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(h, leftRecCtx, r, pos)
 	})
 }
