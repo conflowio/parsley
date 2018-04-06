@@ -4,17 +4,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package parsley_test
+package parser_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-var _ = Describe("ParserFunc", func() {
+var _ = Describe("Func", func() {
 
 	It("should call the function and return the result", func() {
 		expectedHistory := &parsleyfakes.FakeHistory{}
@@ -28,7 +29,7 @@ var _ = Describe("ParserFunc", func() {
 		var actualLeftRecCtx data.IntMap
 		var actualReader parsley.Reader
 		var actualPos int
-		p := parsley.ParserFunc(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
 			actualHistory = h
 			actualLeftRecCtx = leftRecCtx
 			actualReader = r

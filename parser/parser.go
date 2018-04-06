@@ -6,3 +6,40 @@
 
 // Package parser contains the main structs for parsing
 package parser
+
+import (
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parsley"
+)
+
+// Func defines a helper to implement the Parser interface with functions
+type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error)
+
+func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return f(h, leftRecCtx, r, pos)
+}
+
+func (f Func) Name() string {
+	return ""
+}
+
+func (f Func) WithName(name string) *NamedFunc {
+	return &NamedFunc{
+		name: name,
+		f:    f,
+	}
+}
+
+type NamedFunc struct {
+	name string
+	f    Func
+}
+
+func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return nf.f(h, leftRecCtx, r, pos)
+}
+
+// Name returns with the parser name
+func (nf *NamedFunc) Name() string {
+	return nf.name
+}
