@@ -5,42 +5,58 @@ import (
 	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/combinator"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text/terminal"
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() parsley.ParserFunc {
-	var value parsley.ParserFunc
+func NewParser() *parser.NamedFunc {
+	var value parser.NamedFunc
 
 	array := combinator.Seq(
 		builder.All("ARRAY", interpreter.Select(1)),
 		terminal.Rune('['),
-		combinator.SepBy("ARRAY_ELEMENTS", &value, terminal.Rune(','), arrayInterpreter()),
-		terminal.Rune(']'),
+		combinator.SepBy(
+			"ARRAY_ELEMENTS",
+			combinator.Trim(&value, true),
+			combinator.Trim(terminal.Rune(','), false),
+			arrayInterpreter(),
+		),
+		combinator.Trim(terminal.Rune(']'), true),
 	)
 
-	keyValue := combinator.Seq(builder.All("OBJ_KV", nil), terminal.String(false), terminal.Rune(':'), &value)
+	keyValue := combinator.Seq(
+		builder.All("OBJ_KV", nil),
+		terminal.String(false),
+		terminal.Rune(':'),
+		combinator.Trim(&value, false),
+	)
 
 	object := combinator.Seq(
 		builder.All("OBJ", interpreter.Select(1)),
 		terminal.Rune('{'),
-		combinator.SepBy("OBJ_ATTRIBUTES", keyValue, terminal.Rune(','), objectInterpreter()),
-		terminal.Rune('}'),
+		combinator.SepBy(
+			"OBJ_ATTRIBUTES",
+			combinator.Trim(keyValue, true),
+			combinator.Trim(terminal.Rune(','), false),
+			objectInterpreter(),
+		),
+		combinator.Trim(terminal.Rune('}'), true),
 	)
 
-	value = combinator.Choice("value",
+	value = *combinator.Trim(combinator.Choice("value",
 		terminal.String(false),
 		terminal.Float(),
 		terminal.Integer(),
 		array,
 		object,
-		terminal.Word("FALSE", "false", false),
-		terminal.Word("TRUE", "true", true),
-		terminal.Word("NULL", "null", nil),
-	)
+		terminal.Word("false", false),
+		terminal.Word("true", true),
+		terminal.Word("null", nil),
+	), true)
 
-	return value
+	return &value
 }
 
 func arrayInterpreter() ast.InterpreterFunc {

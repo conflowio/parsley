@@ -33,8 +33,9 @@ func benchmarkParsleyJSON(b *testing.B, jsonFilePath string) {
 	}
 }
 
-func BenchmarkParsleyJSON1k(b *testing.B)  { benchmarkParsleyJSON(b, "../example_1k.json") }
-func BenchmarkParsleyJSON10k(b *testing.B) { benchmarkParsleyJSON(b, "../example_10k.json") }
+func BenchmarkParsleyJSON1k(b *testing.B)   { benchmarkParsleyJSON(b, "../example_1k.json") }
+func BenchmarkParsleyJSON10k(b *testing.B)  { benchmarkParsleyJSON(b, "../example_10k.json") }
+func BenchmarkParsleyJSON100k(b *testing.B) { benchmarkParsleyJSON(b, "../example_100k.json") }
 
 func benchmarkEncodingJSON(b *testing.B, jsonFilePath string) {
 	input, err := ioutil.ReadFile(jsonFilePath)
@@ -53,5 +54,6 @@ func benchmarkEncodingJSON(b *testing.B, jsonFilePath string) {
 	}
 }
 
-func BenchmarkEncodingJSON1k(b *testing.B)  { benchmarkEncodingJSON(b, "../example_1k.json") }
-func BenchmarkEncodingJSON10k(b *testing.B) { benchmarkEncodingJSON(b, "../example_10k.json") }
+func BenchmarkEncodingJSON1k(b *testing.B)   { benchmarkEncodingJSON(b, "../example_1k.json") }
+func BenchmarkEncodingJSON10k(b *testing.B)  { benchmarkEncodingJSON(b, "../example_10k.json") }
+func BenchmarkEncodingJSON100k(b *testing.B) { benchmarkEncodingJSON(b, "../example_100k.json") }
