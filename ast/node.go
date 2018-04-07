@@ -75,24 +75,21 @@ type NonTerminalNode struct {
 
 // NewNonTerminalNode creates a new NonTerminalNode instance
 func NewNonTerminalNode(token string, children []parsley.Node) *NonTerminalNode {
+	if len(children) == 0 {
+		panic("a NonTerminalNode should always have children")
+	}
 	node := &NonTerminalNode{
 		token:    token,
 		children: children,
 	}
 
 	for _, child := range children {
-		if child != nil {
+		if child.Pos() != parsley.NilPos {
 			node.pos = child.Pos()
 			break
 		}
 	}
-
-	for i := len(children) - 1; i >= 0; i-- {
-		if children[i] != nil {
-			node.readerPos = children[i].ReaderPos()
-			break
-		}
-	}
+	node.readerPos = children[len(children)-1].ReaderPos()
 
 	return node
 }
