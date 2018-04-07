@@ -6,73 +6,73 @@
 
 package combinator_test
 
-// import (
-// 	"fmt"
-// 	"testing"
-//
-// 	"github.com/opsidian/parsley/ast"
-// 	"github.com/opsidian/parsley/ast/builder"
-// 	"github.com/opsidian/parsley/combinator"
-// 	"github.com/opsidian/parsley/data"
-// 	"github.com/opsidian/parsley/parser"
-// 	"github.com/opsidian/parsley/parsley"
-// 	"github.com/opsidian/parsley/reader"
-// 	"github.com/opsidian/parsley/test"
-// 	"github.com/opsidian/parsley/text"
-// 	"github.com/opsidian/parsley/text/terminal"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/require"
-// )
-//
-// // Let's define a simple language where you define an integer array.
-// // The language would be left recursive, but using SepBy (which is using Many and Seq) we can avoid this.
-// // The grammar is: S -> [I(,I)*], I -> any integer
-// func ExampleSepBy() {
-// 	interpreter := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-// 		var res []int
-// 		for i := 0; i < len(nodes); i += 2 {
-// 			val, _ := nodes[i].Value(ctx)
-// 			res = append(res, val.(int))
-// 		}
-// 		return res, nil
-// 	})
-//
-// 	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(',', "SEP"), interpreter)
-// 	p := combinator.Seq(builder.Select(1), terminal.Rune('[', "ARR_START"), intList, terminal.Rune(']', "ARR_END"))
-// 	s := parsley.NewSentence(p)
-//
-// 	value1, _, _ := s.Evaluate(text.NewReader([]byte("[]"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value1, value1)
-//
-// 	value2, _, _ := s.Evaluate(text.NewReader([]byte("[1, 2, 3]"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value2, value2)
-// 	// Output: []int []
-// 	// []int [1 2 3]
-// }
-//
-// // Let's define a simple language where you can add integer numbers.
-// // The language would be left recursive, but using SepBy1 (which is using Many and Seq) we can avoid this.
-// // The grammar is: S -> I(+I)*, I -> any integer
-// func ExampleSepBy1() {
-// 	interpreter := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-// 		sum := 0
-// 		for i := 0; i < len(nodes); i += 2 {
-// 			val, _ := nodes[i].Value(ctx)
-// 			sum += val.(int)
-// 		}
-// 		return sum, nil
-// 	})
-//
-// 	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+', "+"), interpreter)
-// 	s := parsley.NewSentence(p)
-// 	value1, _, _ := s.Evaluate(text.NewReader([]byte("1"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value1, value1)
-//
-// 	value2, _, _ := s.Evaluate(text.NewReader([]byte("1 + 2 + 3"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value2, value2)
-// 	// Output: int 1
-// 	// int 6
-// }
+import (
+	"fmt"
+
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/ast/interpreter"
+	"github.com/opsidian/parsley/combinator"
+	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/text"
+	"github.com/opsidian/parsley/text/terminal"
+)
+
+// Let's define a simple language where you define an integer array.
+// The language would be left recursive, but using SepBy (which is using Many and Seq) we can avoid this.
+// The grammar is: S -> [I(,I)*], I -> any integer
+func ExampleSepBy() {
+	arr := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		var res []int
+		for i := 0; i < len(nodes); i += 2 {
+			val, _ := nodes[i].Value(ctx)
+			res = append(res, val.(int))
+		}
+		return res, nil
+	})
+
+	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(','), arr)
+	p := combinator.Seq(builder.All("ARR", interpreter.Select(1)), terminal.Rune('['), intList, terminal.Rune(']'))
+
+	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
+	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	fmt.Printf("%T %v\n", value1, value1)
+
+	r = text.NewReader(text.NewFile("example.file", []byte("[1,2,3]")))
+	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	fmt.Printf("%T %v\n", value2, value2)
+
+	// Output: <nil> <nil>
+	// []int [1 2 3]
+}
+
+// Let's define a simple language where you can add integer numbers.
+// The language would be left recursive, but using SepBy1 (which is using Many and Seq) we can avoid this.
+// The grammar is: S -> I(+I)*, I -> any integer
+func ExampleSepBy1() {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		sum := 0
+		for i := 0; i < len(nodes); i += 2 {
+			val, _ := nodes[i].Value(ctx)
+			sum += val.(int)
+		}
+		return sum, nil
+	})
+
+	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+'), interpreter)
+
+	r := text.NewReader(text.NewFile("example.file", []byte("1")))
+	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	fmt.Printf("%T %v\n", value1, value1)
+
+	r = text.NewReader(text.NewFile("example.file", []byte("1+2+3")))
+	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	fmt.Printf("%T %v\n", value2, value2)
+	// Output: int 1
+	// int 6
+}
+
 //
 // func TestSepByShouldCombineParserResults(t *testing.T) {
 // 	pResults := []parser.ResultSet{

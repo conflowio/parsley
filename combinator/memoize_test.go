@@ -6,53 +6,52 @@
 
 package combinator_test
 
-// import (
-// 	"fmt"
-// 	"testing"
-//
-// 	"github.com/opsidian/parsley/ast"
-// 	"github.com/opsidian/parsley/ast/builder"
-// 	"github.com/opsidian/parsley/combinator"
-// 	"github.com/opsidian/parsley/data"
-// 	"github.com/opsidian/parsley/parser"
-// 	"github.com/opsidian/parsley/parsley"
-// 	"github.com/opsidian/parsley/reader"
-// 	"github.com/opsidian/parsley/test"
-// 	"github.com/opsidian/parsley/text"
-// 	"github.com/opsidian/parsley/text/terminal"
-// 	"github.com/stretchr/testify/assert"
-// )
-//
-// // Let's define a left-recursive language where we need to curtail left-recursion
-// // and also cache previous parser matches with Memoize.
-// // Grammar: S -> A, A -> a | Ab
-// func ExampleMemoize() {
-// 	concat := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-// 		var res string
-// 		for _, node := range nodes {
-// 			val, _ := node.Value(ctx)
-// 			if runeVal, ok := val.(rune); ok {
-// 				res += string(runeVal)
-// 			} else {
-// 				res += val.(string)
-// 			}
-// 		}
-// 		return res, nil
-// 	})
-//
-// 	var a parser.Func
-// 	a = combinator.Memoize(combinator.Any("a or ab",
-// 		terminal.Rune('a', "CHAR"),
-// 		combinator.Seq(builder.All("AB", concat),
-// 			&a,
-// 			terminal.Rune('b', "CHAR"),
-// 		),
-// 	))
-// 	s := parsley.NewSentence(a)
-// 	value, _, _ := s.Evaluate(text.NewReader([]byte("abbbbbbbb"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value, value)
-// 	// Output: string abbbbbbbb
-// }
+import (
+	"fmt"
+
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/combinator"
+	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/text"
+	"github.com/opsidian/parsley/text/terminal"
+)
+
+// Let's define a left-recursive language where we need to curtail left-recursion
+// and also cache previous parser matches with Memoize.
+// Grammar: S -> A, A -> a | Ab
+func ExampleMemoize() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			if runeVal, ok := val.(rune); ok {
+				res += string(runeVal)
+			} else {
+				res += val.(string)
+			}
+		}
+		return res, nil
+	})
+
+	var p parser.NamedFunc
+	p = *combinator.Memoize(combinator.Any("a or ab",
+		terminal.Rune('a'),
+		combinator.Seq(builder.All("AB", concat),
+			&p,
+			terminal.Rune('b'),
+		),
+	))
+	f := text.NewFile("example.file", []byte("abbbbbbbb"))
+	r := text.NewReader(f)
+	s := combinator.Sentence(&p)
+	h := parser.NewHistory()
+	value, _ := parsley.Evaluate(h, r, s, nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string abbbbbbbb
+}
+
 //
 // func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
 // 	h := parser.NewHistory()

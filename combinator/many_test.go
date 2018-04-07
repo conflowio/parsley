@@ -6,40 +6,36 @@
 
 package combinator_test
 
-// import (
-// 	"fmt"
-// 	"testing"
-//
-// 	"github.com/opsidian/parsley/ast"
-// 	"github.com/opsidian/parsley/ast/builder"
-// 	"github.com/opsidian/parsley/combinator"
-// 	"github.com/opsidian/parsley/data"
-// 	"github.com/opsidian/parsley/parser"
-// 	"github.com/opsidian/parsley/parsley"
-// 	"github.com/opsidian/parsley/reader"
-// 	"github.com/opsidian/parsley/test"
-// 	"github.com/opsidian/parsley/text"
-// 	"github.com/opsidian/parsley/text/terminal"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/require"
-// )
-//
-// // Let's define a parser which accepts any number of "a" characters
-// func ExampleMany() {
-// 	concat := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-// 		var res string
-// 		for _, node := range nodes {
-// 			val, _ := node.Value(ctx)
-// 			res += string(val.(rune))
-// 		}
-// 		return res, nil
-// 	})
-// 	p := combinator.Many(builder.All("a", concat), terminal.Rune('a', "A"))
-// 	s := parsley.NewSentence(p)
-// 	value, _, _ := s.Evaluate(text.NewReader([]byte("aaaaa"), "", true), nil)
-// 	fmt.Printf("%T %v\n", value, value)
-// 	// Output: string aaaaa
-// }
+import (
+	"fmt"
+
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/ast/builder"
+	"github.com/opsidian/parsley/combinator"
+	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/text"
+	"github.com/opsidian/parsley/text/terminal"
+)
+
+// Let's define a parser which accepts any number of "a" characters
+func ExampleMany() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+	p := combinator.Many(builder.All("a", concat), terminal.Rune('a'))
+	r := text.NewReader(text.NewFile("example.file", []byte("aaaaa")))
+	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+
+	fmt.Printf("%T %v\n", value, value)
+	// Output: string aaaaa
+}
+
 //
 // // Let's define a parser which accepts one or many "a" characters
 // func ExampleMany1() {

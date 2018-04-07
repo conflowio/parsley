@@ -15,7 +15,7 @@ import (
 // Many applies the  parser zero or more times
 func Many(nodeBuilder parsley.NodeBuilder, p parsley.Parser) parser.Func {
 	f := func(i int) parsley.Parser { return p }
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		return newRecursive(nodeBuilder, f, 0, -1).Parse(h, leftRecCtx, r, pos)
 	})
 }
@@ -23,7 +23,7 @@ func Many(nodeBuilder parsley.NodeBuilder, p parsley.Parser) parser.Func {
 // Many1 applies the parser one or more times
 func Many1(nodeBuilder parsley.NodeBuilder, p parsley.Parser) parser.Func {
 	f := func(i int) parsley.Parser { return p }
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		return newRecursive(nodeBuilder, f, 1, -1).Parse(h, leftRecCtx, r, pos)
 	})
 }

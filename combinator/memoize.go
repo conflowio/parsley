@@ -19,26 +19,26 @@ var nextParserIndex int32
 // Memoize handles result cache and curtailing left recursion
 func Memoize(p parsley.Parser) *parser.NamedFunc {
 	parserIndex := int(atomic.AddInt32(&nextParserIndex, 1))
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		if result, found := h.GetResult(parserIndex, pos, leftRecCtx); found {
-			return result.CurtailingParsers, result.Nodes, result.Err
+			return result.CurtailingParsers, result.Node, result.Err
 		}
 
 		if leftRecCtx.Get(parserIndex) > r.Remaining(pos)+1 {
 			return data.NewIntSet(parserIndex), nil, nil
 		}
 
-		cp, nodes, err := p.Parse(h, leftRecCtx.Inc(parserIndex), r, pos)
+		cp, node, err := p.Parse(h, leftRecCtx.Inc(parserIndex), r, pos)
 		leftRecCtx = leftRecCtx.Filter(cp)
 
 		res := &parsley.Result{
 			LeftRecCtx:        leftRecCtx,
 			CurtailingParsers: cp,
-			Nodes:             nodes,
+			Node:              node,
 			Err:               err,
 		}
 		h.SaveResult(parserIndex, pos, res)
 
-		return cp, nodes, err
+		return cp, node, err
 	}).WithName(p.Name())
 }

@@ -19,7 +19,7 @@ type recursive struct {
 	min               int
 	max               int
 	curtailingParsers data.IntSet
-	result            []parsley.Node
+	result            parsley.Node
 	err               parsley.Error
 	nodes             []parsley.Node
 }
@@ -35,25 +35,24 @@ func newRecursive(nodeBuilder parsley.NodeBuilder, parserLookUp func(i int) pars
 		min:               min,
 		max:               max,
 		curtailingParsers: data.EmptyIntSet,
-		result:            []parsley.Node{},
 		nodes:             []parsley.Node{},
 	}
 }
 
 // Parse runs the recursive parser
-func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 	rp.parse(0, h, leftRecCtx, r, pos, true)
 	return rp.curtailingParsers, rp.result, rp.err
 }
 
 func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
-	var nodes []parsley.Node
+	var res parsley.Node
 	var err parsley.Error
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
 		h.RegisterCall()
-		cp, nodes, err = nextParser.Parse(h, leftRecCtx, r, pos)
+		cp, res, err = nextParser.Parse(h, leftRecCtx, r, pos)
 		if err != nil && (rp.err == nil || err.Pos() >= rp.err.Pos()) {
 			rp.err = err
 		}
@@ -63,33 +62,50 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 		rp.curtailingParsers = rp.curtailingParsers.Union(cp)
 	}
 
-	if len(nodes) > 0 {
-		for i, node := range nodes {
-			if len(rp.nodes) < depth+1 {
-				rp.nodes = append(rp.nodes, node)
-			} else {
-				rp.nodes[depth] = node
+	if res != nil {
+		switch rest := res.(type) {
+		case ast.NodeList:
+			for i, node := range rest {
+				if len(rp.nodes) < depth+1 {
+					rp.nodes = append(rp.nodes, node)
+				} else {
+					rp.nodes[depth] = node
+				}
+				if i > 0 || node.ReaderPos() > pos {
+					leftRecCtx = data.EmptyIntMap
+					mergeCurtailingParsers = false
+				}
+				if rp.parse(depth+1, h, leftRecCtx, r, node.ReaderPos(), mergeCurtailingParsers) {
+					return true
+				}
 			}
-			if i > 0 || node.ReaderPos() > pos {
+		default:
+			if len(rp.nodes) < depth+1 {
+				rp.nodes = append(rp.nodes, rest)
+			} else {
+				rp.nodes[depth] = rest
+			}
+			if rest.ReaderPos() > pos {
 				leftRecCtx = data.EmptyIntMap
 				mergeCurtailingParsers = false
 			}
-			if rp.parse(depth+1, h, leftRecCtx, r, node.ReaderPos(), mergeCurtailingParsers) {
+			if rp.parse(depth+1, h, leftRecCtx, r, rest.ReaderPos(), mergeCurtailingParsers) {
 				return true
 			}
 		}
 	}
-	if len(nodes) == 0 {
+
+	if res == nil {
 		if depth >= rp.min && (rp.max == -1 || depth <= rp.max) {
 			if depth > 0 {
 				nodesCopy := make([]parsley.Node, depth)
 				copy(nodesCopy[0:depth], rp.nodes[0:depth])
-				rp.result = append(rp.result, rp.nodeBuilder.BuildNode(nodesCopy))
+				rp.result = ast.AppendNode(rp.result, rp.nodeBuilder.BuildNode(nodesCopy))
 				if rp.nodes[depth-1] != nil && rp.nodes[depth-1].Token() == ast.EOF {
 					return true
 				}
 			} else { // It's an empty result
-				rp.result = append(rp.result, rp.nodeBuilder.BuildNode(nil))
+				rp.result = ast.AppendNode(rp.result, ast.EmptyNode(pos))
 			}
 		}
 	}

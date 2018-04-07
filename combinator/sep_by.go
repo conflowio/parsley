@@ -71,7 +71,7 @@ func (s sepBy) BuildNode(nodes []parsley.Node) parsley.Node {
 	}
 
 	children := []parsley.Node{nodes[0]}
-	if len(nodes) > 1 && nodes[1] != nil {
+	if len(nodes) > 1 && nodes[1].Token() != ast.NIL {
 		node1 := nodes[1].(*ast.NonTerminalNode)
 		if s.returnValue && len(node1.Children()) == 0 {
 			return nodes[0]
