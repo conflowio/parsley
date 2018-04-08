@@ -7,6 +7,7 @@ import (
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 )
 
@@ -19,18 +20,18 @@ func NewParser() *parser.NamedFunc {
 		terminal.Rune('['),
 		combinator.SepBy(
 			"ARRAY_ELEMENTS",
-			combinator.Trim(&value, true),
-			combinator.Trim(terminal.Rune(','), false),
+			text.LeftTrim(&value, text.WsSpacesNl),
+			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 			arrayInterpreter(),
 		),
-		combinator.Trim(terminal.Rune(']'), true),
+		text.LeftTrim(terminal.Rune(']'), text.WsSpacesNl),
 	)
 
 	keyValue := combinator.Seq(
 		builder.All("OBJ_KV", nil),
 		terminal.String(false),
-		terminal.Rune(':'),
-		combinator.Trim(&value, false),
+		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
+		text.LeftTrim(&value, text.WsSpaces),
 	)
 
 	object := combinator.Seq(
@@ -38,14 +39,14 @@ func NewParser() *parser.NamedFunc {
 		terminal.Rune('{'),
 		combinator.SepBy(
 			"OBJ_ATTRIBUTES",
-			combinator.Trim(keyValue, true),
-			combinator.Trim(terminal.Rune(','), false),
+			text.LeftTrim(keyValue, text.WsSpacesNl),
+			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 			objectInterpreter(),
 		),
-		combinator.Trim(terminal.Rune('}'), true),
+		text.LeftTrim(terminal.Rune('}'), text.WsSpacesNl),
 	)
 
-	value = *combinator.Trim(combinator.Choice("value",
+	value = *combinator.Choice("value",
 		terminal.String(false),
 		terminal.Float(),
 		terminal.Integer(),
@@ -54,7 +55,7 @@ func NewParser() *parser.NamedFunc {
 		terminal.Word("false", false),
 		terminal.Word("true", true),
 		terminal.Word("null", nil),
-	), true)
+	)
 
 	return &value
 }
