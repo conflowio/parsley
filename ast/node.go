@@ -56,6 +56,10 @@ func (t *TerminalNode) ReaderPos() int {
 	return t.readerPos
 }
 
+func (t *TerminalNode) SetReaderPos(f func(int) int) {
+	t.readerPos = f(t.readerPos)
+}
+
 // String returns with a string representation of the node
 func (t *TerminalNode) String() string {
 	if t.value == nil {
@@ -128,6 +132,11 @@ func (n *NonTerminalNode) ReaderPos() int {
 	return n.readerPos
 }
 
+// SetReaderPos amends the reader position using the given function
+func (n *NonTerminalNode) SetReaderPos(f func(int) int) {
+	n.readerPos = f(n.readerPos)
+}
+
 // String returns with a string representation of the node
 func (n *NonTerminalNode) String() string {
 	return fmt.Sprintf("NT{%s, %s, %d, %d}", n.token, n.children, n.pos, n.readerPos)
@@ -160,6 +169,13 @@ func (nl NodeList) Pos() parsley.Pos {
 // ReaderPos should not be called on a NodeList
 func (nl NodeList) ReaderPos() int {
 	panic("ReaderPos() should not be called on NodeList")
+}
+
+// SetReaderPos amends the reader position using the given function
+func (nl NodeList) SetReaderPos(f func(int) int) {
+	for _, n := range nl {
+		n.SetReaderPos(f)
+	}
 }
 
 // Append appends a new node to the list
@@ -207,6 +223,10 @@ func (e EmptyNode) ReaderPos() int {
 // String returns with a string representation of the node
 func (e EmptyNode) String() string {
 	return "NIL"
+}
+
+// SetReaderPos does nothing for an empty node
+func (e EmptyNode) SetReaderPos(f func(int) int) {
 }
 
 // AppendNode appends

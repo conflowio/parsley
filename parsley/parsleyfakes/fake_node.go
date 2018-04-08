@@ -48,6 +48,11 @@ type FakeNode struct {
 	readerPosReturnsOnCall map[int]struct {
 		result1 int
 	}
+	SetReaderPosStub        func(func(int) int)
+	setReaderPosMutex       sync.RWMutex
+	setReaderPosArgsForCall []struct {
+		arg1 func(int) int
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -223,6 +228,30 @@ func (fake *FakeNode) ReaderPosReturnsOnCall(i int, result1 int) {
 	}{result1}
 }
 
+func (fake *FakeNode) SetReaderPos(arg1 func(int) int) {
+	fake.setReaderPosMutex.Lock()
+	fake.setReaderPosArgsForCall = append(fake.setReaderPosArgsForCall, struct {
+		arg1 func(int) int
+	}{arg1})
+	fake.recordInvocation("SetReaderPos", []interface{}{arg1})
+	fake.setReaderPosMutex.Unlock()
+	if fake.SetReaderPosStub != nil {
+		fake.SetReaderPosStub(arg1)
+	}
+}
+
+func (fake *FakeNode) SetReaderPosCallCount() int {
+	fake.setReaderPosMutex.RLock()
+	defer fake.setReaderPosMutex.RUnlock()
+	return len(fake.setReaderPosArgsForCall)
+}
+
+func (fake *FakeNode) SetReaderPosArgsForCall(i int) func(int) int {
+	fake.setReaderPosMutex.RLock()
+	defer fake.setReaderPosMutex.RUnlock()
+	return fake.setReaderPosArgsForCall[i].arg1
+}
+
 func (fake *FakeNode) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -234,6 +263,8 @@ func (fake *FakeNode) Invocations() map[string][][]interface{} {
 	defer fake.posMutex.RUnlock()
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
+	fake.setReaderPosMutex.RLock()
+	defer fake.setReaderPosMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
