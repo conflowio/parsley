@@ -17,7 +17,7 @@ import (
 )
 
 // Float matches a float literal
-func Float() *parser.NamedFunc {
+func Float(wsMode text.WsMode) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
@@ -25,6 +25,8 @@ func Float() *parser.NamedFunc {
 			if err != nil {
 				return data.EmptyIntSet, nil, parsley.NewError(r.Pos(pos), "invalid float value encountered")
 			}
+
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode("FLOAT", val, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil

@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Bool", func() {
 
-	var p = terminal.Bool("true", "false")
+	var p = terminal.Bool("true", "false", text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).To(Equal("true or false"))
@@ -27,8 +27,8 @@ var _ = Describe("Bool", func() {
 
 	Context("when called with an empty true/false value", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Bool("", "false") }).To(Panic())
-			Expect(func() { terminal.Bool("true", "") }).To(Panic())
+			Expect(func() { terminal.Bool("", "false", text.WsNone) }).To(Panic())
+			Expect(func() { terminal.Bool("true", "", text.WsNone) }).To(Panic())
 		})
 	})
 
@@ -68,5 +68,35 @@ var _ = Describe("Bool", func() {
 		Entry("True", "True", 0),
 		Entry("False", "False", 0),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Bool("true", "false", text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("false \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+
+			r = text.NewReader(text.NewFile("textfile", []byte("true \t\n\fxxx")))
+			_, res, _ = p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(6))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Bool("true", "false", text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("false \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(9))
+
+			r = text.NewReader(text.NewFile("textfile", []byte("true \t\n\fxxx")))
+			_, res, _ = p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(8))
+		})
+	})
 
 })

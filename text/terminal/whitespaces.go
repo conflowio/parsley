@@ -15,16 +15,20 @@ import (
 )
 
 // Whitespaces matches one or more spaces or tabs. If newLine is true it also matches \n and \f characters.
-func Whitespaces(newLine bool) *parser.NamedFunc {
+func Whitespaces(wsMode text.WsMode) parsley.Parser {
+	if wsMode == text.WsNone {
+		return parser.Empty()
+	}
+
 	var name string
-	if !newLine {
+	if wsMode == text.WsSpaces {
 		name = "spaces or tabs"
 	} else {
 		name = "spaces, tabs or newline"
 	}
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
-		if readerPos, found := tr.MatchWhitespaces(pos, newLine); found {
+		if readerPos := tr.SkipWhitespaces(pos, wsMode); readerPos > pos {
 			return data.EmptyIntSet, ast.EmptyNode(readerPos), nil
 		}
 

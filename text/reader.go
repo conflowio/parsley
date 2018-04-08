@@ -15,6 +15,19 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
+// WsMode is a type for definining how to handle whitespaces after the tokens
+type WsMode uint8
+
+// Whitespace modes
+// WsNone means no whitespaces will read and skipped after a token
+// WsSpaces means spaces and tabs will be read and skipped automatically after a match
+// WsSpacesNl means spaces, tabs and new lines will be read and skipped automatically after a match
+const (
+	WsNone WsMode = iota
+	WsSpaces
+	WsSpacesNl
+)
+
 // Reader defines a text input reader
 // For more efficient reading it provides methods for regexp matching.
 type Reader struct {
@@ -154,21 +167,19 @@ func (r *Reader) IsEOF(pos int) bool {
 	return pos >= r.file.len
 }
 
-// MatchWhitespaces reads all the whitespaces
-func (r *Reader) MatchWhitespaces(pos int, newLine bool) (int, bool) {
-	found := false
-	if newLine {
-		for pos < r.file.len && (r.file.data[pos] == '\t' || r.file.data[pos] == '\n' || r.file.data[pos] == '\f' || r.file.data[pos] == ' ') {
-			found = true
+// SkipWhitespaces skips the given whitespaces all the whitespaces
+func (r *Reader) SkipWhitespaces(pos int, wsMode WsMode) int {
+	switch wsMode {
+	case WsSpaces:
+		for pos < r.file.len && (r.file.data[pos] == ' ' || r.file.data[pos] == '\t') {
 			pos++
 		}
-	} else {
-		for pos < r.file.len && (r.file.data[pos] == ' ' || r.file.data[pos] == '\t') {
-			found = true
+	case WsSpacesNl:
+		for pos < r.file.len && (r.file.data[pos] == '\t' || r.file.data[pos] == '\n' || r.file.data[pos] == '\f' || r.file.data[pos] == ' ') {
 			pos++
 		}
 	}
-	return pos, found
+	return pos
 }
 
 // Pos returns with the current position

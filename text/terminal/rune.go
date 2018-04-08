@@ -17,10 +17,11 @@ import (
 )
 
 // Rune matches the given character
-func Rune(ch rune) *parser.NamedFunc {
+func Rune(ch rune, wsMode text.WsMode) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.ReadRune(pos, ch); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode(string(ch), ch, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil

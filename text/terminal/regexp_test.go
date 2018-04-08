@@ -19,8 +19,8 @@ import (
 
 var _ = Describe("Regexp", func() {
 
-	var p1 = terminal.Regexp("FOO", "foo", "fo+", 0)
-	var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1)
+	var p1 = terminal.Regexp("FOO", "foo", "fo+", 0, text.WsNone)
+	var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1, text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p1.Name()).To(Equal("foo"))
@@ -29,7 +29,7 @@ var _ = Describe("Regexp", func() {
 	Context("when regexp matches an empty string", func() {
 		It("should panic", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
-			p := terminal.Regexp("FOO", "foo", "f*", 0)
+			p := terminal.Regexp("FOO", "foo", "f*", 0, text.WsNone)
 			Expect(func() { p.Parse(nil, data.EmptyIntMap, r, 0) }).To(Panic())
 		})
 	})
@@ -37,7 +37,7 @@ var _ = Describe("Regexp", func() {
 	Context("when capturing group is invalid", func() {
 		It("should panic", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
-			p := terminal.Regexp("FOO", "foo", "f(o+)", 2)
+			p := terminal.Regexp("FOO", "foo", "f(o+)", 2, text.WsNone)
 			Expect(func() { p.Parse(nil, data.EmptyIntMap, r, 0) }).To(Panic())
 		})
 	})
@@ -99,4 +99,36 @@ var _ = Describe("Regexp", func() {
 		Entry("empty", ``, 0),
 		Entry("other", `bar`, 0),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p1 = terminal.Regexp("FOO", "foo", "fo+", 0, text.WsSpaces)
+		var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1, text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ := p1.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+
+			r = text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ = p2.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p1 = terminal.Regexp("FOO", "foo", "fo+", 0, text.WsSpacesNl)
+		var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1, text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ := p1.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+
+			r = text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ = p2.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+		})
+	})
 })

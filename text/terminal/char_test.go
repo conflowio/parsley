@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Char", func() {
 
-	var p = terminal.Char()
+	var p = terminal.Char(text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).ToNot(BeEmpty())
@@ -89,4 +89,26 @@ var _ = Describe("Char", func() {
 		Entry("no end quote", `'a`, 0, parsley.Pos(3)),
 		Entry("multiple characters", `'aa'`, 0, parsley.Pos(3)),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Char(text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("'a' \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Char(text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("'a' \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+		})
+	})
 })

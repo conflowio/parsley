@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Integer", func() {
 
-	var p = terminal.Integer()
+	var p = terminal.Integer(text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).ToNot(BeEmpty())
@@ -75,4 +75,26 @@ var _ = Describe("Integer", func() {
 		Entry("-", "-", 0),
 		Entry("+", "+", 0),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Integer(text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("123 \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Integer(text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("123 \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+		})
+	})
 })

@@ -461,28 +461,32 @@ var _ = Describe("Reader", func() {
 		})
 	})
 
-	Describe("MatchWhitespaces()", func() {
+	Describe("SkipWhitespaces()", func() {
 		BeforeEach(func() {
 			data = []byte("abc \t\n\fdef")
 		})
 
 		It("should not match any whitespaces if none", func() {
-			pos, found := r.MatchWhitespaces(0, true)
-			Expect(found).To(BeFalse())
+			pos := r.SkipWhitespaces(0, text.WsSpacesNl)
 			Expect(pos).To(Equal(0))
 		})
 
 		It("should match all types of whitespaces", func() {
-			pos, found := r.MatchWhitespaces(3, true)
-			Expect(found).To(BeTrue())
+			pos := r.SkipWhitespaces(3, text.WsSpacesNl)
 			Expect(pos).To(Equal(7))
 		})
 
 		Context("when not including new lines", func() {
 			It("should only match spaces and tabs", func() {
-				pos, found := r.MatchWhitespaces(3, false)
-				Expect(found).To(BeTrue())
+				pos := r.SkipWhitespaces(3, text.WsSpaces)
 				Expect(pos).To(Equal(5))
+			})
+		})
+
+		Context("when not skipping any whitespaces", func() {
+			It("should not match any whitespaces", func() {
+				pos := r.SkipWhitespaces(3, text.WsNone)
+				Expect(pos).To(Equal(3))
 			})
 		})
 	})

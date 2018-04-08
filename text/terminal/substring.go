@@ -17,7 +17,7 @@ import (
 )
 
 // Substring matches the given string
-func Substring(token string, str string, value interface{}) *parser.NamedFunc {
+func Substring(token string, str string, value interface{}, wsMode text.WsMode) *parser.NamedFunc {
 	if str == "" {
 		panic("Substring() should not be called with empty string")
 	}
@@ -25,6 +25,7 @@ func Substring(token string, str string, value interface{}) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchString(pos, str); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode(token, value, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil

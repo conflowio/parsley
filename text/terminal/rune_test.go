@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Rune", func() {
 
-	var p = terminal.Rune('+')
+	var p = terminal.Rune('+', text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).To(Equal(`"+"`))
@@ -53,4 +53,26 @@ var _ = Describe("Rune", func() {
 		Entry("empty", ``, 0),
 		Entry("x", `x`, 0),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Rune('a', text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("a \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(3))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Rune('a', text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("a \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
 })

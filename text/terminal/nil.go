@@ -15,7 +15,7 @@ import (
 )
 
 // Nil matches a nil literal
-func Nil(nilStr string) *parser.NamedFunc {
+func Nil(nilStr string, wsMode text.WsMode) *parser.NamedFunc {
 	if nilStr == "" {
 		panic("Nil() should not be called with an empty nil string")
 	}
@@ -23,6 +23,7 @@ func Nil(nilStr string) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, nilStr); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode("NIL", nil, r.Pos(pos), readerPos), nil
 		}
 

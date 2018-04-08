@@ -23,7 +23,7 @@ var _ = Describe("String", func() {
 
 	Context("when backquotes are allowed", func() {
 
-		var p = terminal.String(true)
+		var p = terminal.String(true, text.WsNone)
 
 		It("should have a name", func() {
 			Expect(p.Name()).ToNot(BeEmpty())
@@ -92,11 +92,41 @@ var _ = Describe("String", func() {
 			Entry("`foo", "`foo"),
 			Entry(`"foo`, `"foo`),
 		)
+
+		Context("with wsSpaces", func() {
+
+			var p = terminal.String(true, text.WsSpaces)
+
+			It("should skip spaces and tabs", func() {
+				r := text.NewReader(text.NewFile("textfile", []byte("`foo` \t\n\fxxx")))
+				_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+				Expect(res.ReaderPos()).To(Equal(7))
+
+				r = text.NewReader(text.NewFile("textfile", []byte("\"foo\" \t\n\fxxx")))
+				_, res, _ = p.Parse(nil, data.EmptyIntMap, r, 0)
+				Expect(res.ReaderPos()).To(Equal(7))
+			})
+		})
+
+		Context("with wsSpacesNl", func() {
+
+			var p = terminal.String(true, text.WsSpacesNl)
+
+			It("should skip spaces, tabs and new lines", func() {
+				r := text.NewReader(text.NewFile("textfile", []byte("`foo` \t\n\fxxx")))
+				_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+				Expect(res.ReaderPos()).To(Equal(9))
+
+				r = text.NewReader(text.NewFile("textfile", []byte("\"foo\" \t\n\fxxx")))
+				_, res, _ = p.Parse(nil, data.EmptyIntMap, r, 0)
+				Expect(res.ReaderPos()).To(Equal(9))
+			})
+		})
 	})
 
 	Context("when backquotes are not allowed", func() {
 
-		var p = terminal.String(false)
+		var p = terminal.String(false, text.WsNone)
 
 		It("should have a name", func() {
 			Expect(p.Name()).ToNot(BeEmpty())

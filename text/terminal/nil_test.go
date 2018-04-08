@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Nil", func() {
 
-	var p = terminal.Nil("nil")
+	var p = terminal.Nil("nil", text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).To(Equal("nil"))
@@ -27,7 +27,7 @@ var _ = Describe("Nil", func() {
 
 	Context("when called with an empty nil value", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Nil("") }).To(Panic())
+			Expect(func() { terminal.Nil("", text.WsNone) }).To(Panic())
 		})
 	})
 
@@ -62,4 +62,25 @@ var _ = Describe("Nil", func() {
 		Entry("Nil", "Nil", 0),
 	)
 
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Nil("nil", text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("nil \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Nil("nil", text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("nil \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+		})
+	})
 })

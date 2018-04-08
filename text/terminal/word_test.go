@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Word", func() {
 
-	var p = terminal.Word("foo", 42)
+	var p = terminal.Word("foo", 42, text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).To(Equal(`"foo"`))
@@ -27,7 +27,7 @@ var _ = Describe("Word", func() {
 
 	Context("when called with an empty word", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Word("", 42) }).To(Panic())
+			Expect(func() { terminal.Word("", 42, text.WsNone) }).To(Panic())
 		})
 	})
 
@@ -60,4 +60,26 @@ var _ = Describe("Word", func() {
 		Entry("prefix", `foobar`, 0),
 		Entry("partial", `fo`, 0),
 	)
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Word("foo", nil, text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Word("foo", nil, text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("foo \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
+		})
+	})
 })

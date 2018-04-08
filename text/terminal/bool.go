@@ -17,7 +17,7 @@ import (
 )
 
 // Bool matches a bool literal: true or false
-func Bool(trueStr string, falseStr string) *parser.NamedFunc {
+func Bool(trueStr string, falseStr string, wsMode text.WsMode) *parser.NamedFunc {
 	if trueStr == "" || falseStr == "" {
 		panic("Bool() should not be called with an empty true/false string")
 	}
@@ -25,9 +25,11 @@ func Bool(trueStr string, falseStr string) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode("BOOL", true, r.Pos(pos), readerPos), nil
 		}
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode("BOOL", false, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil

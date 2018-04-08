@@ -19,7 +19,7 @@ import (
 
 var _ = Describe("Float", func() {
 
-	var p = terminal.Float()
+	var p = terminal.Float(text.WsNone)
 
 	It("should have a name", func() {
 		Expect(p.Name()).ToNot(BeEmpty())
@@ -88,6 +88,28 @@ var _ = Describe("Float", func() {
 			Expect(err).To(MatchError("invalid float value encountered"))
 			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
 			Expect(res).To(BeNil())
+		})
+	})
+
+	Context("with wsSpaces", func() {
+
+		var p = terminal.Float(text.WsSpaces)
+
+		It("should skip spaces and tabs", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("1.2 \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(5))
+		})
+	})
+
+	Context("with wsSpacesNl", func() {
+
+		var p = terminal.Float(text.WsSpacesNl)
+
+		It("should skip spaces, tabs and new lines", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("1.2 \t\n\fxxx")))
+			_, res, _ := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(res.ReaderPos()).To(Equal(7))
 		})
 	})
 })

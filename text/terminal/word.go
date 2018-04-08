@@ -17,7 +17,7 @@ import (
 )
 
 // Word matches the given word
-func Word(word string, value interface{}) *parser.NamedFunc {
+func Word(word string, value interface{}, wsMode text.WsMode) *parser.NamedFunc {
 	if word == "" {
 		panic("Word() should not be called with empty word")
 	}
@@ -25,6 +25,7 @@ func Word(word string, value interface{}) *parser.NamedFunc {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, word); found {
+			readerPos = tr.SkipWhitespaces(readerPos, wsMode)
 			return data.EmptyIntSet, ast.NewTerminalNode("WORD", value, r.Pos(pos), readerPos), nil
 		}
 		return data.EmptyIntSet, nil, nil
