@@ -19,9 +19,30 @@ import (
 
 var _ = Describe("Whitespaces", func() {
 
+	Context("when not allowing any whitespaces", func() {
+
+		var p = terminal.Whitespaces(text.WsNone)
+
+		It("should always return with an empty node", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte("abc")))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+			Expect(res).To(Equal(ast.EmptyNode(0)))
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should not match whitespaces", func() {
+			r := text.NewReader(text.NewFile("textfile", []byte(" abc")))
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+			Expect(res).To(Equal(ast.EmptyNode(0)))
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
 	Context("when not allowing new lines", func() {
 
-		var p = terminal.Whitespaces(false)
+		var p = terminal.Whitespaces(text.WsSpaces)
 
 		DescribeTable("should match",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
@@ -30,7 +51,7 @@ var _ = Describe("Whitespaces", func() {
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
-				Expect(node.Token()).To(Equal("EMPTY"))
+				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
 				Expect(node.Pos()).To(Equal(parsley.NilPos))
 				Expect(node.ReaderPos()).To(Equal(endPos))
@@ -57,7 +78,7 @@ var _ = Describe("Whitespaces", func() {
 
 	Context("when allowing new lines", func() {
 
-		var p = terminal.Whitespaces(true)
+		var p = terminal.Whitespaces(text.WsSpacesNl)
 
 		DescribeTable("should match (with new lines)",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
@@ -66,7 +87,7 @@ var _ = Describe("Whitespaces", func() {
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
-				Expect(node.Token()).To(Equal("EMPTY"))
+				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
 				Expect(node.Pos()).To(Equal(parsley.NilPos))
 				Expect(node.ReaderPos()).To(Equal(endPos))
