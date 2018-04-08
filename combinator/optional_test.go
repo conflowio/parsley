@@ -35,9 +35,9 @@ func ExampleOptional() {
 	})
 
 	p := combinator.Seq(builder.All("AB", concat),
-		terminal.Rune('a'),
-		combinator.Optional(terminal.Rune('b')),
-		terminal.Rune('c'),
+		terminal.Rune('a', text.WsNone),
+		combinator.Optional(terminal.Rune('b', text.WsNone)),
+		terminal.Rune('c', text.WsNone),
 	)
 	r := text.NewReader(text.NewFile("example.file", []byte("ac")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)

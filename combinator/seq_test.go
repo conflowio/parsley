@@ -30,9 +30,9 @@ func ExampleSeq() {
 	})
 
 	p := combinator.Seq(builder.All("ABC", concat),
-		terminal.Rune('a'),
-		terminal.Rune('b'),
-		terminal.Rune('c'),
+		terminal.Rune('a', text.WsNone),
+		terminal.Rune('b', text.WsNone),
+		terminal.Rune('c', text.WsNone),
 	)
 	r := text.NewReader(text.NewFile("example.file", []byte("abc")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
@@ -52,9 +52,9 @@ func ExampleSeqTry() {
 	})
 
 	p := combinator.SeqTry(builder.All("ABC", concat), 0,
-		terminal.Rune('a'),
-		terminal.Rune('b'),
-		terminal.Rune('c'),
+		terminal.Rune('a', text.WsNone),
+		terminal.Rune('b', text.WsNone),
+		terminal.Rune('c', text.WsNone),
 	)
 	r := text.NewReader(text.NewFile("example.file", []byte("ab")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)

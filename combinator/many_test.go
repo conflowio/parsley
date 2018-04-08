@@ -28,7 +28,7 @@ func ExampleMany() {
 		}
 		return res, nil
 	})
-	p := combinator.Many(builder.All("a", concat), terminal.Rune('a'))
+	p := combinator.Many(builder.All("a", concat), terminal.Rune('a', text.WsNone))
 	r := text.NewReader(text.NewFile("example.file", []byte("aaaaa")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 

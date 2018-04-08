@@ -32,8 +32,18 @@ func ExampleSepBy() {
 		return res, nil
 	})
 
-	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(','), arr)
-	p := combinator.Seq(builder.All("ARR", interpreter.Select(1)), terminal.Rune('['), intList, terminal.Rune(']'))
+	intList := combinator.SepBy(
+		"ARR",
+		terminal.Integer(text.WsNone),
+		terminal.Rune(',', text.WsNone),
+		arr,
+	)
+	p := combinator.Seq(
+		builder.All("ARR", interpreter.Select(1)),
+		terminal.Rune('[', text.WsNone),
+		intList,
+		terminal.Rune(']', text.WsNone),
+	)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
 	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
@@ -60,7 +70,7 @@ func ExampleSepBy1() {
 		return sum, nil
 	})
 
-	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+'), interpreter)
+	p := combinator.SepBy1("SUM", terminal.Integer(text.WsNone), terminal.Rune('+', text.WsNone), interpreter)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1")))
 	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)

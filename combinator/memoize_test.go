@@ -37,10 +37,10 @@ func ExampleMemoize() {
 
 	var p parser.NamedFunc
 	p = *combinator.Memoize(combinator.Any("a or ab",
-		terminal.Rune('a'),
+		terminal.Rune('a', text.WsNone),
 		combinator.Seq(builder.All("AB", concat),
 			&p,
-			terminal.Rune('b'),
+			terminal.Rune('b', text.WsNone),
 		),
 	))
 	f := text.NewFile("example.file", []byte("abbbbbbbb"))
