@@ -50,7 +50,7 @@ func ExampleOptional() {
 //
 // 	res := parser.NewResult(ast.NewTerminalNode("CHAR", test.NewPosition(1), 'a'), test.NewReader(1, 1, false, true))
 //
-// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return data.NewIntSet(1), res.AsSet(), nil
 // 	})
 //
@@ -63,7 +63,7 @@ func ExampleOptional() {
 // func TestOptionalShouldReturnEmptyResultIfParserFailed(t *testing.T) {
 // 	r := test.NewReader(0, 2, false, false)
 //
-// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return data.NewIntSet(1), nil, nil
 // 	})
 //

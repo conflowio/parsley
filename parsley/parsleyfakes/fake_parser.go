@@ -9,13 +9,13 @@ import (
 )
 
 type FakeParser struct {
-	ParseStub        func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error)
+	ParseStub        func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error)
 	parseMutex       sync.RWMutex
 	parseArgsForCall []struct {
 		h          parsley.History
 		leftRecCtx data.IntMap
 		r          parsley.Reader
-		pos        int
+		pos        parsley.Pos
 	}
 	parseReturns struct {
 		result1 data.IntSet
@@ -40,14 +40,14 @@ type FakeParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeParser) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+func (fake *FakeParser) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 	fake.parseMutex.Lock()
 	ret, specificReturn := fake.parseReturnsOnCall[len(fake.parseArgsForCall)]
 	fake.parseArgsForCall = append(fake.parseArgsForCall, struct {
 		h          parsley.History
 		leftRecCtx data.IntMap
 		r          parsley.Reader
-		pos        int
+		pos        parsley.Pos
 	}{h, leftRecCtx, r, pos})
 	fake.recordInvocation("Parse", []interface{}{h, leftRecCtx, r, pos})
 	fake.parseMutex.Unlock()
@@ -66,7 +66,7 @@ func (fake *FakeParser) ParseCallCount() int {
 	return len(fake.parseArgsForCall)
 }
 
-func (fake *FakeParser) ParseArgsForCall(i int) (parsley.History, data.IntMap, parsley.Reader, int) {
+func (fake *FakeParser) ParseArgsForCall(i int) (parsley.History, data.IntMap, parsley.Reader, parsley.Pos) {
 	fake.parseMutex.RLock()
 	defer fake.parseMutex.RUnlock()
 	return fake.parseArgsForCall[i].h, fake.parseArgsForCall[i].leftRecCtx, fake.parseArgsForCall[i].r, fake.parseArgsForCall[i].pos

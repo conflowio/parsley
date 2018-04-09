@@ -27,15 +27,16 @@ var _ = Describe("Float", func() {
 
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FLOAT"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(endPos))
+			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry("1.2 beginning", "1.2 ---", 0, 1.2, parsley.Pos(1), 3),
 		Entry("1.2 middle", "--- 1.2 ---", 4, 1.2, parsley.Pos(5), 7),
@@ -63,8 +64,9 @@ var _ = Describe("Float", func() {
 
 	DescribeTable("should not match",
 		func(input string, startPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
@@ -82,8 +84,9 @@ var _ = Describe("Float", func() {
 	Describe("when there is an invalid float value", func() {
 		It("should trow an error", func() {
 			input := "1.2e3456"
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("invalid float value encountered"))
 			Expect(err.Pos()).To(Equal(parsley.Pos(1)))

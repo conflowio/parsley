@@ -38,20 +38,20 @@ var _ = Describe("Reader", func() {
 
 	Describe("ReadRune()", func() {
 		It("should match the next ASCII rune", func() {
-			pos, found := r.ReadRune(0, 'a')
-			Expect(pos).To(Equal(1))
+			pos, found := r.ReadRune(f.Pos(0), 'a')
+			Expect(pos).To(Equal(f.Pos(1)))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should not match a different rune", func() {
-			pos, found := r.ReadRune(0, 'b')
-			Expect(pos).To(Equal(0))
+			pos, found := r.ReadRune(f.Pos(0), 'b')
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(found).To(BeFalse())
 		})
 
 		It("should match an ASCII rune at the end", func() {
-			pos, found := r.ReadRune(6, 'f')
-			Expect(pos).To(Equal(7))
+			pos, found := r.ReadRune(f.Pos(6), 'f')
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(found).To(BeTrue())
 		})
 
@@ -61,22 +61,22 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should match the next UTF8 rune", func() {
-				pos, found := r.ReadRune(0, '🍕')
-				Expect(pos).To(Equal(4))
+				pos, found := r.ReadRune(f.Pos(0), '🍕')
+				Expect(pos).To(Equal(f.Pos(4)))
 				Expect(found).To(BeTrue())
 			})
 
 			It("should match a UTF8 rune at the end", func() {
-				pos, found := r.ReadRune(9, '🍺')
-				Expect(pos).To(Equal(13))
+				pos, found := r.ReadRune(f.Pos(9), '🍺')
+				Expect(pos).To(Equal(f.Pos(13)))
 				Expect(found).To(BeTrue())
 			})
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, found := r.ReadRune(7, 'f')
-				Expect(pos).To(Equal(7))
+				pos, found := r.ReadRune(f.Pos(7), 'f')
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(found).To(BeFalse())
 			})
 		})
@@ -85,38 +85,38 @@ var _ = Describe("Reader", func() {
 	Describe("MatchString()", func() {
 		Context("when called with empty string", func() {
 			It("should panic", func() {
-				Expect(func() { r.MatchString(0, "") }).To(Panic())
+				Expect(func() { r.MatchString(f.Pos(0), "") }).To(Panic())
 			})
 		})
 
 		It("should match the a substring", func() {
-			pos, found := r.MatchString(0, "ab")
-			Expect(pos).To(Equal(2))
+			pos, found := r.MatchString(f.Pos(0), "ab")
+			Expect(pos).To(Equal(f.Pos(2)))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should not match a different substring", func() {
-			pos, found := r.MatchString(0, "ac")
-			Expect(pos).To(Equal(0))
+			pos, found := r.MatchString(f.Pos(0), "ac")
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(found).To(BeFalse())
 		})
 
 		It("should match a substring at the end", func() {
-			pos, found := r.MatchString(5, "ef")
-			Expect(pos).To(Equal(7))
+			pos, found := r.MatchString(f.Pos(5), "ef")
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should only match the full substring at the end", func() {
-			pos, found := r.MatchString(5, "efg")
-			Expect(pos).To(Equal(5))
+			pos, found := r.MatchString(f.Pos(5), "efg")
+			Expect(pos).To(Equal(f.Pos(5)))
 			Expect(found).To(BeFalse())
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, found := r.MatchString(7, "x")
-				Expect(pos).To(Equal(7))
+				pos, found := r.MatchString(f.Pos(7), "x")
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(found).To(BeFalse())
 			})
 		})
@@ -127,26 +127,26 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should match the a substring", func() {
-				pos, found := r.MatchString(0, "🍕 and")
-				Expect(pos).To(Equal(8))
+				pos, found := r.MatchString(f.Pos(0), "🍕 and")
+				Expect(pos).To(Equal(f.Pos(8)))
 				Expect(found).To(BeTrue())
 			})
 
 			It("should not match a different substring", func() {
-				pos, found := r.MatchString(0, "🍕 not")
-				Expect(pos).To(Equal(0))
+				pos, found := r.MatchString(f.Pos(0), "🍕 not")
+				Expect(pos).To(Equal(f.Pos(0)))
 				Expect(found).To(BeFalse())
 			})
 
 			It("should match a substring at the end", func() {
-				pos, found := r.MatchString(5, "and 🍺")
-				Expect(pos).To(Equal(13))
+				pos, found := r.MatchString(f.Pos(5), "and 🍺")
+				Expect(pos).To(Equal(f.Pos(13)))
 				Expect(found).To(BeTrue())
 			})
 
 			It("should only match the full substring at the end", func() {
-				pos, found := r.MatchString(5, "and 🍺 s")
-				Expect(pos).To(Equal(5))
+				pos, found := r.MatchString(f.Pos(5), "and 🍺 s")
+				Expect(pos).To(Equal(f.Pos(5)))
 				Expect(found).To(BeFalse())
 			})
 		})
@@ -155,44 +155,44 @@ var _ = Describe("Reader", func() {
 	Describe("MatchWord()", func() {
 		Context("when called with empty string", func() {
 			It("should panic", func() {
-				Expect(func() { r.MatchWord(0, "") }).To(Panic())
+				Expect(func() { r.MatchWord(f.Pos(0), "") }).To(Panic())
 			})
 		})
 
 		It("should match the full word", func() {
-			pos, found := r.MatchWord(0, "abc")
-			Expect(pos).To(Equal(3))
+			pos, found := r.MatchWord(f.Pos(0), "abc")
+			Expect(pos).To(Equal(f.Pos(3)))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should not match a partial word", func() {
-			pos, found := r.MatchWord(0, "ab")
-			Expect(pos).To(Equal(0))
+			pos, found := r.MatchWord(f.Pos(0), "ab")
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(found).To(BeFalse())
 		})
 
 		It("should not match the different word", func() {
-			pos, found := r.MatchWord(0, "abd")
-			Expect(pos).To(Equal(0))
+			pos, found := r.MatchWord(f.Pos(0), "abd")
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(found).To(BeFalse())
 		})
 
 		It("should match a word at the end", func() {
-			pos, found := r.MatchWord(4, "def")
-			Expect(pos).To(Equal(7))
+			pos, found := r.MatchWord(f.Pos(4), "def")
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(found).To(BeTrue())
 		})
 
 		It("should only match the full word at the end", func() {
-			pos, found := r.MatchWord(4, "defg")
-			Expect(pos).To(Equal(4))
+			pos, found := r.MatchWord(f.Pos(4), "defg")
+			Expect(pos).To(Equal(f.Pos(4)))
 			Expect(found).To(BeFalse())
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, found := r.MatchWord(7, "x")
-				Expect(pos).To(Equal(7))
+				pos, found := r.MatchWord(f.Pos(7), "x")
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(found).To(BeFalse())
 			})
 		})
@@ -203,7 +203,7 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should panic", func() {
-				Expect(func() { r.MatchWord(0, "🍕 and") }).To(Panic())
+				Expect(func() { r.MatchWord(f.Pos(0), "🍕 and") }).To(Panic())
 			})
 		})
 	})
@@ -211,38 +211,38 @@ var _ = Describe("Reader", func() {
 	Describe("ReadRegexp()", func() {
 		Context("when matches an empty string", func() {
 			It("should panic", func() {
-				Expect(func() { r.ReadRegexp(0, "x?") }).To(Panic())
+				Expect(func() { r.ReadRegexp(f.Pos(0), "x?") }).To(Panic())
 			})
 		})
 
 		It("should match the regexp", func() {
-			pos, match := r.ReadRegexp(0, "a+b+x?")
-			Expect(pos).To(Equal(2))
+			pos, match := r.ReadRegexp(f.Pos(0), "a+b+x?")
+			Expect(pos).To(Equal(f.Pos(2)))
 			Expect(match).To(Equal([]byte("ab")))
 		})
 
 		It("should not match a non-matching regexp", func() {
-			pos, match := r.ReadRegexp(0, "ac+")
-			Expect(pos).To(Equal(0))
+			pos, match := r.ReadRegexp(f.Pos(0), "ac+")
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(match).To(BeNil())
 		})
 
 		It("should match a regexp at the end", func() {
-			pos, match := r.ReadRegexp(5, "ef+")
-			Expect(pos).To(Equal(7))
+			pos, match := r.ReadRegexp(f.Pos(5), "ef+")
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(match).To(Equal([]byte("ef")))
 		})
 
 		It("should only match the full match at the end", func() {
-			pos, match := r.ReadRegexp(5, "efg+")
-			Expect(pos).To(Equal(5))
+			pos, match := r.ReadRegexp(f.Pos(5), "efg+")
+			Expect(pos).To(Equal(f.Pos(5)))
 			Expect(match).To(BeNil())
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, match := r.ReadRegexp(7, "x+")
-				Expect(pos).To(Equal(7))
+				pos, match := r.ReadRegexp(f.Pos(7), "x+")
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(match).To(BeNil())
 			})
 		})
@@ -253,26 +253,26 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should match the regexp", func() {
-				pos, match := r.ReadRegexp(0, ".* and")
-				Expect(pos).To(Equal(8))
+				pos, match := r.ReadRegexp(f.Pos(0), ".* and")
+				Expect(pos).To(Equal(f.Pos(8)))
 				Expect(match).To(Equal([]byte("🍕 and")))
 			})
 
 			It("should not match a non-matching regexp", func() {
-				pos, match := r.ReadRegexp(0, ".* not")
-				Expect(pos).To(Equal(0))
+				pos, match := r.ReadRegexp(f.Pos(0), ".* not")
+				Expect(pos).To(Equal(f.Pos(0)))
 				Expect(match).To(BeNil())
 			})
 
 			It("should match a regexp at the end", func() {
-				pos, match := r.ReadRegexp(5, "and .*")
-				Expect(pos).To(Equal(13))
+				pos, match := r.ReadRegexp(f.Pos(5), "and .*")
+				Expect(pos).To(Equal(f.Pos(13)))
 				Expect(match).To(Equal([]byte("and 🍺")))
 			})
 
 			It("should only match the full match at the end", func() {
-				pos, match := r.ReadRegexp(5, "and .*s")
-				Expect(pos).To(Equal(5))
+				pos, match := r.ReadRegexp(f.Pos(5), "and .*s")
+				Expect(pos).To(Equal(f.Pos(5)))
 				Expect(match).To(BeNil())
 			})
 		})
@@ -281,13 +281,13 @@ var _ = Describe("Reader", func() {
 	Describe("ReadRegexpSubmatch()", func() {
 		Context("when matches an empty string", func() {
 			It("should panic", func() {
-				Expect(func() { r.ReadRegexpSubmatch(0, "x?") }).To(Panic())
+				Expect(func() { r.ReadRegexpSubmatch(f.Pos(0), "x?") }).To(Panic())
 			})
 		})
 
 		It("should match the regexp", func() {
-			pos, match := r.ReadRegexpSubmatch(0, "(a+)b+x?")
-			Expect(pos).To(Equal(2))
+			pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(a+)b+x?")
+			Expect(pos).To(Equal(f.Pos(2)))
 			Expect(match).To(Equal([][]byte{
 				[]byte("ab"),
 				[]byte("a"),
@@ -295,14 +295,14 @@ var _ = Describe("Reader", func() {
 		})
 
 		It("should not match a non-matching regexp", func() {
-			pos, match := r.ReadRegexpSubmatch(0, "(a)c+")
-			Expect(pos).To(Equal(0))
+			pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(a)c+")
+			Expect(pos).To(Equal(f.Pos(0)))
 			Expect(match).To(BeNil())
 		})
 
 		It("should match a regexp at the end", func() {
-			pos, match := r.ReadRegexpSubmatch(5, "(e)f+")
-			Expect(pos).To(Equal(7))
+			pos, match := r.ReadRegexpSubmatch(f.Pos(5), "(e)f+")
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(match).To(Equal([][]byte{
 				[]byte("ef"),
 				[]byte("e"),
@@ -310,15 +310,15 @@ var _ = Describe("Reader", func() {
 		})
 
 		It("should only match the full match at the end", func() {
-			pos, match := r.ReadRegexpSubmatch(5, "efg+")
-			Expect(pos).To(Equal(5))
+			pos, match := r.ReadRegexpSubmatch(f.Pos(5), "efg+")
+			Expect(pos).To(Equal(f.Pos(5)))
 			Expect(match).To(BeNil())
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, match := r.ReadRegexpSubmatch(7, "x+")
-				Expect(pos).To(Equal(7))
+				pos, match := r.ReadRegexpSubmatch(f.Pos(7), "x+")
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(match).To(BeNil())
 			})
 		})
@@ -329,8 +329,8 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should match the regexp", func() {
-				pos, match := r.ReadRegexpSubmatch(0, "(.*) and")
-				Expect(pos).To(Equal(8))
+				pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(.*) and")
+				Expect(pos).To(Equal(f.Pos(8)))
 				Expect(match).To(Equal([][]byte{
 					[]byte("🍕 and"),
 					[]byte("🍕"),
@@ -338,14 +338,14 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should not match a non-matching regexp", func() {
-				pos, match := r.ReadRegexpSubmatch(0, ".* not")
-				Expect(pos).To(Equal(0))
+				pos, match := r.ReadRegexpSubmatch(f.Pos(0), ".* not")
+				Expect(pos).To(Equal(f.Pos(0)))
 				Expect(match).To(BeNil())
 			})
 
 			It("should match a regexp at the end", func() {
-				pos, match := r.ReadRegexpSubmatch(5, "and (.*)")
-				Expect(pos).To(Equal(13))
+				pos, match := r.ReadRegexpSubmatch(f.Pos(5), "and (.*)")
+				Expect(pos).To(Equal(f.Pos(13)))
 				Expect(match).To(Equal([][]byte{
 					[]byte("and 🍺"),
 					[]byte("🍺"),
@@ -353,8 +353,8 @@ var _ = Describe("Reader", func() {
 			})
 
 			It("should only match the full match at the end", func() {
-				pos, match := r.ReadRegexpSubmatch(5, "and .*s")
-				Expect(pos).To(Equal(5))
+				pos, match := r.ReadRegexpSubmatch(f.Pos(5), "and .*s")
+				Expect(pos).To(Equal(f.Pos(5)))
 				Expect(match).To(BeNil())
 			})
 		})
@@ -370,14 +370,14 @@ var _ = Describe("Reader", func() {
 		})
 
 		It("should match the input with the function", func() {
-			pos, match := r.Readf(0, fun)
-			Expect(pos).To(Equal(1))
+			pos, match := r.Readf(f.Pos(0), fun)
+			Expect(pos).To(Equal(f.Pos(1)))
 			Expect(match).To(Equal([]byte("a")))
 		})
 
 		It("should match the input at the end", func() {
-			pos, match := r.Readf(6, fun)
-			Expect(pos).To(Equal(7))
+			pos, match := r.Readf(f.Pos(6), fun)
+			Expect(pos).To(Equal(f.Pos(7)))
 			Expect(match).To(Equal([]byte("f")))
 		})
 
@@ -385,8 +385,8 @@ var _ = Describe("Reader", func() {
 			fun = func(b []byte) ([]byte, int) {
 				return b[0:1], 2
 			}
-			pos, match := r.Readf(1, fun)
-			Expect(pos).To(Equal(3))
+			pos, match := r.Readf(f.Pos(1), fun)
+			Expect(pos).To(Equal(f.Pos(3)))
 			Expect(match).To(Equal([]byte("b")))
 		})
 
@@ -394,15 +394,15 @@ var _ = Describe("Reader", func() {
 			fun = func(b []byte) ([]byte, int) {
 				return nil, 0
 			}
-			pos, match := r.Readf(2, fun)
-			Expect(pos).To(Equal(2))
+			pos, match := r.Readf(f.Pos(2), fun)
+			Expect(pos).To(Equal(f.Pos(2)))
 			Expect(match).To(BeNil())
 		})
 
 		Context("at the end of the file", func() {
 			It("should not match anything", func() {
-				pos, match := r.Readf(7, fun)
-				Expect(pos).To(Equal(7))
+				pos, match := r.Readf(f.Pos(7), fun)
+				Expect(pos).To(Equal(f.Pos(7)))
 				Expect(match).To(BeNil())
 			})
 		})
@@ -412,7 +412,7 @@ var _ = Describe("Reader", func() {
 				fun = func(b []byte) ([]byte, int) {
 					return b[0:1], 2
 				}
-				Expect(func() { r.Readf(6, fun) }).To(Panic())
+				Expect(func() { r.Readf(f.Pos(6), fun) }).To(Panic())
 			})
 		})
 
@@ -421,7 +421,7 @@ var _ = Describe("Reader", func() {
 				fun = func(b []byte) ([]byte, int) {
 					return b[0:2], 1
 				}
-				Expect(func() { r.Readf(0, fun) }).To(Panic())
+				Expect(func() { r.Readf(f.Pos(0), fun) }).To(Panic())
 			})
 		})
 
@@ -430,18 +430,18 @@ var _ = Describe("Reader", func() {
 				fun = func(b []byte) ([]byte, int) {
 					return b[0:1], 0
 				}
-				Expect(func() { r.Readf(0, fun) }).To(Panic())
+				Expect(func() { r.Readf(f.Pos(0), fun) }).To(Panic())
 			})
 		})
 	})
 
 	Describe("Remaining()", func() {
 		It("should return with the remaining bytes", func() {
-			Expect(r.Remaining(0)).To(Equal(len(input)))
+			Expect(r.Remaining(f.Pos(0))).To(Equal(len(input)))
 		})
 
 		It("should return with the remaining bytes from a given position", func() {
-			Expect(r.Remaining(3)).To(Equal(len(input) - 3))
+			Expect(r.Remaining(f.Pos(3))).To(Equal(len(input) - 3))
 		})
 	})
 
@@ -453,11 +453,11 @@ var _ = Describe("Reader", func() {
 
 	Describe("IsEOF()", func() {
 		It("should return false before the end of the input", func() {
-			Expect(r.IsEOF(0)).To(BeFalse())
-			Expect(r.IsEOF(6)).To(BeFalse())
+			Expect(r.IsEOF(f.Pos(0))).To(BeFalse())
+			Expect(r.IsEOF(f.Pos(6))).To(BeFalse())
 		})
 		It("should return true at the end of the input", func() {
-			Expect(r.IsEOF(7)).To(BeTrue())
+			Expect(r.IsEOF(f.Pos(7))).To(BeTrue())
 		})
 	})
 
@@ -467,26 +467,26 @@ var _ = Describe("Reader", func() {
 		})
 
 		It("should not match any whitespaces if none", func() {
-			pos := r.SkipWhitespaces(0, text.WsSpacesNl)
-			Expect(pos).To(Equal(0))
+			pos := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
+			Expect(pos).To(Equal(f.Pos(0)))
 		})
 
 		It("should match all types of whitespaces", func() {
-			pos := r.SkipWhitespaces(3, text.WsSpacesNl)
-			Expect(pos).To(Equal(7))
+			pos := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
+			Expect(pos).To(Equal(f.Pos(7)))
 		})
 
 		Context("when not including new lines", func() {
 			It("should only match spaces and tabs", func() {
-				pos := r.SkipWhitespaces(3, text.WsSpaces)
-				Expect(pos).To(Equal(5))
+				pos := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
+				Expect(pos).To(Equal(f.Pos(5)))
 			})
 		})
 
 		Context("when not skipping any whitespaces", func() {
 			It("should not match any whitespaces", func() {
-				pos := r.SkipWhitespaces(3, text.WsNone)
-				Expect(pos).To(Equal(3))
+				pos := r.SkipWhitespaces(f.Pos(3), text.WsNone)
+				Expect(pos).To(Equal(f.Pos(3)))
 			})
 		})
 	})

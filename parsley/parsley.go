@@ -14,7 +14,7 @@ import (
 // If there are multiple possible parse trees only the first one is returned.
 func Parse(h History, r Reader, s Parser) (Node, Error) {
 	h.RegisterCall()
-	_, node, err := s.Parse(h, data.EmptyIntMap, r, 0)
+	_, node, err := s.Parse(h, data.EmptyIntMap, r, Pos(1))
 	if err != nil {
 		return nil, WrapError(err, "Failed to parse the input: {{err}}")
 	}

@@ -19,7 +19,7 @@ func Any(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 		panic("no parsers were given")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 		cp := data.EmptyIntSet
 		var res parsley.Node
 		var err parsley.Error

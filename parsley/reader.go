@@ -10,6 +10,6 @@ package parsley
 //go:generate counterfeiter . Reader
 type Reader interface {
 	Pos(int) Pos
-	Remaining(int) int
-	IsEOF(int) bool
+	Remaining(Pos) int
+	IsEOF(Pos) bool
 }

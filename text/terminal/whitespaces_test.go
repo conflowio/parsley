@@ -46,15 +46,16 @@ var _ = Describe("Whitespaces", func() {
 
 		DescribeTable("should match",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
-				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				f := text.NewFile("textfile", []byte(input))
+				r := text.NewReader(f)
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
 				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
-				Expect(node.Pos()).To(Equal(parsley.NilPos))
-				Expect(node.ReaderPos()).To(Equal(endPos))
+				Expect(node.Pos()).To(Equal(f.Pos(endPos)))
+				Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 			},
 			Entry("ws beginning", " \t---", 0, parsley.Pos(1), 2),
 			Entry("ws middle", "--- \t---", 3, parsley.Pos(4), 5),
@@ -64,8 +65,9 @@ var _ = Describe("Whitespaces", func() {
 
 		DescribeTable("should not match",
 			func(input string, startPos int) {
-				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				f := text.NewFile("textfile", []byte(input))
+				r := text.NewReader(f)
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
@@ -82,15 +84,16 @@ var _ = Describe("Whitespaces", func() {
 
 		DescribeTable("should match (with new lines)",
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
-				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				f := text.NewFile("textfile", []byte(input))
+				r := text.NewReader(f)
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
 				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
-				Expect(node.Pos()).To(Equal(parsley.NilPos))
-				Expect(node.ReaderPos()).To(Equal(endPos))
+				Expect(node.Pos()).To(Equal(f.Pos(endPos)))
+				Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 			},
 			Entry("ws beginning", " \t\n\f---", 0, parsley.Pos(1), 4),
 			Entry("ws middle", "--- \t\n\f---", 3, parsley.Pos(4), 7),
@@ -99,8 +102,9 @@ var _ = Describe("Whitespaces", func() {
 
 		DescribeTable("should not match (with new lines)",
 			func(input string, startPos int) {
-				r := text.NewReader(text.NewFile("textfile", []byte(input)))
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+				f := text.NewFile("textfile", []byte(input))
+				r := text.NewReader(f)
+				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())

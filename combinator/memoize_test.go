@@ -167,7 +167,7 @@ func ExampleMemoize() {
 // 	parserIndex := 1
 // 	assert.Equal(t, leftRecCtx.Get(parserIndex), 0)
 //
-// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		assert.Equal(t, leftRecCtx.Get(parserIndex), 1)
 // 		return parser.NoCurtailingParsers(), nil, nil
 // 	})
@@ -182,7 +182,7 @@ func ExampleMemoize() {
 // 	expectedRS := parser.NewResult(node, r).AsSet()
 // 	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 //
-// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		return expectedCP, expectedRS, expectedErr
 // 	})
 // 	cp, rs, err := combinator.Memoize(p).Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
@@ -200,7 +200,7 @@ func ExampleMemoize() {
 // 	expectedErr := reader.NewError(test.NewPosition(1), "ERR1")
 //
 // 	called := false
-// 	p := combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p := combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		called = true
 // 		return expectedCP, expectedRS, expectedErr
 // 	}))
@@ -226,7 +226,7 @@ func ExampleMemoize() {
 //
 // 	callCount := 0
 // 	var p parser.Func
-// 	p = combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, []parsley.Node, parsley.Error) {
+// 	p = combinator.Memoize(parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
 // 		callCount++
 // 		return (&p).Parse(h, leftRecCtx, r)
 // 	}))

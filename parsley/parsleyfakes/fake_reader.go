@@ -19,10 +19,10 @@ type FakeReader struct {
 	posReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
-	RemainingStub        func(int) int
+	RemainingStub        func(parsley.Pos) int
 	remainingMutex       sync.RWMutex
 	remainingArgsForCall []struct {
-		arg1 int
+		arg1 parsley.Pos
 	}
 	remainingReturns struct {
 		result1 int
@@ -30,10 +30,10 @@ type FakeReader struct {
 	remainingReturnsOnCall map[int]struct {
 		result1 int
 	}
-	IsEOFStub        func(int) bool
+	IsEOFStub        func(parsley.Pos) bool
 	isEOFMutex       sync.RWMutex
 	isEOFArgsForCall []struct {
-		arg1 int
+		arg1 parsley.Pos
 	}
 	isEOFReturns struct {
 		result1 bool
@@ -93,11 +93,11 @@ func (fake *FakeReader) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeReader) Remaining(arg1 int) int {
+func (fake *FakeReader) Remaining(arg1 parsley.Pos) int {
 	fake.remainingMutex.Lock()
 	ret, specificReturn := fake.remainingReturnsOnCall[len(fake.remainingArgsForCall)]
 	fake.remainingArgsForCall = append(fake.remainingArgsForCall, struct {
-		arg1 int
+		arg1 parsley.Pos
 	}{arg1})
 	fake.recordInvocation("Remaining", []interface{}{arg1})
 	fake.remainingMutex.Unlock()
@@ -116,7 +116,7 @@ func (fake *FakeReader) RemainingCallCount() int {
 	return len(fake.remainingArgsForCall)
 }
 
-func (fake *FakeReader) RemainingArgsForCall(i int) int {
+func (fake *FakeReader) RemainingArgsForCall(i int) parsley.Pos {
 	fake.remainingMutex.RLock()
 	defer fake.remainingMutex.RUnlock()
 	return fake.remainingArgsForCall[i].arg1
@@ -141,11 +141,11 @@ func (fake *FakeReader) RemainingReturnsOnCall(i int, result1 int) {
 	}{result1}
 }
 
-func (fake *FakeReader) IsEOF(arg1 int) bool {
+func (fake *FakeReader) IsEOF(arg1 parsley.Pos) bool {
 	fake.isEOFMutex.Lock()
 	ret, specificReturn := fake.isEOFReturnsOnCall[len(fake.isEOFArgsForCall)]
 	fake.isEOFArgsForCall = append(fake.isEOFArgsForCall, struct {
-		arg1 int
+		arg1 parsley.Pos
 	}{arg1})
 	fake.recordInvocation("IsEOF", []interface{}{arg1})
 	fake.isEOFMutex.Unlock()
@@ -164,7 +164,7 @@ func (fake *FakeReader) IsEOFCallCount() int {
 	return len(fake.isEOFArgsForCall)
 }
 
-func (fake *FakeReader) IsEOFArgsForCall(i int) int {
+func (fake *FakeReader) IsEOFArgsForCall(i int) parsley.Pos {
 	fake.isEOFMutex.RLock()
 	defer fake.isEOFMutex.RUnlock()
 	return fake.isEOFArgsForCall[i].arg1

@@ -44,7 +44,7 @@ var _ = Describe("Any", func() {
 		parsers                 []parsley.Parser
 		p1, p2                  *parsleyfakes.FakeParser
 		leftRecCtx              data.IntMap
-		pos                     int
+		pos                     parsley.Pos
 		cp, p1CP, p2CP          data.IntSet
 		res, p1Res, p2Res       parsley.Node
 		parserErr, p1Err, p2Err parsley.Error
@@ -60,6 +60,7 @@ var _ = Describe("Any", func() {
 		p2.NameReturns("p2")
 		leftRecCtx = data.EmptyIntMap
 		parsers = []parsley.Parser{p1, p2}
+		pos = parsley.Pos(1)
 
 		n1 = &parsleyfakes.FakeNode{}
 		n1.TokenReturns("n1")

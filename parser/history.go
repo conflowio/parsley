@@ -14,26 +14,26 @@ import (
 // History records information about parser calls
 type History struct {
 	callCount int
-	results   map[int]map[int]*parsley.Result
+	results   map[int]map[parsley.Pos]*parsley.Result
 }
 
 // NewHistory creates a history instance
 func NewHistory() *History {
 	return &History{
-		results: make(map[int]map[int]*parsley.Result),
+		results: make(map[int]map[parsley.Pos]*parsley.Result),
 	}
 }
 
 // SaveResult registers a parser result for a certain position
-func (h *History) SaveResult(parserIndex int, pos int, result *parsley.Result) {
+func (h *History) SaveResult(parserIndex int, pos parsley.Pos, result *parsley.Result) {
 	if _, ok := h.results[parserIndex]; !ok {
-		h.results[parserIndex] = make(map[int]*parsley.Result)
+		h.results[parserIndex] = make(map[parsley.Pos]*parsley.Result)
 	}
 	h.results[parserIndex][pos] = result
 }
 
 // GetResult return with a previously saved result
-func (h *History) GetResult(parserIndex int, pos int, leftRecCtx data.IntMap) (*parsley.Result, bool) {
+func (h *History) GetResult(parserIndex int, pos parsley.Pos, leftRecCtx data.IntMap) (*parsley.Result, bool) {
 	result, found := h.results[parserIndex][pos]
 	if !found {
 		return nil, false

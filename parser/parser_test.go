@@ -22,15 +22,15 @@ var _ = Describe("Func", func() {
 		expectedHistory := &parsleyfakes.FakeHistory{}
 		expectedLeftRecCtx := data.NewIntMap(map[int]int{1: 2})
 		expectedReader := &parsleyfakes.FakeReader{}
-		expectedPos := 2
+		expectedPos := parsley.Pos(2)
 		expectedCurtailingParsers := data.NewIntSet(1)
-		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), 1)
+		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), parsley.Pos(2))
 		expectedErr := parsley.NewError(parsley.Pos(1), "testerr")
 		var actualHistory parsley.History
 		var actualLeftRecCtx data.IntMap
 		var actualReader parsley.Reader
-		var actualPos int
-		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+		var actualPos parsley.Pos
+		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 			actualHistory = h
 			actualLeftRecCtx = leftRecCtx
 			actualReader = r

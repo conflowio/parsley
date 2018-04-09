@@ -38,7 +38,7 @@ func (rp *Recursive) Bind(interpreter parsley.Interpreter) *Recursive {
 }
 
 // Parse parses the given input
-func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 	p := &recursive{
 		token:             rp.token,
 		parserLookUp:      rp.parserLookUp,
@@ -67,12 +67,12 @@ type recursive struct {
 }
 
 // Parse runs the recursive parser
-func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 	rp.parse(0, h, leftRecCtx, r, pos, true)
 	return rp.curtailingParsers, rp.result, rp.err
 }
 
-func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
 	var res parsley.Node
 	var err parsley.Error
@@ -121,7 +121,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 	return false
 }
 
-func (rp *recursive) parseNext(i int, node parsley.Node, depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parseNext(i int, node parsley.Node, depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos, mergeCurtailingParsers bool) bool {
 	if len(rp.nodes) < depth+1 {
 		rp.nodes = append(rp.nodes, node)
 	} else {

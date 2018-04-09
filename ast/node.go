@@ -23,11 +23,11 @@ type TerminalNode struct {
 	token     string
 	value     interface{}
 	pos       parsley.Pos
-	readerPos int
+	readerPos parsley.Pos
 }
 
 // NewTerminalNode creates a new TerminalNode instance
-func NewTerminalNode(token string, value interface{}, pos parsley.Pos, readerPos int) *TerminalNode {
+func NewTerminalNode(token string, value interface{}, pos parsley.Pos, readerPos parsley.Pos) *TerminalNode {
 	return &TerminalNode{
 		token:     token,
 		value:     value,
@@ -52,11 +52,11 @@ func (t *TerminalNode) Pos() parsley.Pos {
 }
 
 // ReaderPos returns the position of the first character immediately after this node
-func (t *TerminalNode) ReaderPos() int {
+func (t *TerminalNode) ReaderPos() parsley.Pos {
 	return t.readerPos
 }
 
-func (t *TerminalNode) SetReaderPos(f func(int) int) {
+func (t *TerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 	t.readerPos = f(t.readerPos)
 }
 
@@ -73,7 +73,7 @@ type NonTerminalNode struct {
 	token       string
 	children    []parsley.Node
 	pos         parsley.Pos
-	readerPos   int
+	readerPos   parsley.Pos
 	interpreter parsley.Interpreter
 }
 
@@ -123,12 +123,12 @@ func (n *NonTerminalNode) Children() []parsley.Node {
 }
 
 // ReaderPos returns the position of the first character immediately after this node
-func (n *NonTerminalNode) ReaderPos() int {
+func (n *NonTerminalNode) ReaderPos() parsley.Pos {
 	return n.readerPos
 }
 
 // SetReaderPos amends the reader position using the given function
-func (n *NonTerminalNode) SetReaderPos(f func(int) int) {
+func (n *NonTerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 	n.readerPos = f(n.readerPos)
 }
 
@@ -162,7 +162,7 @@ func (nl NodeList) Pos() parsley.Pos {
 }
 
 // ReaderPos should not be called on a NodeList
-func (nl NodeList) ReaderPos() int {
+func (nl NodeList) ReaderPos() parsley.Pos {
 	panic("ReaderPos() should not be called on NodeList")
 }
 
@@ -195,7 +195,7 @@ func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) {
 }
 
 // EmptyNode represents an empty node
-type EmptyNode int
+type EmptyNode parsley.Pos
 
 // Token returns with EMPTY
 func (e EmptyNode) Token() string {
@@ -209,12 +209,12 @@ func (e EmptyNode) Value(ctx interface{}) (interface{}, parsley.Error) {
 
 // Pos returns with NilPosition
 func (e EmptyNode) Pos() parsley.Pos {
-	return parsley.NilPos
+	return parsley.Pos(e)
 }
 
 // ReaderPos returns the reader position
-func (e EmptyNode) ReaderPos() int {
-	return int(e)
+func (e EmptyNode) ReaderPos() parsley.Pos {
+	return parsley.Pos(e)
 }
 
 // String returns with a string representation of the node
@@ -258,16 +258,16 @@ func WalkNode(node parsley.Node, f func(i int, n parsley.Node) bool) {
 
 // ReaderPosSetter allows to change the reader position on a node
 type ReaderPosSetter interface {
-	SetReaderPos(f func(int) int)
+	SetReaderPos(f func(parsley.Pos) parsley.Pos)
 }
 
 // SetReaderPos sets the reader position on a node
-func SetReaderPos(node parsley.Node, f func(int) int) parsley.Node {
+func SetReaderPos(node parsley.Node, f func(parsley.Pos) parsley.Pos) parsley.Node {
 	switch n := node.(type) {
 	case ReaderPosSetter:
 		n.SetReaderPos(f)
 	case EmptyNode:
-		return EmptyNode(f(int(n)))
+		return EmptyNode(f(parsley.Pos(n)))
 	case NodeList:
 		for i, item := range n {
 			n[i] = SetReaderPos(item, f)

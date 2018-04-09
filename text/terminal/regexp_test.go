@@ -44,15 +44,16 @@ var _ = Describe("Regexp", func() {
 
 	DescribeTable("full match - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(endPos))
+			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry(`foo beginning`, `foo ---`, 0, "foo", parsley.Pos(1), 3),
 		Entry(`foo middle`, `--- foo ---`, 4, "foo", parsley.Pos(5), 7),
@@ -61,8 +62,9 @@ var _ = Describe("Regexp", func() {
 
 	DescribeTable("full match - should not match",
 		func(input string, startPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
@@ -73,15 +75,16 @@ var _ = Describe("Regexp", func() {
 
 	DescribeTable("submatch - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(endPos))
+			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry(`foo beginning`, `foo ---`, 0, "oo", parsley.Pos(1), 3),
 		Entry(`foo middle`, `--- foo ---`, 4, "oo", parsley.Pos(5), 7),
@@ -90,8 +93,9 @@ var _ = Describe("Regexp", func() {
 
 	DescribeTable("submatch - should not match",
 		func(input string, startPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())

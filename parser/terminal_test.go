@@ -57,14 +57,10 @@ var _ = Describe("End", func() {
 		It("should return with an EOF node", func() {
 			r.IsEOFReturns(true)
 			r.PosReturns(parsley.Pos(2))
-			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
+			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 2)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), 1)))
+			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), parsley.Pos(2))))
 			Expect(err).ToNot(HaveOccurred())
-
-			Expect(r.PosCallCount()).To(Equal(1))
-			pos := r.PosArgsForCall(0)
-			Expect(pos).To(Equal(1))
 		})
 	})
 

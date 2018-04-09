@@ -25,7 +25,7 @@ func Whitespaces(wsMode text.WsMode) parsley.Parser {
 	} else {
 		name = "spaces, tabs or newline"
 	}
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos := tr.SkipWhitespaces(pos, wsMode); readerPos > pos {
 			return data.EmptyIntSet, ast.EmptyNode(readerPos), nil

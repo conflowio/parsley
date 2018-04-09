@@ -6,7 +6,7 @@ type Node interface {
 	Token() string
 	Value(ctx interface{}) (interface{}, Error)
 	Pos() Pos
-	ReaderPos() int
+	ReaderPos() Pos
 }
 
 // NodeBuilder defines an interface to build a node from multiple nodes

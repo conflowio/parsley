@@ -20,10 +20,10 @@ func Nil(nilStr string) *parser.NamedFunc {
 		panic("Nil() should not be called with an empty nil string")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, nilStr); found {
-			return data.EmptyIntSet, ast.NewTerminalNode("NIL", nil, r.Pos(pos), readerPos), nil
+			return data.EmptyIntSet, ast.NewTerminalNode("NIL", nil, pos, readerPos), nil
 		}
 
 		return data.EmptyIntSet, nil, nil

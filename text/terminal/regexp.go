@@ -21,18 +21,18 @@ import (
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
 func Regexp(token string, name string, regexp string, groupIndex int) *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 		tr := r.(*text.Reader)
 		if groupIndex == 0 {
 			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
-				return data.EmptyIntSet, ast.NewTerminalNode(token, string(match), r.Pos(pos), readerPos), nil
+				return data.EmptyIntSet, ast.NewTerminalNode(token, string(match), pos, readerPos), nil
 			}
 		} else {
 			if readerPos, matches := tr.ReadRegexpSubmatch(pos, regexp); matches != nil {
 				if groupIndex >= len(matches) {
 					panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
 				}
-				return data.EmptyIntSet, ast.NewTerminalNode(token, string(matches[groupIndex]), r.Pos(pos), readerPos), nil
+				return data.EmptyIntSet, ast.NewTerminalNode(token, string(matches[groupIndex]), pos, readerPos), nil
 			}
 		}
 		return data.EmptyIntSet, nil, nil

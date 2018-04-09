@@ -18,7 +18,7 @@ func Choice(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 		panic("No parsers were given")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos int) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
 		cp := data.EmptyIntSet
 		var err parsley.Error
 		for _, p := range parsers {

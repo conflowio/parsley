@@ -7,7 +7,7 @@ import (
 // Parser defines a parser interface
 //go:generate counterfeiter . Parser
 type Parser interface {
-	Parse(h History, leftRecCtx data.IntMap, r Reader, pos int) (data.IntSet, Node, Error)
+	Parse(h History, leftRecCtx data.IntMap, r Reader, pos Pos) (data.IntSet, Node, Error)
 	Name() string
 }
 
@@ -22,8 +22,8 @@ type Result struct {
 // History records information about parser calls
 //go:generate counterfeiter . History
 type History interface {
-	SaveResult(parserIndex int, pos int, result *Result)
-	GetResult(parserIndex int, pos int, leftRecCtx data.IntMap) (*Result, bool)
+	SaveResult(parserIndex int, pos Pos, result *Result)
+	GetResult(parserIndex int, pos Pos, leftRecCtx data.IntMap) (*Result, bool)
 	RegisterCall()
 	CallCount() int
 }

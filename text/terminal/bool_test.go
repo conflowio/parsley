@@ -34,15 +34,16 @@ var _ = Describe("Bool", func() {
 
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("BOOL"))
 			Expect(node.Value(nil)).To(Equal(value))
 			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(endPos))
+			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry("true beginning", "true ---", 0, true, parsley.Pos(1), 4),
 		Entry("false beginning", "false ---", 0, false, parsley.Pos(1), 5),
@@ -54,8 +55,9 @@ var _ = Describe("Bool", func() {
 
 	DescribeTable("should not match",
 		func(input string, startPos int) {
-			r := text.NewReader(text.NewFile("textfile", []byte(input)))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, startPos)
+			f := text.NewFile("textfile", []byte(input))
+			r := text.NewReader(f)
+			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())

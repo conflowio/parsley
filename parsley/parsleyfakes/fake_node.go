@@ -39,14 +39,14 @@ type FakeNode struct {
 	posReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
-	ReaderPosStub        func() int
+	ReaderPosStub        func() parsley.Pos
 	readerPosMutex       sync.RWMutex
 	readerPosArgsForCall []struct{}
 	readerPosReturns     struct {
-		result1 int
+		result1 parsley.Pos
 	}
 	readerPosReturnsOnCall map[int]struct {
-		result1 int
+		result1 parsley.Pos
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -183,7 +183,7 @@ func (fake *FakeNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNode) ReaderPos() int {
+func (fake *FakeNode) ReaderPos() parsley.Pos {
 	fake.readerPosMutex.Lock()
 	ret, specificReturn := fake.readerPosReturnsOnCall[len(fake.readerPosArgsForCall)]
 	fake.readerPosArgsForCall = append(fake.readerPosArgsForCall, struct{}{})
@@ -204,22 +204,22 @@ func (fake *FakeNode) ReaderPosCallCount() int {
 	return len(fake.readerPosArgsForCall)
 }
 
-func (fake *FakeNode) ReaderPosReturns(result1 int) {
+func (fake *FakeNode) ReaderPosReturns(result1 parsley.Pos) {
 	fake.ReaderPosStub = nil
 	fake.readerPosReturns = struct {
-		result1 int
+		result1 parsley.Pos
 	}{result1}
 }
 
-func (fake *FakeNode) ReaderPosReturnsOnCall(i int, result1 int) {
+func (fake *FakeNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
 	fake.ReaderPosStub = nil
 	if fake.readerPosReturnsOnCall == nil {
 		fake.readerPosReturnsOnCall = make(map[int]struct {
-			result1 int
+			result1 parsley.Pos
 		})
 	}
 	fake.readerPosReturnsOnCall[i] = struct {
-		result1 int
+		result1 parsley.Pos
 	}{result1}
 }
 
