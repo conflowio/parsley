@@ -2,8 +2,6 @@ package json
 
 import (
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
-	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -12,41 +10,36 @@ import (
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() *parser.NamedFunc {
+func NewParser() parser.Func {
 	var value parser.NamedFunc
 
-	array := combinator.Seq(
-		builder.All("ARRAY", interpreter.Select(1)),
+	array := combinator.Seq("ARRAY", "array",
 		terminal.Rune('['),
 		combinator.SepBy(
 			"ARRAY_ELEMENTS",
 			text.LeftTrim(&value, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
-			arrayInterpreter(),
 		),
 		text.LeftTrim(terminal.Rune(']'), text.WsSpacesNl),
-	)
+	).Bind(arrayInterpreter())
 
-	keyValue := combinator.Seq(
-		builder.All("OBJ_KV", nil),
+	keyValue := combinator.Seq("OBJ_KV", "attribute",
 		terminal.String(false),
 		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
 		text.LeftTrim(&value, text.WsSpaces),
 	)
 
-	object := combinator.Seq(
-		builder.All("OBJ", interpreter.Select(1)),
+	object := combinator.Seq("OBJ", "object",
 		terminal.Rune('{'),
 		combinator.SepBy(
 			"OBJ_ATTRIBUTES",
 			text.LeftTrim(keyValue, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
-			objectInterpreter(),
 		),
 		text.LeftTrim(terminal.Rune('}'), text.WsSpacesNl),
-	)
+	).Bind(objectInterpreter())
 
-	value = *combinator.Choice("value",
+	value = *combinator.Memoize(combinator.Choice("value",
 		terminal.String(false),
 		terminal.Float(),
 		terminal.Integer(),
@@ -55,16 +48,18 @@ func NewParser() *parser.NamedFunc {
 		terminal.Word("false", false),
 		terminal.Word("true", true),
 		terminal.Word("null", nil),
-	)
+	))
 
-	return &value
+	return text.RightTrim(&value, text.WsSpacesNl)
 }
 
 func arrayInterpreter() ast.InterpreterFunc {
 	return ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-		if len(nodes) == 0 {
+		if nodes[1].Token() == ast.NIL {
 			return []interface{}{}, nil
 		}
+
+		nodes = nodes[1].(*ast.NonTerminalNode).Children()
 		res := make([]interface{}, len(nodes)/2+1)
 		for i := 0; i < len(nodes); i += 2 {
 			value, err := nodes[i].Value(ctx)
@@ -79,9 +74,11 @@ func arrayInterpreter() ast.InterpreterFunc {
 
 func objectInterpreter() ast.InterpreterFunc {
 	return ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-		if len(nodes) == 0 {
-			return []interface{}{}, nil
+		if nodes[1].Token() == ast.NIL {
+			return map[string]interface{}{}, nil
 		}
+
+		nodes = nodes[1].(*ast.NonTerminalNode).Children()
 		res := make(map[string]interface{}, len(nodes)/2+1)
 		for i := 0; i < len(nodes); i += 2 {
 			pair := nodes[i].(*ast.NonTerminalNode)

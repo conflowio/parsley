@@ -14,13 +14,12 @@ import (
 )
 
 func benchmarkParsleyJSON(b *testing.B, jsonFilePath string) {
-	input, err := ioutil.ReadFile(jsonFilePath)
+	f, err := text.ReadFile(jsonFilePath)
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	s := combinator.Sentence(json.NewParser())
-	f := text.NewFile("test", input[0:len(input)-1])
 	r := text.NewReader(f)
 	h := parser.NewHistory()
 	if _, err = parsley.Evaluate(h, r, s, nil); err != nil {
