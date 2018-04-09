@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -28,7 +27,7 @@ func ExampleMany() {
 		}
 		return res, nil
 	})
-	p := combinator.Many(builder.All("a", concat), terminal.Rune('a'))
+	p := combinator.Many("MANY_A", terminal.Rune('a')).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("aaaaa")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 

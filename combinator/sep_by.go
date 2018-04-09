@@ -7,76 +7,32 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
-	"github.com/opsidian/parsley/parser"
+	"fmt"
+
 	"github.com/opsidian/parsley/parsley"
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
-// It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parser.Func {
-	return newSepBy(token, valueP, sepP, interpreter, 0, false).CreateParser()
-}
-
-// SepByOrValue applies the given value parser zero or more times separated by the separator parser
-// If there is only one value then the value node will be returned and the interpreter won't be used
-// It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepByOrValue(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parser.Func {
-	return newSepBy(token, valueP, sepP, interpreter, 0, true).CreateParser()
+func SepBy(token string, valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+	return newSepBy(token, valueP, sepP, true)
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
-// It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepBy1(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parsley.Parser {
-	return newSepBy(token, valueP, sepP, interpreter, 1, false).CreateParser()
+func SepBy1(token string, valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+	return newSepBy(token, valueP, sepP, false)
 }
 
-// SepByOrValue1 applies the given value parser one or more times separated by the separator parser
-// If there is only one value then the value node will be returned and the interpreter won't be used
-// It simply uses the Seq, SeqTry, Many and Memoize combinators.
-func SepByOrValue1(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter) parsley.Parser {
-	return newSepBy(token, valueP, sepP, interpreter, 1, true).CreateParser()
-}
-
-type sepBy struct {
-	token       string
-	valueP      parsley.Parser
-	sepP        parsley.Parser
-	interpreter parsley.Interpreter
-	min         int
-	returnValue bool
-}
-
-func newSepBy(token string, valueP parsley.Parser, sepP parsley.Parser, interpreter parsley.Interpreter, min int, returnValue bool) sepBy {
-	return sepBy{
-		token:       token,
-		valueP:      valueP,
-		sepP:        sepP,
-		interpreter: interpreter,
-		min:         min,
-		returnValue: returnValue,
-	}
-}
-
-func (s sepBy) CreateParser() parser.Func {
-	sepValue := Memoize(Seq(builder.All("SEP_VALUE", nil), s.sepP, s.valueP))
-	sepValueMany := Memoize(Many(builder.Flatten(s.token, nil), sepValue))
-	return SeqTry(s, s.min, s.valueP, sepValueMany)
-}
-
-func (s sepBy) BuildNode(nodes []parsley.Node) parsley.Node {
-	if len(nodes) == 0 {
-		return ast.NewNonTerminalNode(s.token, nil).Bind(s.interpreter)
-	}
-
-	children := []parsley.Node{nodes[0]}
-	if len(nodes) > 1 && nodes[1].Token() != ast.NIL {
-		node1 := nodes[1].(*ast.NonTerminalNode)
-		if s.returnValue && len(node1.Children()) == 0 {
-			return nodes[0]
+func newSepBy(token string, valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recursive {
+	name := fmt.Sprintf("%s separated by %s", valueP.Name(), sepP.Name())
+	lookup := func(i int) parsley.Parser {
+		if i%2 == 0 {
+			return valueP
+		} else {
+			return sepP
 		}
-		children = append(children, node1.Children()...)
 	}
-	return ast.NewNonTerminalNode(s.token, children).Bind(s.interpreter)
+	lenCheck := func(len int) bool {
+		return (len == 0 && allowEmpty) || len%2 == 1
+	}
+	return NewRecursive(token, name, lookup, lenCheck)
 }

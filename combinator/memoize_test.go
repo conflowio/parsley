@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -38,10 +37,7 @@ func ExampleMemoize() {
 	var p parser.NamedFunc
 	p = *combinator.Memoize(combinator.Any("a or ab",
 		terminal.Rune('a'),
-		combinator.Seq(builder.All("AB", concat),
-			&p,
-			terminal.Rune('b'),
-		),
+		combinator.Seq("AB", "a or ab", &p, terminal.Rune('b')).Bind(concat),
 	))
 	f := text.NewFile("example.file", []byte("abbbbbbbb"))
 	r := text.NewReader(f)

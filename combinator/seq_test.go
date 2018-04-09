@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -29,11 +28,11 @@ func ExampleSeq() {
 		return res, nil
 	})
 
-	p := combinator.Seq(builder.All("ABC", concat),
+	p := combinator.Seq("ABC", "abc",
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),
-	)
+	).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("abc")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value, value)
@@ -51,11 +50,11 @@ func ExampleSeqTry() {
 		return res, nil
 	})
 
-	p := combinator.SeqTry(builder.All("ABC", concat), 0,
+	p := combinator.SeqTry("ABC", "abc",
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),
-	)
+	).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("ab")))
 	value, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value, value)

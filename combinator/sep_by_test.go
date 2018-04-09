@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/ast/builder"
 	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
@@ -32,8 +31,12 @@ func ExampleSepBy() {
 		return res, nil
 	})
 
-	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(','), arr)
-	p := combinator.Seq(builder.All("ARR", interpreter.Select(1)), terminal.Rune('['), intList, terminal.Rune(']'))
+	intList := combinator.SepBy("ARR", terminal.Integer(), terminal.Rune(',')).Bind(arr)
+	p := combinator.Seq("ARR", "array",
+		terminal.Rune('['),
+		intList,
+		terminal.Rune(']'),
+	).Bind(interpreter.Select(1))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
 	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
@@ -60,7 +63,7 @@ func ExampleSepBy1() {
 		return sum, nil
 	})
 
-	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+'), interpreter)
+	p := combinator.SepBy1("SUM", terminal.Integer(), terminal.Rune('+')).Bind(interpreter)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1")))
 	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
