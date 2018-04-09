@@ -171,13 +171,6 @@ func (nl NodeList) ReaderPos() int {
 	panic("ReaderPos() should not be called on NodeList")
 }
 
-// SetReaderPos amends the reader position using the given function
-func (nl NodeList) SetReaderPos(f func(int) int) {
-	for _, n := range nl {
-		n.SetReaderPos(f)
-	}
-}
-
 // Append appends a new node to the list
 func (nl *NodeList) Append(node parsley.Node) {
 	switch v := node.(type) {
@@ -194,6 +187,15 @@ func (nl *NodeList) Append(node parsley.Node) {
 		*nl = append(*nl, v)
 	default:
 		*nl = append(*nl, v)
+	}
+}
+
+// Walk runs the given function on all nodes
+func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) {
+	for i, node := range nl {
+		if f(i, node) {
+			break
+		}
 	}
 }
 
@@ -225,10 +227,6 @@ func (e EmptyNode) String() string {
 	return "NIL"
 }
 
-// SetReaderPos does nothing for an empty node
-func (e EmptyNode) SetReaderPos(f func(int) int) {
-}
-
 // AppendNode appends
 func AppendNode(n1, n2 parsley.Node) parsley.Node {
 	if n1 == nil {
@@ -246,4 +244,41 @@ func AppendNode(n1, n2 parsley.Node) parsley.Node {
 		nl.Append(n2)
 		return nl
 	}
+}
+
+// Walkable is a generic interface to allow to apply a function on the node
+type Walkable interface {
+	Walk(f func(i int, n parsley.Node) bool)
+}
+
+// WalkNode applies the given function to the node
+func WalkNode(node parsley.Node, f func(i int, n parsley.Node) bool) {
+	switch n := node.(type) {
+	case Walkable:
+		n.Walk(f)
+	default:
+		f(0, node)
+	}
+}
+
+// ReaderPosSetter allows to change the reader position on a node
+type ReaderPosSetter interface {
+	SetReaderPos(f func(int) int)
+}
+
+// SetReaderPos sets the reader position on a node
+func SetReaderPos(node parsley.Node, f func(int) int) parsley.Node {
+	switch n := node.(type) {
+	case ReaderPosSetter:
+		n.SetReaderPos(f)
+	case EmptyNode:
+		return EmptyNode(f(int(n)))
+	case NodeList:
+		for i, item := range n {
+			n[i] = SetReaderPos(item, f)
+		}
+	default:
+		panic("invalid node type for SetReaderPos(), you may need to implement the ast.ReaderPosSetter interface")
+	}
+	return node
 }

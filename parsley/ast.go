@@ -7,7 +7,6 @@ type Node interface {
 	Value(ctx interface{}) (interface{}, Error)
 	Pos() Pos
 	ReaderPos() int
-	SetReaderPos(func(int) int)
 }
 
 // NodeBuilder defines an interface to build a node from multiple nodes
