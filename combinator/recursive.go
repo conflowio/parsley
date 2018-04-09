@@ -109,7 +109,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 			if depth > 0 {
 				nodesCopy := make([]parsley.Node, depth)
 				copy(nodesCopy[0:depth], rp.nodes[0:depth])
-				rp.result = ast.AppendNode(rp.result, ast.NewNonTerminalNode(rp.token, nodesCopy).Bind(rp.interpreter))
+				rp.result = ast.AppendNode(rp.result, ast.NewNonTerminalNode(rp.token, nodesCopy, rp.interpreter))
 				if rp.nodes[depth-1] != nil && rp.nodes[depth-1].Token() == ast.EOF {
 					return true
 				}

@@ -78,13 +78,14 @@ type NonTerminalNode struct {
 }
 
 // NewNonTerminalNode creates a new NonTerminalNode instance
-func NewNonTerminalNode(token string, children []parsley.Node) *NonTerminalNode {
+func NewNonTerminalNode(token string, children []parsley.Node, interpreter parsley.Interpreter) *NonTerminalNode {
 	if len(children) == 0 {
 		panic("a NonTerminalNode should always have children")
 	}
 	node := &NonTerminalNode{
-		token:    token,
-		children: children,
+		token:       token,
+		children:    children,
+		interpreter: interpreter,
 	}
 
 	for _, child := range children {
@@ -98,12 +99,6 @@ func NewNonTerminalNode(token string, children []parsley.Node) *NonTerminalNode 
 	return node
 }
 
-// Bind adds an interpreter function to the node
-func (n *NonTerminalNode) Bind(interpreter parsley.Interpreter) *NonTerminalNode {
-	n.interpreter = interpreter
-	return n
-}
-
 // Token returns with the node token
 func (n *NonTerminalNode) Token() string {
 	return n.token
@@ -112,7 +107,7 @@ func (n *NonTerminalNode) Token() string {
 // Value returns with the value of the node
 func (n *NonTerminalNode) Value(ctx interface{}) (interface{}, parsley.Error) {
 	if n.interpreter == nil {
-		return nil, nil
+		panic("missing interpreter for node")
 	}
 	return n.interpreter.Eval(ctx, n.children)
 }
