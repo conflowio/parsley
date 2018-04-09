@@ -18,20 +18,20 @@ func Choice(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 		panic("No parsers were given")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		cp := data.EmptyIntSet
 		var err parsley.Error
 		for _, p := range parsers {
 			h.RegisterCall()
-			cp2, node, err2 := p.Parse(h, leftRecCtx, r, pos)
+			node, err2, cp2 := p.Parse(h, leftRecCtx, r, pos)
 			cp = cp.Union(cp2)
 			if err2 != nil && (err == nil || err2.Pos() >= err.Pos()) {
 				err = err2
 			}
 			if node != nil {
-				return cp, node, err
+				return node, err, cp
 			}
 		}
-		return cp, nil, err
+		return nil, err, cp
 	}).WithName(name)
 }

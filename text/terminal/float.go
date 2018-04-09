@@ -18,15 +18,15 @@ import (
 
 // Float matches a float literal
 func Float() *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
 			val, err := strconv.ParseFloat(string(result), 64)
 			if err != nil {
-				return data.EmptyIntSet, nil, parsley.NewError(pos, "invalid float value encountered")
+				return nil, parsley.NewError(pos, "invalid float value encountered"), data.EmptyIntSet
 			}
-			return data.EmptyIntSet, ast.NewTerminalNode("FLOAT", val, pos, readerPos), nil
+			return ast.NewTerminalNode("FLOAT", val, pos, readerPos), nil, data.EmptyIntSet
 		}
-		return data.EmptyIntSet, nil, nil
+		return nil, nil, data.EmptyIntSet
 	}).WithName("float value")
 }

@@ -30,15 +30,15 @@ var _ = Describe("Func", func() {
 		var actualLeftRecCtx data.IntMap
 		var actualReader parsley.Reader
 		var actualPos parsley.Pos
-		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 			actualHistory = h
 			actualLeftRecCtx = leftRecCtx
 			actualReader = r
 			actualPos = pos
-			return expectedCurtailingParsers, expectedNodes, expectedErr
+			return expectedNodes, expectedErr, expectedCurtailingParsers
 		})
 
-		actualCurtailingParsers, actualNodes, actualErr := p.Parse(expectedHistory, expectedLeftRecCtx, expectedReader, expectedPos)
+		actualNodes, actualErr, actualCurtailingParsers := p.Parse(expectedHistory, expectedLeftRecCtx, expectedReader, expectedPos)
 
 		Expect(actualHistory).To(BeIdenticalTo(expectedHistory))
 		Expect(actualCurtailingParsers).To(Equal(expectedCurtailingParsers))

@@ -33,7 +33,7 @@ var _ = Describe("String", func() {
 			func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(*ast.TerminalNode)
@@ -71,7 +71,7 @@ var _ = Describe("String", func() {
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
@@ -86,7 +86,7 @@ var _ = Describe("String", func() {
 			func(input string) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
 				Expect(err.Pos()).To(Equal(parsley.Pos(5)))
@@ -108,7 +108,7 @@ var _ = Describe("String", func() {
 		It("should match double-quoted strings", func() {
 			f := text.NewFile("textfile", []byte(`"foo"`))
 			r := text.NewReader(f)
-			_, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
+			res, err, _ := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).ToNot(BeNil())
 		})
@@ -116,7 +116,7 @@ var _ = Describe("String", func() {
 		It("should not match backquoted strings", func() {
 			f := text.NewFile("textfile", []byte("`foo`"))
 			r := text.NewReader(f)
-			_, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
+			res, err, _ := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		})

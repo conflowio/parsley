@@ -28,7 +28,7 @@ var _ = Describe("Empty", func() {
 	})
 
 	It("should return with an empty node", func() {
-		curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
+		res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 1)
 		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 		Expect(res).To(Equal(ast.EmptyNode(1)))
 		Expect(err).ToNot(HaveOccurred())
@@ -57,7 +57,7 @@ var _ = Describe("End", func() {
 		It("should return with an EOF node", func() {
 			r.IsEOFReturns(true)
 			r.PosReturns(parsley.Pos(2))
-			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 2)
+			res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 2)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), parsley.Pos(2))))
 			Expect(err).ToNot(HaveOccurred())
@@ -68,7 +68,7 @@ var _ = Describe("End", func() {
 		It("should return with a nil result", func() {
 			r.IsEOFReturns(false)
 			r.PosReturns(parsley.Pos(2))
-			curtailingParsers, res, err := p.Parse(h, data.EmptyIntMap, r, 1)
+			res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 1)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(BeNil())
 			Expect(err).To(BeNil())

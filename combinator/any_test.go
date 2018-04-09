@@ -78,11 +78,11 @@ var _ = Describe("Any", func() {
 	})
 
 	JustBeforeEach(func() {
-		p1.ParseReturnsOnCall(0, p1CP, p1Res, p1Err)
-		p2.ParseReturnsOnCall(0, p2CP, p2Res, p2Err)
+		p1.ParseReturnsOnCall(0, p1Res, p1Err, p1CP)
+		p2.ParseReturnsOnCall(0, p2Res, p2Err, p2CP)
 
 		p = combinator.Any("test", parsers...)
-		cp, res, parserErr = p.Parse(h, leftRecCtx, r, pos)
+		res, parserErr, cp = p.Parse(h, leftRecCtx, r, pos)
 	})
 
 	Context("when no parsers are given", func() {

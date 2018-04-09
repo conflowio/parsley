@@ -18,7 +18,7 @@ import (
 
 // String matches a string literal enclosed in double quotes
 func String(allowBackquote bool) *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
 		quote := '"'
 		readerPos, found := tr.ReadRune(pos, quote)
@@ -30,13 +30,13 @@ func String(allowBackquote bool) *parser.NamedFunc {
 		}
 
 		if !found {
-			return data.EmptyIntSet, nil, nil
+			return nil, nil, data.EmptyIntSet
 		}
 
 		// check for empty string
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
-			return data.EmptyIntSet, ast.NewTerminalNode("STRING", "", pos, readerPos), nil
+			return ast.NewTerminalNode("STRING", "", pos, readerPos), nil, data.EmptyIntSet
 		}
 
 		var value []byte
@@ -48,9 +48,9 @@ func String(allowBackquote bool) *parser.NamedFunc {
 
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
-			return data.EmptyIntSet, nil, parsley.NewError(readerPos, "was expecting '%s'", string(quote))
+			return nil, parsley.NewError(readerPos, "was expecting '%s'", string(quote)), data.EmptyIntSet
 		}
-		return data.EmptyIntSet, ast.NewTerminalNode("STRING", string(value), pos, readerPos), nil
+		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), nil, data.EmptyIntSet
 	}).WithName("string value")
 }
 

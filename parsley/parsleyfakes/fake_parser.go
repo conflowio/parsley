@@ -9,7 +9,7 @@ import (
 )
 
 type FakeParser struct {
-	ParseStub        func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error)
+	ParseStub        func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet)
 	parseMutex       sync.RWMutex
 	parseArgsForCall []struct {
 		h          parsley.History
@@ -18,14 +18,14 @@ type FakeParser struct {
 		pos        parsley.Pos
 	}
 	parseReturns struct {
-		result1 data.IntSet
-		result2 parsley.Node
-		result3 parsley.Error
+		result1 parsley.Node
+		result2 parsley.Error
+		result3 data.IntSet
 	}
 	parseReturnsOnCall map[int]struct {
-		result1 data.IntSet
-		result2 parsley.Node
-		result3 parsley.Error
+		result1 parsley.Node
+		result2 parsley.Error
+		result3 data.IntSet
 	}
 	NameStub        func() string
 	nameMutex       sync.RWMutex
@@ -40,7 +40,7 @@ type FakeParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeParser) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+func (fake *FakeParser) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 	fake.parseMutex.Lock()
 	ret, specificReturn := fake.parseReturnsOnCall[len(fake.parseArgsForCall)]
 	fake.parseArgsForCall = append(fake.parseArgsForCall, struct {
@@ -72,28 +72,28 @@ func (fake *FakeParser) ParseArgsForCall(i int) (parsley.History, data.IntMap, p
 	return fake.parseArgsForCall[i].h, fake.parseArgsForCall[i].leftRecCtx, fake.parseArgsForCall[i].r, fake.parseArgsForCall[i].pos
 }
 
-func (fake *FakeParser) ParseReturns(result1 data.IntSet, result2 parsley.Node, result3 parsley.Error) {
+func (fake *FakeParser) ParseReturns(result1 parsley.Node, result2 parsley.Error, result3 data.IntSet) {
 	fake.ParseStub = nil
 	fake.parseReturns = struct {
-		result1 data.IntSet
-		result2 parsley.Node
-		result3 parsley.Error
+		result1 parsley.Node
+		result2 parsley.Error
+		result3 data.IntSet
 	}{result1, result2, result3}
 }
 
-func (fake *FakeParser) ParseReturnsOnCall(i int, result1 data.IntSet, result2 parsley.Node, result3 parsley.Error) {
+func (fake *FakeParser) ParseReturnsOnCall(i int, result1 parsley.Node, result2 parsley.Error, result3 data.IntSet) {
 	fake.ParseStub = nil
 	if fake.parseReturnsOnCall == nil {
 		fake.parseReturnsOnCall = make(map[int]struct {
-			result1 data.IntSet
-			result2 parsley.Node
-			result3 parsley.Error
+			result1 parsley.Node
+			result2 parsley.Error
+			result3 data.IntSet
 		})
 	}
 	fake.parseReturnsOnCall[i] = struct {
-		result1 data.IntSet
-		result2 parsley.Node
-		result3 parsley.Error
+		result1 parsley.Node
+		result2 parsley.Error
+		result3 data.IntSet
 	}{result1, result2, result3}
 }
 

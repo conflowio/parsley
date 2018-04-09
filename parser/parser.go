@@ -13,9 +13,9 @@ import (
 )
 
 // Func defines a helper to implement the Parser interface with functions
-type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error)
+type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet)
 
-func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 	return f(h, leftRecCtx, r, pos)
 }
 
@@ -35,7 +35,7 @@ type NamedFunc struct {
 	f    Func
 }
 
-func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, parsley.Node, parsley.Error) {
+func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 	return nf.f(h, leftRecCtx, r, pos)
 }
 

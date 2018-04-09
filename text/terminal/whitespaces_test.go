@@ -25,7 +25,7 @@ var _ = Describe("Whitespaces", func() {
 
 		It("should always return with an empty node", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte("abc")))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, 0)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.EmptyNode(0)))
 			Expect(err).ToNot(HaveOccurred())
@@ -33,7 +33,7 @@ var _ = Describe("Whitespaces", func() {
 
 		It("should not match whitespaces", func() {
 			r := text.NewReader(text.NewFile("textfile", []byte(" abc")))
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, 0)
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, 0)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.EmptyNode(0)))
 			Expect(err).ToNot(HaveOccurred())
@@ -48,7 +48,7 @@ var _ = Describe("Whitespaces", func() {
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
@@ -67,7 +67,7 @@ var _ = Describe("Whitespaces", func() {
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
@@ -86,7 +86,7 @@ var _ = Describe("Whitespaces", func() {
 			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				node := res.(ast.EmptyNode)
@@ -104,7 +104,7 @@ var _ = Describe("Whitespaces", func() {
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())

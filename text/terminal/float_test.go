@@ -29,7 +29,7 @@ var _ = Describe("Float", func() {
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
@@ -66,7 +66,7 @@ var _ = Describe("Float", func() {
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
@@ -86,7 +86,7 @@ var _ = Describe("Float", func() {
 			input := "1.2e3456"
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(MatchError("invalid float value encountered"))
 			Expect(err.Pos()).To(Equal(parsley.Pos(1)))

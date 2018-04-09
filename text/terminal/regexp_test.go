@@ -46,7 +46,7 @@ var _ = Describe("Regexp", func() {
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
@@ -64,7 +64,7 @@ var _ = Describe("Regexp", func() {
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p1.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
@@ -77,7 +77,7 @@ var _ = Describe("Regexp", func() {
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
@@ -95,7 +95,7 @@ var _ = Describe("Regexp", func() {
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			curtailingParsers, res, err := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			res, err, curtailingParsers := p2.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
