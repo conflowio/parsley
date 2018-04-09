@@ -1,6 +1,7 @@
 package text
 
 import (
+	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -19,7 +20,7 @@ func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 		tr := r.(*Reader)
 		cp, res, err := p.Parse(h, leftRecCtx, r, pos)
 		if res != nil {
-			res.SetReaderPos(func(pos int) int { return tr.SkipWhitespaces(pos, wsMode) })
+			res = ast.SetReaderPos(res, func(pos int) int { return tr.SkipWhitespaces(pos, wsMode) })
 		}
 		return cp, res, err
 	})
