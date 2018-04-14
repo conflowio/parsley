@@ -56,16 +56,42 @@ func (t *TerminalNode) ReaderPos() parsley.Pos {
 	return t.readerPos
 }
 
+// SetReaderPos changes the reader position
 func (t *TerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 	t.readerPos = f(t.readerPos)
 }
 
 // String returns with a string representation of the node
 func (t *TerminalNode) String() string {
-	if t.value == nil {
-		return fmt.Sprintf("T{%s, %d, %d}", t.token, t.pos, t.readerPos)
-	}
-	return fmt.Sprintf("T{%v, %d, %d}", t.value, t.pos, t.readerPos)
+	return fmt.Sprintf("%s{%v, %d..%d}", t.token, t.value, t.pos, t.readerPos)
+}
+
+// NilNode represents an nil node
+type NilNode parsley.Pos
+
+// Token returns with NIL
+func (n NilNode) Token() string {
+	return NIL
+}
+
+// Value returns with nil
+func (n NilNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return nil, nil
+}
+
+// Pos returns with NilPosition
+func (n NilNode) Pos() parsley.Pos {
+	return parsley.Pos(n)
+}
+
+// ReaderPos returns the reader position
+func (n NilNode) ReaderPos() parsley.Pos {
+	return parsley.Pos(n)
+}
+
+// String returns with a string representation of the node
+func (n NilNode) String() string {
+	return NIL
 }
 
 // NonTerminalNode represents a branch node in the AST
@@ -95,7 +121,7 @@ func NewNonTerminalNode(token string, children []parsley.Node, interpreter parsl
 func NewEmptyNonTerminalNode(token string, pos parsley.Pos, interpreter parsley.Interpreter) *NonTerminalNode {
 	return &NonTerminalNode{
 		token:       token,
-		children:    nil,
+		children:    []parsley.Node{},
 		pos:         pos,
 		readerPos:   pos,
 		interpreter: interpreter,
@@ -137,7 +163,7 @@ func (n *NonTerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 
 // String returns with a string representation of the node
 func (n *NonTerminalNode) String() string {
-	return fmt.Sprintf("NT{%s, %s, %d, %d}", n.token, n.children, n.pos, n.readerPos)
+	return fmt.Sprintf("%s{%s, %d..%d}", n.token, n.children, n.pos, n.readerPos)
 }
 
 // NodeList contains a list of nodes, should be used when a parser returns with multiple results
@@ -195,88 +221,4 @@ func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) {
 			break
 		}
 	}
-}
-
-// NilNode represents an nil node
-type NilNode parsley.Pos
-
-// Token returns with NIL
-func (n NilNode) Token() string {
-	return NIL
-}
-
-// Value returns with nil
-func (n NilNode) Value(ctx interface{}) (interface{}, parsley.Error) {
-	return nil, nil
-}
-
-// Pos returns with NilPosition
-func (n NilNode) Pos() parsley.Pos {
-	return parsley.Pos(n)
-}
-
-// ReaderPos returns the reader position
-func (n NilNode) ReaderPos() parsley.Pos {
-	return parsley.Pos(n)
-}
-
-// String returns with a string representation of the node
-func (n NilNode) String() string {
-	return NIL
-}
-
-// AppendNode appends
-func AppendNode(n1, n2 parsley.Node) parsley.Node {
-	if n1 == nil {
-		return n2
-	}
-	if n2 == nil {
-		return n1
-	}
-	switch n := n1.(type) {
-	case NodeList:
-		n.Append(n2)
-		return n
-	default:
-		nl := NodeList([]parsley.Node{n1})
-		nl.Append(n2)
-		return nl
-	}
-}
-
-// Walkable is a generic interface to allow to apply a function on the node
-type Walkable interface {
-	Walk(f func(i int, n parsley.Node) bool)
-}
-
-// WalkNode applies the given function to the node
-func WalkNode(node parsley.Node, f func(i int, n parsley.Node) bool) {
-	switch n := node.(type) {
-	case Walkable:
-		n.Walk(f)
-	default:
-		f(0, node)
-	}
-}
-
-// ReaderPosSetter allows to change the reader position on a node
-type ReaderPosSetter interface {
-	SetReaderPos(f func(parsley.Pos) parsley.Pos)
-}
-
-// SetReaderPos sets the reader position on a node
-func SetReaderPos(node parsley.Node, f func(parsley.Pos) parsley.Pos) parsley.Node {
-	switch n := node.(type) {
-	case ReaderPosSetter:
-		n.SetReaderPos(f)
-	case NilNode:
-		return NilNode(f(parsley.Pos(n)))
-	case NodeList:
-		for i, item := range n {
-			n[i] = SetReaderPos(item, f)
-		}
-	default:
-		panic("invalid node type for SetReaderPos(), you may need to implement the ast.ReaderPosSetter interface")
-	}
-	return node
 }
