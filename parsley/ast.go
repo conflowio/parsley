@@ -9,12 +9,6 @@ type Node interface {
 	ReaderPos() Pos
 }
 
-// NodeBuilder defines an interface to build a node from multiple nodes
-//go:generate counterfeiter . NodeBuilder
-type NodeBuilder interface {
-	BuildNode([]Node) Node
-}
-
 // Interpreter defines an interface to evaluate AST nodes
 //go:generate counterfeiter . Interpreter
 type Interpreter interface {
