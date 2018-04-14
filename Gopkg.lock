@@ -8,10 +8,17 @@
   version = "v1.1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/jinzhu/inflection"
+  packages = ["."]
+  revision = "04140366298a54a039076d798123ffa108fff46c"
+
+[[projects]]
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
     "config",
+    "extensions/table",
     "internal/codelocation",
     "internal/containernode",
     "internal/failer",
@@ -27,8 +34,7 @@
     "reporters/stenographer",
     "reporters/stenographer/support/go-colorable",
     "reporters/stenographer/support/go-isatty",
-    "types",
-    "extensions/table"
+    "types"
   ]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
   version = "v1.4.0"
@@ -60,18 +66,8 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/stretchr/objx"
-  packages = ["."]
-  revision = "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
-
-[[projects]]
-  branch = "master"
   name = "github.com/stretchr/testify"
-  packages = [
-    "assert",
-    "mock",
-    "require"
-  ]
+  packages = ["assert"]
   revision = "890a5c3458b43e6104ff5da8dfa139d013d77544"
 
 [[projects]]
@@ -123,6 +119,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ace198c733abb7a35142594221720ad67ab57ec9961a274a11aea421e4b9a91d"
+  inputs-digest = "e7a7f07ff290413eed4f7a775acc569dcac1f791f3671ffdc6632184ec322bfa"
   solver-name = "gps-cdcl"
   solver-version = 1
