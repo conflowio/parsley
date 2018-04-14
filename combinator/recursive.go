@@ -50,6 +50,7 @@ func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.
 	return p.Parse(h, leftRecCtx, r, pos)
 }
 
+// Name returns with the parser's descriptive name
 func (rp *Recursive) Name() string {
 	return rp.name
 }

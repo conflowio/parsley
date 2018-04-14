@@ -13,26 +13,24 @@ import (
 func NewParser() parser.Func {
 	var value parser.NamedFunc
 
-	array := combinator.Seq("ARRAY", "array",
+	array := combinator.Seq("ARRAY",
 		terminal.Rune('['),
 		combinator.SepBy(
-			"ARRAY_ELEMENTS",
 			text.LeftTrim(&value, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		),
 		text.LeftTrim(terminal.Rune(']'), text.WsSpacesNl),
 	).Bind(arrayInterpreter())
 
-	keyValue := combinator.Seq("OBJ_KV", "attribute",
+	keyValue := combinator.Seq("OBJ_KV",
 		terminal.String(false),
 		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
 		text.LeftTrim(&value, text.WsSpaces),
 	)
 
-	object := combinator.Seq("OBJ", "object",
+	object := combinator.Seq("OBJ",
 		terminal.Rune('{'),
 		combinator.SepBy(
-			"OBJ_ATTRIBUTES",
 			text.LeftTrim(keyValue, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		),

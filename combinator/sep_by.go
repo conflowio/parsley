@@ -9,21 +9,22 @@ package combinator
 import (
 	"fmt"
 
+	"github.com/jinzhu/inflection"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
-func SepBy(token string, valueP parsley.Parser, sepP parsley.Parser) *Recursive {
-	return newSepBy(token, valueP, sepP, true)
+func SepBy(valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+	return newSepBy(valueP, sepP, true)
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
-func SepBy1(token string, valueP parsley.Parser, sepP parsley.Parser) *Recursive {
-	return newSepBy(token, valueP, sepP, false)
+func SepBy1(valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+	return newSepBy(valueP, sepP, false)
 }
 
-func newSepBy(token string, valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recursive {
-	name := fmt.Sprintf("%s separated by %s", valueP.Name(), sepP.Name())
+func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recursive {
+	name := fmt.Sprintf("%s separated by %s", inflection.Plural(valueP.Name()), inflection.Plural(sepP.Name()))
 	lookup := func(i int) parsley.Parser {
 		if i%2 == 0 {
 			return valueP
@@ -34,5 +35,5 @@ func newSepBy(token string, valueP parsley.Parser, sepP parsley.Parser, allowEmp
 	lenCheck := func(len int) bool {
 		return (len == 0 && allowEmpty) || len%2 == 1
 	}
-	return NewRecursive(token, name, lookup, lenCheck)
+	return NewRecursive("SEP_BY", name, lookup, lenCheck)
 }

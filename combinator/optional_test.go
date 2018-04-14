@@ -33,7 +33,7 @@ func ExampleOptional() {
 		return res, nil
 	})
 
-	p := combinator.Seq("AB", "ab?c",
+	p := combinator.Seq("AB",
 		terminal.Rune('a'),
 		combinator.Optional(terminal.Rune('b')),
 		terminal.Rune('c'),
