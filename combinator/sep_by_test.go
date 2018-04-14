@@ -46,7 +46,7 @@ func ExampleSepBy() {
 	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 
-	// Output: <nil> <nil>
+	// Output: []int []
 	// []int [1 2 3]
 }
 

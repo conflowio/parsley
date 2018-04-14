@@ -80,23 +80,26 @@ type NonTerminalNode struct {
 // NewNonTerminalNode creates a new NonTerminalNode instance
 func NewNonTerminalNode(token string, children []parsley.Node, interpreter parsley.Interpreter) *NonTerminalNode {
 	if len(children) == 0 {
-		panic("a NonTerminalNode should always have children")
+		panic("NewNonTerminalNode should not be called with empty node list")
 	}
-	node := &NonTerminalNode{
+	return &NonTerminalNode{
 		token:       token,
 		children:    children,
+		pos:         children[0].Pos(),
+		readerPos:   children[len(children)-1].ReaderPos(),
 		interpreter: interpreter,
 	}
+}
 
-	for _, child := range children {
-		if child.Pos() != parsley.NilPos {
-			node.pos = child.Pos()
-			break
-		}
+// NewEmptyNonTerminalNode creates a new NonTerminalNode without children
+func NewEmptyNonTerminalNode(token string, pos parsley.Pos, interpreter parsley.Interpreter) *NonTerminalNode {
+	return &NonTerminalNode{
+		token:       token,
+		children:    nil,
+		pos:         pos,
+		readerPos:   pos,
+		interpreter: interpreter,
 	}
-	node.readerPos = children[len(children)-1].ReaderPos()
-
-	return node
 }
 
 // Token returns with the node token

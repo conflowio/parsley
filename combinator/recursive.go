@@ -115,7 +115,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 					return true
 				}
 			} else { // It's an empty result
-				rp.result = ast.AppendNode(rp.result, ast.EmptyNode(pos))
+				rp.result = ast.AppendNode(rp.result, ast.NewEmptyNonTerminalNode(rp.token, pos, rp.interpreter))
 			}
 		}
 	}
