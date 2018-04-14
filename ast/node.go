@@ -176,7 +176,7 @@ func (nl *NodeList) Append(node parsley.Node) {
 		for _, node := range v {
 			nl.Append(node)
 		}
-	case EmptyNode:
+	case NilNode:
 		for _, node := range *nl {
 			if node == v {
 				return
@@ -197,32 +197,32 @@ func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) {
 	}
 }
 
-// EmptyNode represents an empty node
-type EmptyNode parsley.Pos
+// NilNode represents an nil node
+type NilNode parsley.Pos
 
-// Token returns with EMPTY
-func (e EmptyNode) Token() string {
+// Token returns with NIL
+func (n NilNode) Token() string {
 	return NIL
 }
 
 // Value returns with nil
-func (e EmptyNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (n NilNode) Value(ctx interface{}) (interface{}, parsley.Error) {
 	return nil, nil
 }
 
 // Pos returns with NilPosition
-func (e EmptyNode) Pos() parsley.Pos {
-	return parsley.Pos(e)
+func (n NilNode) Pos() parsley.Pos {
+	return parsley.Pos(n)
 }
 
 // ReaderPos returns the reader position
-func (e EmptyNode) ReaderPos() parsley.Pos {
-	return parsley.Pos(e)
+func (n NilNode) ReaderPos() parsley.Pos {
+	return parsley.Pos(n)
 }
 
 // String returns with a string representation of the node
-func (e EmptyNode) String() string {
-	return "NIL"
+func (n NilNode) String() string {
+	return NIL
 }
 
 // AppendNode appends
@@ -269,8 +269,8 @@ func SetReaderPos(node parsley.Node, f func(parsley.Pos) parsley.Pos) parsley.No
 	switch n := node.(type) {
 	case ReaderPosSetter:
 		n.SetReaderPos(f)
-	case EmptyNode:
-		return EmptyNode(f(parsley.Pos(n)))
+	case NilNode:
+		return NilNode(f(parsley.Pos(n)))
 	case NodeList:
 		for i, item := range n {
 			n[i] = SetReaderPos(item, f)

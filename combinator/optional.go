@@ -17,6 +17,6 @@ import (
 func Optional(p parsley.Parser) parser.Func {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		res, err, cp := p.Parse(h, leftRecCtx, r, pos)
-		return ast.AppendNode(res, ast.EmptyNode(pos)), err, cp
+		return ast.AppendNode(res, ast.NilNode(pos)), err, cp
 	})
 }

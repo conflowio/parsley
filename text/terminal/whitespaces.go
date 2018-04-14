@@ -17,7 +17,7 @@ import (
 // Whitespaces matches one or more spaces or tabs. If newLine is true it also matches \n and \f characters.
 func Whitespaces(wsMode text.WsMode) parsley.Parser {
 	if wsMode == text.WsNone {
-		return parser.Empty()
+		return parser.Nil()
 	}
 	var name string
 	if wsMode == text.WsSpaces {
@@ -28,7 +28,7 @@ func Whitespaces(wsMode text.WsMode) parsley.Parser {
 	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
 		if readerPos := tr.SkipWhitespaces(pos, wsMode); readerPos > pos {
-			return ast.EmptyNode(readerPos), nil, data.EmptyIntSet
+			return ast.NilNode(readerPos), nil, data.EmptyIntSet
 		}
 
 		return nil, nil, data.EmptyIntSet

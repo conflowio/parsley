@@ -12,11 +12,10 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
-// Empty always matches and returns with an empty node result
-// When using Empty you should not forget to handle for nil nodes in your node builders and/or interpreters.
-func Empty() Func {
+// Nil always matches and returns with an nil node result
+func Nil() Func {
 	return Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		return ast.EmptyNode(pos), nil, data.EmptyIntSet
+		return ast.NilNode(pos), nil, data.EmptyIntSet
 	})
 }
 

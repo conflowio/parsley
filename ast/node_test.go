@@ -126,9 +126,9 @@ var _ = Describe("NodeList", func() {
 			})
 
 			It("should only append an empty node once", func() {
-				nl.Append(ast.EmptyNode(1))
-				nl.Append(ast.EmptyNode(1))
-				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1, ast.EmptyNode(1)})))
+				nl.Append(ast.NilNode(1))
+				nl.Append(ast.NilNode(1))
+				Expect(nl).To(Equal(ast.NodeList([]parsley.Node{n1, ast.NilNode(1)})))
 			})
 		})
 	})
