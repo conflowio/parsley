@@ -15,10 +15,10 @@ import (
 func Parse(h History, r Reader, s Parser) (Node, Error) {
 	h.RegisterCall()
 	node, err, _ := s.Parse(h, data.EmptyIntMap, r, Pos(1))
-	if err != nil {
-		return nil, WrapError(err, "Failed to parse the input: {{err}}")
-	}
 	if node == nil {
+		if err != nil {
+			return nil, WrapError(err, "Failed to parse the input: {{err}}")
+		}
 		return nil, NewError(r.Pos(0), "Failed to parse the input: was expecting %s", s.Name())
 	}
 	return node, nil
