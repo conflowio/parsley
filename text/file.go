@@ -66,7 +66,7 @@ func (f *File) SetOffset(offset int) {
 
 // Position returns with a Position object for the given offset
 func (f *File) Position(pos int) parsley.Position {
-	if pos >= f.len {
+	if pos > f.len {
 		return parsley.NilPosition
 	}
 	if f.lines == nil {

@@ -2,6 +2,7 @@ package parsley
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 )
 
@@ -43,7 +44,7 @@ func (fs *FileSet) AddFile(f File) {
 	f.SetOffset(fs.pos)
 	fs.files = append(fs.files, f)
 	fs.offset = append(fs.offset, fs.pos)
-	fs.pos += f.Len()
+	fs.pos = fs.pos + f.Len() + 1
 }
 
 // Position returns with a position object for a given global position

@@ -44,10 +44,11 @@ var _ = Describe("File", func() {
 			Expect(f.Position(1)).To(Equal(text.NewPosition("testfile", 1, 2)))
 			Expect(f.Position(2)).To(Equal(text.NewPosition("testfile", 1, 3)))
 			Expect(f.Position(3)).To(Equal(text.NewPosition("testfile", 2, 1)))
+			Expect(f.Position(4)).To(Equal(text.NewPosition("testfile", 2, 2)))
 		})
 
 		It("should return nil position for an invalid offset", func() {
-			Expect(f.Position(4)).To(Equal(parsley.NilPosition))
+			Expect(f.Position(5)).To(Equal(parsley.NilPosition))
 		})
 	})
 
@@ -119,10 +120,11 @@ var _ = Describe("File", func() {
 					Expect(f.Position(1)).To(Equal(text.NewPosition(filename, 1, 2)))
 					Expect(f.Position(2)).To(Equal(text.NewPosition(filename, 1, 3)))
 					Expect(f.Position(3)).To(Equal(text.NewPosition(filename, 2, 1)))
+					Expect(f.Position(4)).To(Equal(text.NewPosition(filename, 2, 2)))
 				})
 
 				It("should return nil position for an invalid offset", func() {
-					Expect(f.Position(4)).To(Equal(parsley.NilPosition))
+					Expect(f.Position(5)).To(Equal(parsley.NilPosition))
 				})
 
 				It("should contain a readable position string", func() {

@@ -64,7 +64,7 @@ var _ = Describe("File set", func() {
 				fs.AddFile(f)
 				Expect(f.SetOffsetCallCount()).To(Equal(1))
 				offset := f.SetOffsetArgsForCall(0)
-				Expect(offset).To(Equal(11))
+				Expect(offset).To(Equal(12))
 			})
 		})
 
@@ -113,23 +113,23 @@ var _ = Describe("File set", func() {
 				Expect(fs.Position(parsley.Pos(5))).To(BeIdenticalTo(p1))
 				Expect(f1.PositionArgsForCall(1)).To(Equal(4))
 
-				Expect(fs.Position(parsley.Pos(10))).To(BeIdenticalTo(p1))
-				Expect(f1.PositionArgsForCall(2)).To(Equal(9))
+				Expect(fs.Position(parsley.Pos(11))).To(BeIdenticalTo(p1))
+				Expect(f1.PositionArgsForCall(2)).To(Equal(10))
 			})
 
 			It("returns with a position from the second file", func() {
-				Expect(fs.Position(parsley.Pos(11))).To(BeIdenticalTo(p2))
+				Expect(fs.Position(parsley.Pos(12))).To(BeIdenticalTo(p2))
 				Expect(f2.PositionArgsForCall(0)).To(Equal(0))
 
 				Expect(fs.Position(parsley.Pos(20))).To(BeIdenticalTo(p2))
-				Expect(f2.PositionArgsForCall(1)).To(Equal(9))
+				Expect(f2.PositionArgsForCall(1)).To(Equal(8))
 
-				Expect(fs.Position(parsley.Pos(30))).To(BeIdenticalTo(p2))
-				Expect(f2.PositionArgsForCall(2)).To(Equal(19))
+				Expect(fs.Position(parsley.Pos(32))).To(BeIdenticalTo(p2))
+				Expect(f2.PositionArgsForCall(2)).To(Equal(20))
 			})
 
 			It("returns with a nil position if position is outside of the file set", func() {
-				Expect(fs.Position(parsley.Pos(31))).To(Equal(parsley.NilPosition))
+				Expect(fs.Position(parsley.Pos(33))).To(Equal(parsley.NilPosition))
 			})
 		})
 	})
