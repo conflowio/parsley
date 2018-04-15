@@ -39,7 +39,7 @@ func (h *History) GetResult(parserIndex int, pos parsley.Pos, leftRecCtx data.In
 		return nil, false
 	}
 
-	for key := range result.LeftRecCtx.Keys() {
+	for _, key := range result.LeftRecCtx.Keys() {
 		if result.LeftRecCtx.Get(key) > leftRecCtx.Get(key) {
 			return nil, false
 		}
