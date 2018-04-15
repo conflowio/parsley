@@ -117,6 +117,12 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 			} else { // It's an empty result
 				rp.result = ast.AppendNode(rp.result, ast.NewEmptyNonTerminalNode(rp.token, pos, rp.interpreter))
 			}
+		} else {
+			if depth > 0 {
+				if nextParser != nil && nextParser.Name() != "" && err == nil && (rp.err == nil || pos > rp.err.Pos()) {
+					rp.err = parsley.NewError(pos, "was expecting %s", nextParser.Name())
+				}
+			}
 		}
 	}
 	return false
