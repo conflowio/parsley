@@ -48,4 +48,35 @@ var _ = Describe("Func", func() {
 		Expect(actualErr).To(BeIdenticalTo(expectedErr))
 	})
 
+	Describe("WithName", func() {
+		It("should create a named parser", func() {
+			f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+				return nil, nil, data.EmptyIntSet
+			})
+			p := f.WithName("p1")
+			Expect(p.Name()).To(Equal("p1"))
+		})
+
+		Context("when a function is passed as name", func() {
+			It("should call the function to get the name", func() {
+				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+					return nil, nil, data.EmptyIntSet
+				})
+				name := func() string {
+					return "p1"
+				}
+				p := f.WithName(name)
+				Expect(p.Name()).To(Equal("p1"))
+			})
+		})
+
+		Context("called with an invalid parameter", func() {
+			It("should panic", func() {
+				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+					return nil, nil, data.EmptyIntSet
+				})
+				Expect(func() { f.WithName(nil) }).To(Panic())
+			})
+		})
+	})
 })

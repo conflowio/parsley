@@ -15,14 +15,18 @@ import (
 // Func defines a helper to implement the Parser interface with functions
 type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet)
 
+// Parse parses the input using the function
 func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 	return f(h, leftRecCtx, r, pos)
 }
 
+// Name returns with an empty name
 func (f Func) Name() string {
 	return ""
 }
 
+// WithName returns with the same parser function but with the given name
+// If a function is passed then it will be called when Name() is called
 func (f Func) WithName(name interface{}) *NamedFunc {
 	nf := &NamedFunc{
 		f: f,
@@ -38,11 +42,13 @@ func (f Func) WithName(name interface{}) *NamedFunc {
 	return nf
 }
 
+// NamedFunc is a parser function with a custom name
 type NamedFunc struct {
 	name func() string
 	f    Func
 }
 
+// Parse parses the input using the function
 func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 	return nf.f(h, leftRecCtx, r, pos)
 }
