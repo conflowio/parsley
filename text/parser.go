@@ -25,3 +25,8 @@ func RightTrim(p parsley.Parser, wsMode WsMode) *parser.NamedFunc {
 		return res, err, cp
 	}).WithName(p.Name)
 }
+
+// Trim removes all whitespaces before and after the result token
+func Trim(p parsley.Parser) *parser.NamedFunc {
+	return RightTrim(LeftTrim(p, WsSpacesNl), WsSpacesNl)
+}
