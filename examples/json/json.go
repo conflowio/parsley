@@ -29,19 +29,20 @@ func main() {
 	if len(os.Args) > 1 {
 		jsonFilePath = os.Args[1]
 	}
-
+	fs := parsley.NewFileSet()
 	file, err := text.ReadFile(jsonFilePath)
 	if err != nil {
 		panic(err)
 	}
+	fs.AddFile(file)
 
 	h := parser.NewHistory()
 	reader := text.NewReader(file)
 	s := combinator.Sentence(json.NewParser())
 
-	res, err := parsley.Evaluate(h, reader, s, nil)
-	if err != nil {
-		panic(err)
+	res, evalErr := parsley.Evaluate(h, reader, s, nil)
+	if evalErr != nil {
+		panic(fs.ErrorWithPosition(evalErr))
 	}
 	fmt.Printf("Parser calls: %d\n", h.CallCount())
 	fmt.Printf("%v\n", res)

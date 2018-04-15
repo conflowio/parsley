@@ -47,5 +47,5 @@ func NewParser() *parser.NamedFunc {
 		terminal.Word("null", nil),
 	)
 
-	return text.RightTrim(&value, text.WsSpacesNl)
+	return text.Trim(&value)
 }
