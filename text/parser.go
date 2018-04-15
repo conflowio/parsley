@@ -22,6 +22,12 @@ func RightTrim(p parsley.Parser, wsMode WsMode) *parser.NamedFunc {
 		if res != nil {
 			res = ast.SetReaderPos(res, func(pos parsley.Pos) parsley.Pos { return tr.SkipWhitespaces(pos, wsMode) })
 		}
+		if err != nil {
+			errPos := tr.SkipWhitespaces(err.Pos(), wsMode)
+			if errPos > err.Pos() {
+				err = parsley.NewError(errPos, err.Error())
+			}
+		}
 		return res, err, cp
 	}).WithName(p.Name)
 }
