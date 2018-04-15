@@ -12,27 +12,24 @@ import (
 
 // Parse parses the given input and returns with the root node of the AST. It expects a reader and the root parser.
 // If there are multiple possible parse trees only the first one is returned.
-func Parse(h History, r Reader, s Parser) (Node, Error) {
+func Parse(h History, r Reader, p Parser) (Node, Error) {
 	h.RegisterCall()
-	node, err, _ := s.Parse(h, data.EmptyIntMap, r, Pos(1))
+	node, err, _ := p.Parse(h, data.EmptyIntMap, r, r.Pos(0))
 	if node == nil {
 		if err != nil {
-			return nil, WrapError(err, "Failed to parse the input: {{err}}")
+			return nil, WrapError(err, "failed to parse the input: {{err}}")
 		}
-		return nil, NewError(r.Pos(0), "Failed to parse the input: was expecting %s", s.Name())
+		return nil, NewError(r.Pos(0), "failed to parse the input: was expecting %s", p.Name())
 	}
 	return node, nil
 }
 
 // Evaluate parses the given input and evaluates it. It expects a reader, the root parser and the evaluation context.
 // If there are multiple possible parse trees only the first one is used for evaluation.
-func Evaluate(h History, r Reader, s Parser, ctx interface{}) (interface{}, Error) {
-	node, parseErr := Parse(h, r, s)
+func Evaluate(h History, r Reader, p Parser, ctx interface{}) (interface{}, Error) {
+	node, parseErr := Parse(h, r, p)
 	if parseErr != nil {
 		return nil, parseErr
-	}
-	if node == nil {
-		return nil, nil
 	}
 	value, evalErr := node.Value(ctx)
 	return value, evalErr
