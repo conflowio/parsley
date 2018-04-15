@@ -32,7 +32,7 @@ func ExampleSepBy() {
 	})
 
 	intList := combinator.SepBy(terminal.Integer(), terminal.Rune(',')).Bind(arr)
-	p := combinator.Seq("ARR",
+	p := combinator.Seq("ARR", "array",
 		terminal.Rune('['),
 		intList,
 		terminal.Rune(']'),
