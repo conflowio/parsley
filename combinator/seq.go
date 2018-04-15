@@ -25,6 +25,10 @@ func SeqTry(token string, name string, parsers ...parsley.Parser) *Recursive {
 }
 
 func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recursive {
+	namef := parsers[0].Name
+	if name != "" {
+		namef = func() string { return name }
+	}
 	lookup := func(i int) parsley.Parser {
 		if i < len(parsers) {
 			return parsers[i]
@@ -35,8 +39,5 @@ func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recu
 	lenCheck := func(len int) bool {
 		return len >= min && len <= l
 	}
-	if name == "" {
-		name = parsers[0].Name()
-	}
-	return NewRecursive(token, name, lookup, lenCheck)
+	return NewRecursive(token, namef, lookup, lenCheck)
 }

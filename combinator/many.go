@@ -24,7 +24,9 @@ func Many1(p parsley.Parser) *Recursive {
 }
 
 func newMany(p parsley.Parser, allowEmpty bool) *Recursive {
-	name := fmt.Sprintf("one or more %s", inflection.Plural(p.Name()))
+	name := func() string {
+		return fmt.Sprintf("one or more %s", inflection.Plural(p.Name()))
+	}
 	lookup := func(i int) parsley.Parser {
 		return p
 	}

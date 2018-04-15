@@ -14,7 +14,7 @@ import (
 
 // Recursive is a recursive and-type combinator
 type Recursive struct {
-	name         string
+	name         func() string
 	token        string
 	parserLookUp func(int) parsley.Parser
 	lenCheck     func(int) bool
@@ -22,7 +22,7 @@ type Recursive struct {
 }
 
 // NewRecursive creates a new recursive instance
-func NewRecursive(token string, name string, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
+func NewRecursive(token string, name func() string, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
 	return &Recursive{
 		token:        token,
 		name:         name,
@@ -52,7 +52,7 @@ func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.
 
 // Name returns with the parser's descriptive name
 func (rp *Recursive) Name() string {
-	return rp.name
+	return rp.name()
 }
 
 // recursive is a recursive and-type combinator
@@ -118,8 +118,8 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 				rp.result = ast.AppendNode(rp.result, ast.NewEmptyNonTerminalNode(rp.token, pos, rp.interpreter))
 			}
 		} else {
-			if depth > 0 {
-				if nextParser != nil && nextParser.Name() != "" && err == nil && (rp.err == nil || pos > rp.err.Pos()) {
+			if depth > 0 && nextParser != nil && nextParser.Name() != "" {
+				if err == nil && (rp.err == nil || pos > rp.err.Pos()) {
 					rp.err = parsley.NewError(pos, "was expecting %s", nextParser.Name())
 				}
 			}

@@ -24,7 +24,9 @@ func SepBy1(valueP parsley.Parser, sepP parsley.Parser) *Recursive {
 }
 
 func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recursive {
-	name := fmt.Sprintf("%s separated by %s", inflection.Plural(valueP.Name()), inflection.Plural(sepP.Name()))
+	name := func() string {
+		return fmt.Sprintf("%s separated by %s", inflection.Plural(valueP.Name()), inflection.Plural(sepP.Name()))
+	}
 	lookup := func(i int) parsley.Parser {
 		if i%2 == 0 {
 			return valueP

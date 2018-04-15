@@ -40,5 +40,5 @@ func Memoize(p parsley.Parser) *parser.NamedFunc {
 		h.SaveResult(parserIndex, pos, res)
 
 		return node, err, cp
-	}).WithName(p.Name())
+	}).WithName(p.Name)
 }

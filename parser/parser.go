@@ -23,15 +23,23 @@ func (f Func) Name() string {
 	return ""
 }
 
-func (f Func) WithName(name string) *NamedFunc {
-	return &NamedFunc{
-		name: name,
-		f:    f,
+func (f Func) WithName(name interface{}) *NamedFunc {
+	nf := &NamedFunc{
+		f: f,
 	}
+	switch n := name.(type) {
+	case string:
+		nf.name = func() string { return n }
+	case func() string:
+		nf.name = n
+	default:
+		panic("name should be a string or a function returning string")
+	}
+	return nf
 }
 
 type NamedFunc struct {
-	name string
+	name func() string
 	f    Func
 }
 
@@ -41,5 +49,5 @@ func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.
 
 // Name returns with the parser name
 func (nf *NamedFunc) Name() string {
-	return nf.name
+	return nf.name()
 }
