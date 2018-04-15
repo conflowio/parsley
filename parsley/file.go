@@ -56,3 +56,8 @@ func (fs *FileSet) Position(pos Pos) Position {
 	i := sort.Search(len(fs.offset), func(i int) bool { return fs.offset[i] > int(pos) }) - 1
 	return fs.files[i].Position(int(pos) - fs.offset[i])
 }
+
+// ErrorWithPosition creates an error with a human-readable position
+func (fs *FileSet) ErrorWithPosition(err Error) error {
+	return fmt.Errorf("%s at %s", err.Error(), fs.Position(err.Pos()).String())
+}
