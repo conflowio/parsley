@@ -59,5 +59,9 @@ func (fs *FileSet) Position(pos Pos) Position {
 
 // ErrorWithPosition creates an error with a human-readable position
 func (fs *FileSet) ErrorWithPosition(err Error) error {
-	return fmt.Errorf("%s at %s", err.Error(), fs.Position(err.Pos()).String())
+	pos := fs.Position(err.Pos())
+	if pos == NilPosition {
+		return err
+	}
+	return fmt.Errorf("%s at %s", err.Error(), pos.String())
 }

@@ -134,4 +134,45 @@ var _ = Describe("File set", func() {
 		})
 	})
 
+	Describe("ErrorWithPosition()", func() {
+		var (
+			f        *parsleyfakes.FakeFile
+			position *parsleyfakes.FakePosition
+		)
+
+		BeforeEach(func() {
+			f = &parsleyfakes.FakeFile{}
+			f.LenReturns(10)
+			position = &parsleyfakes.FakePosition{}
+			position.StringReturns("testpos")
+			f.PositionReturns(position)
+			files = []parsley.File{f}
+		})
+
+		It("should return with a human-readable error message", func() {
+			err := fs.ErrorWithPosition(parsley.NewError(parsley.Pos(2), "test error"))
+			Expect(err).To(MatchError("test error at testpos"))
+
+			Expect(f.PositionCallCount()).To(Equal(1))
+			passedPos := f.PositionArgsForCall(0)
+			Expect(passedPos).To(Equal(1))
+		})
+
+		Context("when the position is invalid", func() {
+			It("should return the original error", func() {
+				err := parsley.NewError(parsley.Pos(99), "test error")
+				errWithPos := fs.ErrorWithPosition(err)
+				Expect(err).To(Equal(errWithPos))
+			})
+		})
+
+		Context("when the position is nil", func() {
+			It("should return the original error", func() {
+				err := parsley.NewError(parsley.NilPos, "test error")
+				errWithPos := fs.ErrorWithPosition(err)
+				Expect(err).To(Equal(errWithPos))
+			})
+		})
+	})
+
 })
