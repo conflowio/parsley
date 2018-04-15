@@ -9,7 +9,7 @@ import (
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() parser.Func {
+func NewParser() *parser.NamedFunc {
 	var value parser.NamedFunc
 
 	array := combinator.Seq("ARRAY",
