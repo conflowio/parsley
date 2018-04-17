@@ -28,7 +28,7 @@ var _ = Describe("Integer", func() {
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
-r := text.NewReader(f)
+			r := text.NewReader(f)
 			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
@@ -66,7 +66,7 @@ r := text.NewReader(f)
 	DescribeTable("should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
-r := text.NewReader(f)
+			r := text.NewReader(f)
 			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
@@ -76,5 +76,7 @@ r := text.NewReader(f)
 		Entry("a", "a", 0),
 		Entry("-", "-", 0),
 		Entry("+", "+", 0),
+		Entry("float 0.1", "0.1", 0),
+		Entry("float 0.", "0.", 0),
 	)
 })
