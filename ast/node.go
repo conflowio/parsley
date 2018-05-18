@@ -108,6 +108,11 @@ func NewNonTerminalNode(token string, children []parsley.Node, interpreter parsl
 	if len(children) == 0 {
 		panic("NewNonTerminalNode should not be called with empty node list")
 	}
+	for _, c := range children {
+		if c == nil {
+			panic("NewNonTerminalNode can not have children with nil values")
+		}
+	}
 	return &NonTerminalNode{
 		token:       token,
 		children:    children,

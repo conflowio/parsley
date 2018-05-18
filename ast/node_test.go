@@ -125,6 +125,12 @@ var _ = Describe("NonTerminalNode", func() {
 		})
 	})
 
+	Context("when NewNonTerminalNode is called with nil children", func() {
+		It("should panic", func() {
+			Expect(func() { ast.NewNonTerminalNode(token, []parsley.Node{nil}, interpreter) }).To(Panic())
+		})
+	})
+
 	Context("when created with child nodes", func() {
 		JustBeforeEach(func() {
 			node = ast.NewNonTerminalNode(token, children, interpreter)
