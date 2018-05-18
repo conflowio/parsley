@@ -1,3 +1,30 @@
+## 0.6.0
+
+BACKWARDS INCOMPATIBILITIES:
+* major refactor of most of the API
+* most of the interfaces were moved to the parsley package
+* the position handling was rewritten similar to go's token.Pos
+* the builders were completely removed
+* the reader doesn't handle whitespaces anymore
+* the parsers' return value were simplified
+* nil node values are not allowed anymore
+* most of the combinators API's were simplified to avoid repetition (like name + token)
+
+IMPROVEMENTS:
+* the reader became stateless
+* most of the tests were rewritten using Ginkgo/Gomega
+* common interpreters were added (array, object)
+* whitespaces can be handled precisely with new parsers (text.LeftTrim/RightTrim/Trim)
+* new error type with position (parsley.Pos)
+* new empty node type
+* new file and fileset types were introduced to support parsing multiple files better
+
+BUGFIXES:
+* the History was using the wrong key when checking left-recursion and wasn't curtailing properly
+
+TODO:
+* some of the old tests in the combinator package needs to be rewritten using Gingko (this means we miss a lot of test coverage)
+
 ## 0.5.0
 
 BACKWARDS INCOMPATIBILITIES:
