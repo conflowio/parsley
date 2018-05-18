@@ -9,23 +9,22 @@ package parser
 import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
-// Empty always matches and returns with an empty node result
-// When using Empty you should not forget to handle for nil nodes in your node builders and/or interpreters.
-func Empty() Func {
-	return Func(func(h *History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error) {
-		return NoCurtailingParsers(), NewResult(nil, r).AsSet(), nil
+// Nil always matches and returns with an nil node result
+func Nil() Func {
+	return Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+		return ast.NilNode(pos), nil, data.EmptyIntSet
 	})
 }
 
 // End matches the end of the input
-func End() Func {
-	return Func(func(h *History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error) {
-		if r.IsEOF() {
-			return NoCurtailingParsers(), NewResult(ast.NewTerminalNode(ast.EOF, r.Cursor(), nil), r).AsSet(), nil
+func End() *NamedFunc {
+	return Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+		if r.IsEOF(pos) {
+			return ast.NewTerminalNode(ast.EOF, nil, pos, pos), nil, data.EmptyIntSet
 		}
-		return NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting the end of input")
-	})
+		return nil, nil, data.EmptyIntSet
+	}).WithName("the end of input")
 }

@@ -9,33 +9,51 @@ package parser
 
 import (
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
-// Parser defines a parser interface
-type Parser interface {
-	Parse(h *History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error)
-}
-
 // Func defines a helper to implement the Parser interface with functions
-type Func func(h *History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error)
+type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet)
 
-// Parse parses the next token and returns with an AST node and the updated reader
-func (f Func) Parse(h *History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, ResultSet, reader.Error) {
-	return f(h, leftRecCtx, r)
+// Parse parses the input using the function
+func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+	return f(h, leftRecCtx, r, pos)
 }
 
-// FuncFactory defines an interface for creating parser functions
-type FuncFactory interface {
-	CreateParser() Func
+// Name returns with an empty name
+func (f Func) Name() string {
+	return ""
 }
 
-// EmptyLeftRecCtx creates an empty left recursion context
-func EmptyLeftRecCtx() data.IntMap {
-	return data.EmptyIntMap()
+// WithName returns with the same parser function but with the given name
+// If a function is passed then it will be called when Name() is called
+func (f Func) WithName(name interface{}) *NamedFunc {
+	nf := &NamedFunc{
+		f: f,
+	}
+	switch n := name.(type) {
+	case string:
+		nf.name = func() string { return n }
+	case func() string:
+		nf.name = n
+	default:
+		panic("name should be a string or a function returning string")
+	}
+	return nf
 }
 
-// NoCurtailingParsers returns with an empty int set
-func NoCurtailingParsers() data.IntSet {
-	return data.EmptyIntSet()
+// NamedFunc is a parser function with a custom name
+type NamedFunc struct {
+	name func() string
+	f    Func
+}
+
+// Parse parses the input using the function
+func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+	return nf.f(h, leftRecCtx, r, pos)
+}
+
+// Name returns with the parser name
+func (nf *NamedFunc) Name() string {
+	return nf.name()
 }

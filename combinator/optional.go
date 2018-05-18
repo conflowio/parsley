@@ -7,10 +7,16 @@
 package combinator
 
 import (
+	"github.com/opsidian/parsley/ast"
+	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 )
 
-// Optional returns the parser's matches or an empty match if it fails
-func Optional(p parser.Parser) parser.Func {
-	return Choice("", p, parser.Empty())
+// Optional returns the parser's matches and an empty match
+func Optional(p parsley.Parser) parser.Func {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+		res, err, cp := p.Parse(h, leftRecCtx, r, pos)
+		return ast.AppendNode(res, ast.NilNode(pos)), err, cp
+	})
 }

@@ -7,34 +7,34 @@
 package ast_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/reader"
-	"github.com/opsidian/parsley/reader/mocks"
-	"github.com/opsidian/parsley/test"
-	"github.com/stretchr/testify/assert"
+	"github.com/opsidian/parsley/parsley"
 )
 
-func TesInterpreterFuncShouldCallFunction(t *testing.T) {
-	ctx := "textCtx"
-	nodes := []ast.Node{
-		ast.NewTerminalNode("INT", test.NewPosition(0), 1),
-	}
-	expectedValue := 1
-	expectedErr := new(mocks.Error)
-	var actualCtx interface{}
-	var actualNodes []ast.Node
-	interpreterFunc := ast.InterpreterFunc(func(ctx interface{}, nodes []ast.Node) (interface{}, reader.Error) {
-		actualCtx = ctx
-		actualNodes = nodes
-		return expectedValue, expectedErr
+var _ = Describe("Interpreter", func() {
+
+	It("Eval should call the function", func() {
+		var (
+			passedCtx   interface{}
+			passedNodes []parsley.Node
+			fResult     = "some result"
+			fErr        = parsley.NewError(parsley.Pos(1), "some error")
+			ctx         = "some context"
+			nodes       = []parsley.Node{nil}
+		)
+		f := func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+			passedCtx = ctx
+			passedNodes = nodes
+			return fResult, fErr
+		}
+
+		result, err := ast.InterpreterFunc(f).Eval(ctx, nodes)
+		Expect(result).To(Equal(fResult))
+		Expect(err).To(Equal(fErr))
+
+		Expect(passedCtx).To(Equal(ctx))
+		Expect(passedNodes).To(Equal(nodes))
 	})
-
-	actualValue, actualErr := interpreterFunc.Eval(ctx, nodes)
-
-	assert.Equal(t, ctx, actualCtx)
-	assert.Equal(t, nodes, actualNodes)
-	assert.Equal(t, expectedErr, actualErr)
-	assert.Equal(t, expectedValue, actualValue)
-}
+})

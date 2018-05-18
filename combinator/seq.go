@@ -7,43 +7,37 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
-// Seq tries to apply all parsers after each other matching effectively a sequence of tokens and returns with all
-// combinations of the results. Only matches are returned where all parsers were applied successfully.
-func Seq(nodeBuilder ast.NodeBuilder, parsers ...parser.Parser) parser.Func {
-	if parsers == nil {
-		panic("No parsers were given")
-	}
-	lookup := func(i int) parser.Parser {
-		if i < len(parsers) {
-			return parsers[i]
-		}
-		return nil
-	}
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		l := len(parsers)
-		return newRecursive(nodeBuilder, lookup, l, l).Parse(h, leftRecCtx, r)
-	})
+// Seq tries to apply all parsers after each other matching effectively a sequence of tokens
+// and returns with all combinations of the results.
+// Only matches are returned where all parsers were applied successfully.
+func Seq(token string, name string, parsers ...parsley.Parser) *Recursive {
+	return newSeq(token, name, len(parsers), parsers...)
 }
 
 // SeqTry tries to apply all parsers after each other matching effectively the longest possible sequences of
 // tokens and returns with all combinations of the results.
-func SeqTry(nodeBuilder ast.NodeBuilder, min int, parsers ...parser.Parser) parser.Func {
-	if parsers == nil {
-		panic("No parsers were given")
+// It needs to match the first parser at least
+func SeqTry(token string, name string, parsers ...parsley.Parser) *Recursive {
+	return newSeq(token, name, 1, parsers...)
+}
+
+func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recursive {
+	namef := parsers[0].Name
+	if name != "" {
+		namef = func() string { return name }
 	}
-	lookup := func(i int) parser.Parser {
+	lookup := func(i int) parsley.Parser {
 		if i < len(parsers) {
 			return parsers[i]
 		}
 		return nil
 	}
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, lookup, min, len(parsers)).Parse(h, leftRecCtx, r)
-	})
+	l := len(parsers)
+	lenCheck := func(len int) bool {
+		return len >= min && len <= l
+	}
+	return NewRecursive(token, namef, lookup, lenCheck)
 }

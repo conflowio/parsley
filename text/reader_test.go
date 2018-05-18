@@ -7,446 +7,487 @@
 package text_test
 
 import (
-	"fmt"
-	"io"
-	"io/ioutil"
-	"os"
-	"testing"
-	"unicode/utf8"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-// Let's read from a byte array with a regular expression
-func ExampleReader() {
-	r := text.NewReader([]byte("abcd"), "", true)
-	matches, _, _ := r.ReadMatch("ab|cd", false)
-	fmt.Println(matches[0])
-	// Output: ab
-}
+var _ = Describe("Reader", func() {
 
-func TestNewPosition(t *testing.T) {
-	p := text.NewPosition(1, 2, 3)
-	assert.Equal(t, "", p.Filename())
-	assert.Equal(t, 1, p.Pos())
-	assert.Equal(t, 2, p.Line())
-	assert.Equal(t, 3, p.Col())
-	assert.Equal(t, "2:3", p.String())
-}
+	const (
+		input         = "abc def"
+		inputWithUTF8 = "🍕 and 🍺"
+	)
 
-func TestNewFilePosition(t *testing.T) {
-	p := text.NewFilePosition("file.name", 1, 2, 3)
-	assert.Equal(t, "file.name", p.Filename())
-	assert.Equal(t, 1, p.Pos())
-	assert.Equal(t, 2, p.Line())
-	assert.Equal(t, 3, p.Col())
-	assert.Equal(t, "file.name:2:3", p.String())
-}
+	var (
+		r    *text.Reader
+		f    *text.File
+		data []byte
+	)
 
-func TestEmptyReader(t *testing.T) {
-	r := text.NewReader([]byte{}, "", true)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-	assert.Equal(t, 0, r.Remaining())
-	assert.True(t, r.IsEOF())
-	_, _, err := r.ReadRune()
-	assert.Exactly(t, io.EOF, err)
-}
+	BeforeEach(func() {
+		data = []byte(input)
+	})
 
-func TestNewReaderShouldAddFilename(t *testing.T) {
-	r := text.NewReader([]byte("x"), "file.name", false)
-	assert.Equal(t, text.NewFilePosition("file.name", 0, 1, 1), r.Cursor())
-}
+	JustBeforeEach(func() {
+		f = text.NewFile("testfile", data)
+		r = text.NewReader(f)
+	})
 
-func TestNewReaderShouldConvertNewLines(t *testing.T) {
-	r := text.NewReader([]byte("\r\nB\r\n"), "", false)
-	assert.Equal(t, 3, r.Remaining())
-	ch, _, _ := r.ReadRune()
-	assert.Equal(t, '\n', ch)
-	ch, _, _ = r.ReadRune()
-	assert.Equal(t, 'B', ch)
-	ch, _, _ = r.ReadRune()
-	assert.Equal(t, '\n', ch)
-}
+	Describe("ReadRune()", func() {
+		It("should match the next ASCII rune", func() {
+			pos, found := r.ReadRune(f.Pos(0), 'a')
+			Expect(pos).To(Equal(f.Pos(1)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestNewReaderNotIgnoringWhitespacesShouldKeepWhitespaces(t *testing.T) {
-	r := text.NewReader([]byte(" \n\t foo\n\t "), "", false)
-	assert.Equal(t, 10, r.Remaining())
-	ch, _, _ := r.ReadRune()
-	assert.Equal(t, ' ', ch)
-}
+		It("should not match a different rune", func() {
+			pos, found := r.ReadRune(f.Pos(0), 'b')
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(found).To(BeFalse())
+		})
 
-// This test was introduced as the reader was originally trimming the starting whitespaces
-func TestNewReaderShouldNotTrimInput(t *testing.T) {
-	r := text.NewReader([]byte(" foo"), "", true)
-	assert.Equal(t, 4, r.Remaining())
-	ch, _, _ := r.ReadRune()
-	assert.Equal(t, ' ', ch)
-}
+		It("should match an ASCII rune at the end", func() {
+			pos, found := r.ReadRune(f.Pos(6), 'f')
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestCloneShouldCreateReaderWithSameParams(t *testing.T) {
-	r := text.NewReader([]byte("ab\ncd\nef"), "", true)
-	r.ReadMatch("ab\nc", false)
-	rc := r.Clone().(*text.Reader)
+		Context("When input contains UTF8", func() {
+			BeforeEach(func() {
+				data = []byte(inputWithUTF8)
+			})
 
-	assert.Equal(t, r.Remaining(), rc.Remaining())
-	assert.Equal(t, r.Cursor(), rc.Cursor())
-	assert.Equal(t, r.IsEOF(), rc.IsEOF())
+			It("should match the next UTF8 rune", func() {
+				pos, found := r.ReadRune(f.Pos(0), '🍕')
+				Expect(pos).To(Equal(f.Pos(4)))
+				Expect(found).To(BeTrue())
+			})
 
-	rc.ReadMatch("d\nef", false)
+			It("should match a UTF8 rune at the end", func() {
+				pos, found := r.ReadRune(f.Pos(9), '🍺')
+				Expect(pos).To(Equal(f.Pos(13)))
+				Expect(found).To(BeTrue())
+			})
+		})
 
-	assert.Equal(t, 4, r.Remaining())
-	assert.Equal(t, 0, rc.Remaining())
-	assert.Equal(t, text.NewPosition(4, 2, 2), r.Cursor())
-	assert.Equal(t, text.NewPosition(8, 3, 3), rc.Cursor())
-	assert.False(t, r.IsEOF())
-	assert.True(t, rc.IsEOF())
-}
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, found := r.ReadRune(f.Pos(7), 'f')
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(found).To(BeFalse())
+			})
+		})
+	})
 
-func TestReadRuneShouldReturnWithASCIICharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), "", true)
-	ch, size, err := r.ReadRune()
-	assert.Equal(t, 'a', ch)
-	assert.Equal(t, 1, size)
-	assert.Nil(t, err)
-	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
-}
+	Describe("MatchString()", func() {
+		Context("when called with empty string", func() {
+			It("should panic", func() {
+				Expect(func() { r.MatchString(f.Pos(0), "") }).To(Panic())
+			})
+		})
 
-func TestReadRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), "", true)
-	ch, size, err := r.ReadRune()
-	assert.Equal(t, '🍕', ch)
-	assert.Equal(t, 4, size)
-	assert.Nil(t, err)
-	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
-}
+		It("should match the a substring", func() {
+			pos, found := r.MatchString(f.Pos(0), "ab")
+			Expect(pos).To(Equal(f.Pos(2)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestReadRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
-	r := text.NewReader([]byte("\xc3\x28"), "", true)
-	_, _, err := r.ReadRune()
-	assert.Error(t, err)
-}
+		It("should not match a different substring", func() {
+			pos, found := r.MatchString(f.Pos(0), "ac")
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(found).To(BeFalse())
+		})
 
-func TestReadRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
-	var err error
-	r := text.NewReader([]byte("a"), "", true)
-	_, _, err = r.ReadRune()
-	assert.Nil(t, err)
-	_, _, err = r.ReadRune()
-	assert.Exactly(t, io.EOF, err)
-}
+		It("should match a substring at the end", func() {
+			pos, found := r.MatchString(f.Pos(5), "ef")
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestReadRuneShouldFollowLinesAndColumns(t *testing.T) {
-	r := text.NewReader([]byte("a\nb"), "", true)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+		It("should only match the full substring at the end", func() {
+			pos, found := r.MatchString(f.Pos(5), "efg")
+			Expect(pos).To(Equal(f.Pos(5)))
+			Expect(found).To(BeFalse())
+		})
 
-	r.ReadRune()
-	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, found := r.MatchString(f.Pos(7), "x")
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(found).To(BeFalse())
+			})
+		})
 
-	r.ReadRune()
-	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
+		Context("When input contains UTF8", func() {
+			BeforeEach(func() {
+				data = []byte(inputWithUTF8)
+			})
 
-	r.ReadRune()
-	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
-}
+			It("should match the a substring", func() {
+				pos, found := r.MatchString(f.Pos(0), "🍕 and")
+				Expect(pos).To(Equal(f.Pos(8)))
+				Expect(found).To(BeTrue())
+			})
 
-func TestPeekRuneShouldReturnWithASCIICharacter(t *testing.T) {
-	r := text.NewReader([]byte("a"), "", true)
-	ch, size, err := r.PeekRune()
-	assert.Equal(t, 'a', ch)
-	assert.Equal(t, 1, size)
-	assert.Nil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-}
+			It("should not match a different substring", func() {
+				pos, found := r.MatchString(f.Pos(0), "🍕 not")
+				Expect(pos).To(Equal(f.Pos(0)))
+				Expect(found).To(BeFalse())
+			})
 
-func TestPeekRuneShouldReturnWithUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), "", true)
-	ch, size, err := r.PeekRune()
-	assert.Equal(t, '🍕', ch)
-	assert.Equal(t, 4, size)
-	assert.Nil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-}
+			It("should match a substring at the end", func() {
+				pos, found := r.MatchString(f.Pos(5), "and 🍺")
+				Expect(pos).To(Equal(f.Pos(13)))
+				Expect(found).To(BeTrue())
+			})
 
-func TestPeekRuneShouldReturnErrorIfNoMoreCharsLeft(t *testing.T) {
-	var err error
-	r := text.NewReader([]byte(""), "", true)
-	_, _, err = r.PeekRune()
-	assert.Exactly(t, io.EOF, err)
-}
+			It("should only match the full substring at the end", func() {
+				pos, found := r.MatchString(f.Pos(5), "and 🍺 s")
+				Expect(pos).To(Equal(f.Pos(5)))
+				Expect(found).To(BeFalse())
+			})
+		})
+	})
 
-func TestPeekRuneShouldReturnErrorForInvalidUtfCharacter(t *testing.T) {
-	r := text.NewReader([]byte("\xc3\x28"), "", true)
-	_, _, err := r.PeekRune()
-	assert.Error(t, err)
-}
+	Describe("MatchWord()", func() {
+		Context("when called with empty string", func() {
+			It("should panic", func() {
+				Expect(func() { r.MatchWord(f.Pos(0), "") }).To(Panic())
+			})
+		})
 
-func TestReadMatchShouldAlwaysMatchTheBeginning(t *testing.T) {
-	r := text.NewReader([]byte("abc"), "", true)
-	matches, _, ok := r.ReadMatch("x", false)
-	assert.False(t, ok)
-	assert.Nil(t, matches)
-}
+		It("should match the full word", func() {
+			pos, found := r.MatchWord(f.Pos(0), "abc")
+			Expect(pos).To(Equal(f.Pos(3)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestReadMatchShouldAllPartsOfCompositeFromTheBeginning(t *testing.T) {
-	r := text.NewReader([]byte("abcd"), "", true)
-	matches, _, ok := r.ReadMatch("ab|cd", false)
-	require.True(t, ok)
-	assert.Equal(t, "ab", matches[0])
+		It("should not match a partial word", func() {
+			pos, found := r.MatchWord(f.Pos(0), "ab")
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(found).To(BeFalse())
+		})
 
-	r = text.NewReader([]byte("abcd"), "", true)
-	matches, _, ok = r.ReadMatch("xx|cd", false)
-	assert.False(t, ok)
-	assert.Nil(t, matches)
-}
+		It("should not match the different word", func() {
+			pos, found := r.MatchWord(f.Pos(0), "abd")
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(found).To(BeFalse())
+		})
 
-func TestReadMatchShouldReturnMatchAndSubmatches(t *testing.T) {
-	r := text.NewReader([]byte("123abcDEF"), "", true)
-	matches, pos, ok := r.ReadMatch("(\\d+)([a-z]+)([A-Z]+)", false)
-	require.True(t, ok)
-	assert.Equal(t, 4, len(matches))
-	assert.Equal(t, "123abcDEF", matches[0])
-	assert.Equal(t, "123", matches[1])
-	assert.Equal(t, "abc", matches[2])
-	assert.Equal(t, "DEF", matches[3])
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-}
+		It("should match a word at the end", func() {
+			pos, found := r.MatchWord(f.Pos(4), "def")
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(found).To(BeTrue())
+		})
 
-func TestReadMatchShouldReturnOnlyMainMatchIfNoCatchGroups(t *testing.T) {
-	r := text.NewReader([]byte("abc"), "", true)
-	matches, _, ok := r.ReadMatch("\\w+", false)
-	require.True(t, ok)
-	assert.Equal(t, 1, len(matches))
-	assert.Equal(t, "abc", matches[0])
-}
+		It("should only match the full word at the end", func() {
+			pos, found := r.MatchWord(f.Pos(4), "defg")
+			Expect(pos).To(Equal(f.Pos(4)))
+			Expect(found).To(BeFalse())
+		})
 
-func TestReadMatchShouldIgnoreWhitespacesIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n\tabc"), "", true)
-	matches, pos, ok := r.ReadMatch("[a-z]+", false)
-	require.True(t, ok)
-	assert.Equal(t, 1, len(matches))
-	assert.Equal(t, "abc", matches[0])
-	assert.Equal(t, text.NewPosition(6, 2, 5), r.Cursor())
-	assert.Equal(t, text.NewPosition(3, 2, 2), pos)
-}
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, found := r.MatchWord(f.Pos(7), "x")
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(found).To(BeFalse())
+			})
+		})
 
-func TestReadMatchShouldNotIgnoreWhitespacesIfNotSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n\tabc"), "", false)
-	matches, _, ok := r.ReadMatch("[a-z]+", false)
-	assert.False(t, ok)
-	assert.Nil(t, matches)
+		Context("When input contains UTF8", func() {
+			BeforeEach(func() {
+				data = []byte(inputWithUTF8)
+			})
 
-	matches2, pos, ok := r.ReadMatch("\\s+[a-z]+", false)
-	require.True(t, ok)
-	assert.Equal(t, 1, len(matches2))
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-}
+			It("should panic", func() {
+				Expect(func() { r.MatchWord(f.Pos(0), "🍕 and") }).To(Panic())
+			})
+		})
+	})
 
-func TestReadMatchShouldIncludeWhitespacesIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n\tabc"), "", true)
-	matches, pos, ok := r.ReadMatch("\\s+[a-z]+", true)
-	require.True(t, ok)
-	assert.Equal(t, 1, len(matches))
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-}
+	Describe("ReadRegexp()", func() {
+		Context("when matches an empty string", func() {
+			It("should panic", func() {
+				Expect(func() { r.ReadRegexp(f.Pos(0), "x?") }).To(Panic())
+			})
+		})
 
-func TestReadMatchShouldReturnFalseIfNoMatch(t *testing.T) {
-	r := text.NewReader([]byte(" 123"), "", true)
-	matches, pos, ok := r.ReadMatch("[a-z]+", false)
-	assert.False(t, ok)
-	assert.Nil(t, pos)
-	assert.Nil(t, matches)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-}
+		It("should match the regexp", func() {
+			pos, match := r.ReadRegexp(f.Pos(0), "a+b+x?")
+			Expect(pos).To(Equal(f.Pos(2)))
+			Expect(match).To(Equal([]byte("ab")))
+		})
 
-func TestReadMatchShouldFollowLinesAndColumns(t *testing.T) {
-	r := text.NewReader([]byte("a\nb"), "", false)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+		It("should not match a non-matching regexp", func() {
+			pos, match := r.ReadRegexp(f.Pos(0), "ac+")
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(match).To(BeNil())
+		})
 
-	r.ReadMatch("(?s).", false)
-	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
+		It("should match a regexp at the end", func() {
+			pos, match := r.ReadRegexp(f.Pos(5), "ef+")
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(match).To(Equal([]byte("ef")))
+		})
 
-	r.ReadMatch("(?s).", false)
-	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
+		It("should only match the full match at the end", func() {
+			pos, match := r.ReadRegexp(f.Pos(5), "efg+")
+			Expect(pos).To(Equal(f.Pos(5)))
+			Expect(match).To(BeNil())
+		})
 
-	r.ReadMatch("(?s).", false)
-	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
-}
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, match := r.ReadRegexp(f.Pos(7), "x+")
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(match).To(BeNil())
+			})
+		})
 
-func TestReadMatchShouldHandleUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), "", true)
-	matches, pos, ok := r.ReadMatch(".*", false)
-	require.True(t, ok)
-	assert.Equal(t, []string{"🍕"}, matches)
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
-}
+		Context("When input contains UTF8", func() {
+			BeforeEach(func() {
+				data = []byte(inputWithUTF8)
+			})
 
-func TestPeekMatchShouldMatchButNotMoveCursor(t *testing.T) {
-	r := text.NewReader([]byte("abc"), "", true)
-	expectedPos := r.Cursor()
-	matches, ok := r.PeekMatch("\\w+")
-	require.True(t, ok)
-	assert.Equal(t, 1, len(matches))
-	assert.Equal(t, "abc", matches[0])
-	assert.Equal(t, expectedPos, r.Cursor())
-}
+			It("should match the regexp", func() {
+				pos, match := r.ReadRegexp(f.Pos(0), ".* and")
+				Expect(pos).To(Equal(f.Pos(8)))
+				Expect(match).To(Equal([]byte("🍕 and")))
+			})
 
-func TestPeekMatchShouldReturnMatchAndSubmatches(t *testing.T) {
-	r := text.NewReader([]byte("123abcDEF"), "", true)
-	matches, ok := r.PeekMatch("(\\d+)([a-z]+)([A-Z]+)")
-	require.True(t, ok)
-	assert.Equal(t, 4, len(matches))
-	assert.Equal(t, "123abcDEF", matches[0])
-	assert.Equal(t, "123", matches[1])
-	assert.Equal(t, "abc", matches[2])
-	assert.Equal(t, "DEF", matches[3])
-}
+			It("should not match a non-matching regexp", func() {
+				pos, match := r.ReadRegexp(f.Pos(0), ".* not")
+				Expect(pos).To(Equal(f.Pos(0)))
+				Expect(match).To(BeNil())
+			})
 
-func TestPeekMatchShouldReturnNilIfNoMatch(t *testing.T) {
-	r := text.NewReader([]byte("123"), "", true)
-	matches, ok := r.PeekMatch("[a-z]+")
-	assert.False(t, ok)
-	assert.Nil(t, matches)
-}
+			It("should match a regexp at the end", func() {
+				pos, match := r.ReadRegexp(f.Pos(5), "and .*")
+				Expect(pos).To(Equal(f.Pos(13)))
+				Expect(match).To(Equal([]byte("and 🍺")))
+			})
 
-func TestPeekMatchShouldNotIgnoreWhitespacesEvenIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n\tabc"), "", true)
-	matches, ok := r.PeekMatch("[a-z]+")
-	assert.False(t, ok)
-	assert.Nil(t, matches)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-}
+			It("should only match the full match at the end", func() {
+				pos, match := r.ReadRegexp(f.Pos(5), "and .*s")
+				Expect(pos).To(Equal(f.Pos(5)))
+				Expect(match).To(BeNil())
+			})
+		})
+	})
 
-func TestStringShouldReturnNonEmptyString(t *testing.T) {
-	r := text.NewReader([]byte("ab"), "", true)
-	assert.NotEmpty(t, r.String())
-}
+	Describe("ReadRegexpSubmatch()", func() {
+		Context("when matches an empty string", func() {
+			It("should panic", func() {
+				Expect(func() { r.ReadRegexpSubmatch(f.Pos(0), "x?") }).To(Panic())
+			})
+		})
 
-func TestReadfShouldReturnResultAndPos(t *testing.T) {
-	r := text.NewReader([]byte("123abcDEF"), "", true)
-	reader := func(b []byte) (string, int, bool) {
-		assert.Equal(t, []byte("123abcDEF"), b)
-		return "NEXT: " + string(b[:3]), 3, true
-	}
+		It("should match the regexp", func() {
+			pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(a+)b+x?")
+			Expect(pos).To(Equal(f.Pos(2)))
+			Expect(match).To(Equal([][]byte{
+				[]byte("ab"),
+				[]byte("a"),
+			}))
+		})
 
-	result, pos, ok := r.Readf(reader, false)
-	require.True(t, ok)
-	assert.Equal(t, "NEXT: 123", result)
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assert.Equal(t, text.NewPosition(3, 1, 4), r.Cursor())
-}
+		It("should not match a non-matching regexp", func() {
+			pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(a)c+")
+			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(match).To(BeNil())
+		})
 
-func TestReadfShouldIgnoreWhitespacesIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n123abcd"), "", true)
-	reader := func(b []byte) (string, int, bool) {
-		assert.Equal(t, []byte("123abcd"), b)
-		return "NEXT: " + string(b[:3]), 3, true
-	}
-	result, pos, ok := r.Readf(reader, false)
-	require.True(t, ok)
-	assert.Equal(t, "NEXT: 123", result)
-	assert.Equal(t, text.NewPosition(2, 2, 1), pos)
-	assert.Equal(t, text.NewPosition(5, 2, 4), r.Cursor())
-}
+		It("should match a regexp at the end", func() {
+			pos, match := r.ReadRegexpSubmatch(f.Pos(5), "(e)f+")
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(match).To(Equal([][]byte{
+				[]byte("ef"),
+				[]byte("e"),
+			}))
+		})
 
-func TestReadfShouldNotIgnoreWhitespacesIfNotSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n123abcd"), "", false)
-	reader := func(b []byte) (string, int, bool) {
-		assert.Equal(t, []byte(" \n123abcd"), b)
-		return "NEXT: " + string(b[:3]), 3, true
-	}
-	result, pos, ok := r.Readf(reader, false)
-	require.True(t, ok)
-	assert.Equal(t, "NEXT:  \n1", result)
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
-}
+		It("should only match the full match at the end", func() {
+			pos, match := r.ReadRegexpSubmatch(f.Pos(5), "efg+")
+			Expect(pos).To(Equal(f.Pos(5)))
+			Expect(match).To(BeNil())
+		})
 
-func TestReadfShouldIncludeWhitespacesIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" \n123abcd"), "", true)
-	reader := func(b []byte) (string, int, bool) {
-		assert.Equal(t, []byte(" \n123abcd"), b)
-		return "NEXT: " + string(b[:3]), 3, true
-	}
-	result, pos, ok := r.Readf(reader, true)
-	require.True(t, ok)
-	assert.Equal(t, "NEXT:  \n1", result)
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
-}
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, match := r.ReadRegexpSubmatch(f.Pos(7), "x+")
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(match).To(BeNil())
+			})
+		})
 
-func TestReadfShouldReturnFalseIfNoMatch(t *testing.T) {
-	r := text.NewReader([]byte("123"), "", true)
-	reader := func(b []byte) (string, int, bool) {
-		return "", 0, false
-	}
-	result, pos, ok := r.Readf(reader, false)
-	assert.False(t, ok)
-	assert.Equal(t, "", result)
-	assert.Nil(t, pos)
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
-}
+		Context("When input contains UTF8", func() {
+			BeforeEach(func() {
+				data = []byte(inputWithUTF8)
+			})
 
-func TestReadfShouldFollowLinesAndColumns(t *testing.T) {
-	r := text.NewReader([]byte("a\nb"), "", false)
-	reader := func(b []byte) (string, int, bool) {
-		return "NEXT: " + string(b[:1]), 1, true
-	}
+			It("should match the regexp", func() {
+				pos, match := r.ReadRegexpSubmatch(f.Pos(0), "(.*) and")
+				Expect(pos).To(Equal(f.Pos(8)))
+				Expect(match).To(Equal([][]byte{
+					[]byte("🍕 and"),
+					[]byte("🍕"),
+				}))
+			})
 
-	assert.Equal(t, text.NewPosition(0, 1, 1), r.Cursor())
+			It("should not match a non-matching regexp", func() {
+				pos, match := r.ReadRegexpSubmatch(f.Pos(0), ".* not")
+				Expect(pos).To(Equal(f.Pos(0)))
+				Expect(match).To(BeNil())
+			})
 
-	r.Readf(reader, false)
-	assert.Equal(t, text.NewPosition(1, 1, 2), r.Cursor())
+			It("should match a regexp at the end", func() {
+				pos, match := r.ReadRegexpSubmatch(f.Pos(5), "and (.*)")
+				Expect(pos).To(Equal(f.Pos(13)))
+				Expect(match).To(Equal([][]byte{
+					[]byte("and 🍺"),
+					[]byte("🍺"),
+				}))
+			})
 
-	r.Readf(reader, false)
-	assert.Equal(t, text.NewPosition(2, 2, 1), r.Cursor())
+			It("should only match the full match at the end", func() {
+				pos, match := r.ReadRegexpSubmatch(f.Pos(5), "and .*s")
+				Expect(pos).To(Equal(f.Pos(5)))
+				Expect(match).To(BeNil())
+			})
+		})
+	})
 
-	r.Readf(reader, false)
-	assert.Equal(t, text.NewPosition(3, 2, 2), r.Cursor())
-}
+	Describe("Readf()", func() {
+		var fun func(b []byte) ([]byte, int)
 
-func TestReadfShouldHandleUnicodeCharacter(t *testing.T) {
-	r := text.NewReader([]byte("🍕"), "", true)
-	reader := func(b []byte) (string, int, bool) {
-		r, size := utf8.DecodeRuneInString(string(b))
-		return string(r), size, true
-	}
-	result, pos, ok := r.Readf(reader, false)
-	require.True(t, ok)
-	assert.Equal(t, "🍕", result)
-	assert.Equal(t, text.NewPosition(0, 1, 1), pos)
-	assert.Equal(t, text.NewPosition(4, 1, 2), r.Cursor())
-}
+		BeforeEach(func() {
+			fun = func(b []byte) ([]byte, int) {
+				return b[0:1], 1
+			}
+		})
 
-func TestIsEOFShouldIgnoreWhitespacesIfSet(t *testing.T) {
-	r := text.NewReader([]byte(" "), "", true)
-	assert.True(t, r.IsEOF())
-}
+		It("should match the input with the function", func() {
+			pos, match := r.Readf(f.Pos(0), fun)
+			Expect(pos).To(Equal(f.Pos(1)))
+			Expect(match).To(Equal([]byte("a")))
+		})
 
-func TestIsEOFShouldReturnFalseIfNotAtTheEnd(t *testing.T) {
-	r := text.NewReader([]byte(" "), "", false)
-	assert.False(t, r.IsEOF())
-}
+		It("should match the input at the end", func() {
+			pos, match := r.Readf(f.Pos(6), fun)
+			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(match).To(Equal([]byte("f")))
+		})
 
-func TestNewFileReader(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "text_reader_test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name())
+		It("should use the returned position instead of the length of the match", func() {
+			fun = func(b []byte) ([]byte, int) {
+				return b[0:1], 2
+			}
+			pos, match := r.Readf(f.Pos(1), fun)
+			Expect(pos).To(Equal(f.Pos(3)))
+			Expect(match).To(Equal([]byte("b")))
+		})
 
-	r, err := text.NewFileReader(tmpfile.Name(), true)
-	assert.Nil(t, err)
-	require.NotNil(t, r)
-	assert.Equal(t, text.NewFilePosition(tmpfile.Name(), 0, 1, 1), r.Cursor())
-	assert.Equal(t, 0, r.Remaining())
-	assert.True(t, r.IsEOF())
-}
+		It("should return with no result and unchanged position if no match", func() {
+			fun = func(b []byte) ([]byte, int) {
+				return nil, 0
+			}
+			pos, match := r.Readf(f.Pos(2), fun)
+			Expect(pos).To(Equal(f.Pos(2)))
+			Expect(match).To(BeNil())
+		})
 
-func TestNewFileReaderWithNonexistingFile(t *testing.T) {
-	r, err := text.NewFileReader("non-existing.file", true)
-	assert.Error(t, err)
-	assert.Nil(t, r)
-}
+		Context("at the end of the file", func() {
+			It("should not match anything", func() {
+				pos, match := r.Readf(f.Pos(7), fun)
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(match).To(BeNil())
+			})
+		})
+
+		Context("when the returned position is after the end of file", func() {
+			It("should panic", func() {
+				fun = func(b []byte) ([]byte, int) {
+					return b[0:1], 2
+				}
+				Expect(func() { r.Readf(f.Pos(6), fun) }).To(Panic())
+			})
+		})
+
+		Context("when the returned position is before the end of the match", func() {
+			It("should panic", func() {
+				fun = func(b []byte) ([]byte, int) {
+					return b[0:2], 1
+				}
+				Expect(func() { r.Readf(f.Pos(0), fun) }).To(Panic())
+			})
+		})
+
+		Context("when the next positon is zero but a match is returned", func() {
+			It("should panic", func() {
+				fun = func(b []byte) ([]byte, int) {
+					return b[0:1], 0
+				}
+				Expect(func() { r.Readf(f.Pos(0), fun) }).To(Panic())
+			})
+		})
+	})
+
+	Describe("Remaining()", func() {
+		It("should return with the remaining bytes", func() {
+			Expect(r.Remaining(f.Pos(0))).To(Equal(len(input)))
+		})
+
+		It("should return with the remaining bytes from a given position", func() {
+			Expect(r.Remaining(f.Pos(3))).To(Equal(len(input) - 3))
+		})
+	})
+
+	Describe("Pos()", func() {
+		It("should return with global pos", func() {
+			Expect(r.Pos(1)).To(Equal(parsley.Pos(2)))
+		})
+	})
+
+	Describe("IsEOF()", func() {
+		It("should return false before the end of the input", func() {
+			Expect(r.IsEOF(f.Pos(0))).To(BeFalse())
+			Expect(r.IsEOF(f.Pos(6))).To(BeFalse())
+		})
+		It("should return true at the end of the input", func() {
+			Expect(r.IsEOF(f.Pos(7))).To(BeTrue())
+		})
+	})
+
+	Describe("SkipWhitespaces()", func() {
+		BeforeEach(func() {
+			data = []byte("abc \t\n\fdef")
+		})
+
+		It("should not match any whitespaces if none", func() {
+			pos := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
+			Expect(pos).To(Equal(f.Pos(0)))
+		})
+
+		It("should match all types of whitespaces", func() {
+			pos := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
+			Expect(pos).To(Equal(f.Pos(7)))
+		})
+
+		Context("when not including new lines", func() {
+			It("should only match spaces and tabs", func() {
+				pos := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
+				Expect(pos).To(Equal(f.Pos(5)))
+			})
+		})
+
+		Context("when not skipping any whitespaces", func() {
+			It("should not match any whitespaces", func() {
+				pos := r.SkipWhitespaces(f.Pos(3), text.WsNone)
+				Expect(pos).To(Equal(f.Pos(3)))
+			})
+		})
+	})
+})

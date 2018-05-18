@@ -7,25 +7,26 @@
 package terminal
 
 import (
-	"regexp"
+	"fmt"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Word matches the given word
-func Word(word string, token string, value interface{}) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Word(word string, value interface{}) *parser.NamedFunc {
+	if word == "" {
+		panic("Word() should not be called with empty word")
+	}
+
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
-		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(word), false); ok {
-			if _, ok := tr.PeekMatch("\\w+"); ok {
-				return parser.NoCurtailingParsers(), nil, reader.NewError(pos, "was expecting \"%s\"", word)
-			}
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, value), r).AsSet(), nil
+		if readerPos, found := tr.MatchWord(pos, word); found {
+			return ast.NewTerminalNode("WORD", value, pos, readerPos), nil, data.EmptyIntSet
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting \"%s\"", word)
-	})
+		return nil, nil, data.EmptyIntSet
+	}).WithName(fmt.Sprintf("%q", word))
 }

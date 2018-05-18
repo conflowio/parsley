@@ -11,29 +11,34 @@ import (
 
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
 var nextParserIndex int32
 
 // Memoize handles result cache and curtailing left recursion
-func Memoize(p parser.Parser) parser.Func {
+func Memoize(p parsley.Parser) *parser.NamedFunc {
 	parserIndex := int(atomic.AddInt32(&nextParserIndex, 1))
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		cp, rs, err, found := h.GetResults(parserIndex, r.Cursor().Pos(), leftRecCtx)
-		if found {
-			return cp, rs, err
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+		if result, found := h.GetResult(parserIndex, pos, leftRecCtx); found {
+			return result.Node, result.Err, result.CurtailingParsers
 		}
 
-		if leftRecCtx.Get(parserIndex) > r.Remaining()+1 {
-			return data.NewIntSet(parserIndex), nil, nil
+		if leftRecCtx.Get(parserIndex) > r.Remaining(pos)+1 {
+			return nil, nil, data.NewIntSet(parserIndex)
 		}
 
-		cp, rs, err = p.Parse(h, leftRecCtx.Inc(parserIndex), r)
+		node, err, cp := p.Parse(h, leftRecCtx.Inc(parserIndex), r, pos)
 		leftRecCtx = leftRecCtx.Filter(cp)
 
-		h.RegisterResults(parserIndex, r.Cursor().Pos(), cp, rs, err, leftRecCtx)
+		res := &parsley.Result{
+			LeftRecCtx:        leftRecCtx,
+			CurtailingParsers: cp,
+			Node:              node,
+			Err:               err,
+		}
+		h.SaveResult(parserIndex, pos, res)
 
-		return cp, rs, err
-	})
+		return node, err, cp
+	}).WithName(p.Name)
 }

@@ -7,35 +7,59 @@
 package terminal_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestWordShouldMatchExactString(t *testing.T) {
-	r := text.NewReader([]byte("foo bar"), "", true)
-	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
-	assert.Equal(t, res, parser.NewResult(ast.NewTerminalNode("TEST", text.NewPosition(0, 1, 1), 5), r).AsSet())
-	assert.Nil(t, err)
-}
+var _ = Describe("Word", func() {
 
-func TestWordShouldNotMatchWordPartially(t *testing.T) {
-	r := text.NewReader([]byte("foobar"), "", true)
-	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
-	assert.Nil(t, res)
-	require.NotNil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
-}
+	var p = terminal.Word("foo", 42)
 
-func TestWordShouldMatchOnlyGivenString(t *testing.T) {
-	r := text.NewReader([]byte("bar"), "", true)
-	_, res, err := terminal.Word("foo", "TEST", 5).Parse(nil, parser.EmptyLeftRecCtx(), r)
-	assert.Nil(t, res)
-	require.NotNil(t, err)
-	assert.Equal(t, text.NewPosition(0, 1, 1), err.Pos())
-}
+	It("should have a name", func() {
+		Expect(p.Name()).To(Equal(`"foo"`))
+	})
+
+	Context("when called with an empty word", func() {
+		It("should panic", func() {
+			Expect(func() { terminal.Word("", 42) }).To(Panic())
+		})
+	})
+
+	DescribeTable("should match",
+		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
+			f := text.NewFile("textfile", []byte(input))
+r := text.NewReader(f)
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+			Expect(err).ToNot(HaveOccurred())
+			node := res.(*ast.TerminalNode)
+			Expect(node.Token()).To(Equal("WORD"))
+			Expect(node.Value(nil)).To(Equal(value))
+			Expect(node.Pos()).To(Equal(nodePos))
+			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
+		},
+		Entry(`foo beginning`, `foo`, 0, 42, parsley.Pos(1), 3),
+		Entry(`foo middle`, `--- foo ---`, 4, 42, parsley.Pos(5), 7),
+		Entry(`foo end`, `--- foo`, 4, 42, parsley.Pos(5), 7),
+	)
+
+	DescribeTable("should not match",
+		func(input string, startPos int) {
+			f := text.NewFile("textfile", []byte(input))
+r := text.NewReader(f)
+			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(BeNil())
+		},
+		Entry("empty", ``, 0),
+		Entry("prefix", `foobar`, 0),
+		Entry("partial", `fo`, 0),
+	)
+})

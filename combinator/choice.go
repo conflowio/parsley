@@ -9,34 +9,29 @@ package combinator
 import (
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 )
 
 // Choice tries to apply the given parsers until one of them succeeds
-func Choice(desc string, parsers ...parser.Parser) parser.Func {
+func Choice(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		cur := r.Cursor()
-		cp := parser.NoCurtailingParsers()
-		var rs parser.ResultSet
-		var err reader.Error
+
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+		cp := data.EmptyIntSet
+		var err parsley.Error
 		for _, p := range parsers {
 			h.RegisterCall()
-			cp2, rs2, err2 := p.Parse(h, leftRecCtx, r.Clone())
+			node, err2, cp2 := p.Parse(h, leftRecCtx, r, pos)
 			cp = cp.Union(cp2)
-			rs.Append(rs2...)
-			if err2 != nil && (err == nil || err2.Pos().Pos() >= err.Pos().Pos()) {
+			if err2 != nil && (err == nil || err2.Pos() >= err.Pos()) {
 				err = err2
 			}
-			if len(rs2) > 0 {
-				break
+			if node != nil {
+				return node, err, cp
 			}
 		}
-		if desc != "" && err != nil && err.Pos().Pos() == cur.Pos() {
-			err = reader.NewError(cur, "was expecting %s", desc)
-		}
-		return cp, rs, err
-	})
+		return nil, err, cp
+	}).WithName(name)
 }

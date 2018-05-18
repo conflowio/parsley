@@ -17,7 +17,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/examples/json/json"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
@@ -27,16 +29,20 @@ func main() {
 	if len(os.Args) > 1 {
 		jsonFilePath = os.Args[1]
 	}
-
-	reader, err := text.NewFileReader(jsonFilePath, true)
+	fs := parsley.NewFileSet()
+	file, err := text.ReadFile(jsonFilePath)
 	if err != nil {
 		panic(err)
 	}
+	fs.AddFile(file)
 
-	s := parsley.NewSentence(json.NewParser())
-	res, h, err := s.Evaluate(reader, nil)
-	if err != nil {
-		panic(err)
+	h := parser.NewHistory()
+	reader := text.NewReader(file)
+	s := combinator.Sentence(json.NewParser())
+
+	res, evalErr := parsley.Evaluate(h, reader, s, nil)
+	if evalErr != nil {
+		panic(fs.ErrorWithPosition(evalErr))
 	}
 	fmt.Printf("Parser calls: %d\n", h.CallCount())
 	fmt.Printf("%v\n", res)

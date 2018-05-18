@@ -8,12 +8,10 @@
 //
 // Abstract Syntax Tree
 //
-// ASTs can have two types of nodes. A non-terminal node (branch node) can contain a token and multiple child nodes.
-// A terminal node (leaf node) can contain a token and a value.
-//
-// Builders
-//
-// Builder are used to build a node from multiple nodes.
+// ASTs can have different types of nodes.
+// * A terminal node (leaf node) can contain a token and a value.
+// * A nil node (leaf node) only contains a position and evaluates to nil
+// * A non-terminal node (branch node) can contain a token and multiple child nodes.
 //
 // Interpreters
 //

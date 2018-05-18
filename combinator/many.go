@@ -7,22 +7,31 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"fmt"
+
+	"github.com/jinzhu/inflection"
+	"github.com/opsidian/parsley/parsley"
 )
 
 // Many applies the  parser zero or more times
-func Many(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 0, -1).Parse(h, leftRecCtx, r)
-	})
+func Many(p parsley.Parser) *Recursive {
+	return newMany(p, true)
 }
 
 // Many1 applies the parser one or more times
-func Many1(nodeBuilder ast.NodeBuilder, p parser.Parser) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		return newRecursive(nodeBuilder, func(i int) parser.Parser { return p }, 1, -1).Parse(h, leftRecCtx, r)
-	})
+func Many1(p parsley.Parser) *Recursive {
+	return newMany(p, false)
+}
+
+func newMany(p parsley.Parser, allowEmpty bool) *Recursive {
+	name := func() string {
+		return fmt.Sprintf("one or more %s", inflection.Plural(p.Name()))
+	}
+	lookup := func(i int) parsley.Parser {
+		return p
+	}
+	lenCheck := func(len int) bool {
+		return allowEmpty || len >= 0
+	}
+	return NewRecursive("MANY", name, lookup, lenCheck)
 }

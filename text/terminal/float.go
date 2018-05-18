@@ -12,24 +12,21 @@ import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Float matches a float literal
-func Float() parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Float() *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
-		cur := tr.Cursor()
-		if matches, pos, ok := tr.ReadMatch("[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?", false); ok {
-			val, err := strconv.ParseFloat(matches[0], 64)
+		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
+			val, err := strconv.ParseFloat(string(result), 64)
 			if err != nil {
-				return parser.NoCurtailingParsers(), nil, reader.NewError(cur, "invalid float value encountered")
+				return nil, parsley.NewError(pos, "invalid float value encountered"), data.EmptyIntSet
 			}
-			var rs parser.ResultSet
-			rs = parser.NewResult(ast.NewTerminalNode("FLOAT", pos, val), r).AsSet()
-			return parser.NoCurtailingParsers(), rs, nil
+			return ast.NewTerminalNode("FLOAT", val, pos, readerPos), nil, data.EmptyIntSet
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(cur, "was expecting float value")
-	})
+		return nil, nil, data.EmptyIntSet
+	}).WithName("float value")
 }

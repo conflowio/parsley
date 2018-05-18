@@ -7,22 +7,22 @@
 package terminal
 
 import (
-	"regexp"
+	"fmt"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Rune matches the given character
-func Rune(char rune, token string) parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Rune(ch rune) *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
-		if _, pos, ok := tr.ReadMatch(regexp.QuoteMeta(string(char)), false); ok {
-			return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode(token, pos, char), r).AsSet(), nil
+		if readerPos, found := tr.ReadRune(pos, ch); found {
+			return ast.NewTerminalNode(string(ch), ch, pos, readerPos), nil, data.EmptyIntSet
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting '%s'", string(char))
-	})
+		return nil, nil, data.EmptyIntSet
+	}).WithName(fmt.Sprintf("%q", string(ch)))
 }

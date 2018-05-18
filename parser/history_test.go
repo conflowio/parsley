@@ -1,137 +1,139 @@
-// Copyright (c) 2017 Opsidian Ltd.
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 package parser_test
 
 import (
-	"testing"
-
-	"github.com/opsidian/parsley/ast"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
-	"github.com/opsidian/parsley/test"
-	"github.com/stretchr/testify/assert"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-func TestRegisterResultShouldSaveResultForPosition(t *testing.T) {
-	h := parser.NewHistory()
-	parserIndex := 1
-	node := ast.NewTerminalNode("t", test.NewPosition(0), nil)
-	cp := parser.NoCurtailingParsers()
-	rs := parser.NewResult(node, nil).AsSet()
-	err := reader.NewError(test.NewPosition(1), "ERR1")
-	h.RegisterResults(parserIndex, 2, cp, rs, err, parser.EmptyLeftRecCtx())
+var _ = Describe("History", func() {
+	var (
+		h *parser.History
+		p *parsleyfakes.FakeParser
+	)
 
-	actualCP, actualRS, actualErr, ok := h.GetResults(parserIndex, 2, parser.EmptyLeftRecCtx())
-	assert.Equal(t, cp, actualCP)
-	assert.Equal(t, rs, actualRS)
-	assert.Equal(t, err, actualErr)
-	assert.True(t, ok)
-}
-
-func TestRegisterResultShouldReturnNilResult(t *testing.T) {
-	h := parser.NewHistory()
-	parserIndex := 1
-	err := reader.NewError(test.NewPosition(1), "ERR1")
-	h.RegisterResults(parserIndex, 2, parser.NoCurtailingParsers(), nil, err, parser.EmptyLeftRecCtx())
-	cp, rs, actualErr, ok := h.GetResults(parserIndex, 2, parser.EmptyLeftRecCtx())
-	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Nil(t, rs)
-	assert.Equal(t, err, actualErr)
-	assert.True(t, ok)
-}
-
-func TestRegisterResultShouldReturnFalseWhenNoResultWasRegistered(t *testing.T) {
-	h := parser.NewHistory()
-	parserIndex := 1
-	cp, rs, err, ok := h.GetResults(parserIndex, 2, parser.EmptyLeftRecCtx())
-	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Nil(t, rs)
-	assert.Nil(t, err)
-	assert.False(t, ok)
-}
-
-func TestRegisterResultShouldHandleMultipleParsers(t *testing.T) {
-	h := parser.NewHistory()
-	p1Index := 1
-	p2Index := 2
-	node := ast.NewTerminalNode("t", test.NewPosition(0), nil)
-	cp1 := parser.NoCurtailingParsers()
-	cp2 := data.NewIntSet(1)
-	rs1 := parser.NewResult(node, nil).AsSet()
-	var rs2 parser.ResultSet
-	err1 := reader.NewError(test.NewPosition(1), "ERR1")
-	var err2 reader.Error
-	h.RegisterResults(p1Index, 1, cp1, rs1, err1, parser.EmptyLeftRecCtx())
-	h.RegisterResults(p2Index, 2, cp2, rs2, err2, parser.EmptyLeftRecCtx())
-
-	actualCP, actualRS, actualErr, ok := h.GetResults(p1Index, 1, parser.EmptyLeftRecCtx())
-	assert.Equal(t, cp1, actualCP)
-	assert.Equal(t, rs1, actualRS)
-	assert.Equal(t, err1, actualErr)
-	assert.True(t, ok)
-
-	actualCP, actualRS, actualErr, ok = h.GetResults(p2Index, 2, parser.EmptyLeftRecCtx())
-	assert.Equal(t, cp2, actualCP)
-	assert.Equal(t, rs2, actualRS)
-	assert.Equal(t, err2, actualErr)
-	assert.True(t, ok)
-}
-
-func TestGetResultsShouldNotReturnCurtailedResult(t *testing.T) {
-	h := parser.NewHistory()
-	p1Index := 1
-	p2Index := 2
-	ctx := data.NewIntMap(map[int]int{
-		p1Index: 2,
-		p2Index: 1,
-	})
-	cp := data.NewIntSet(p1Index)
-	h.RegisterResults(p1Index, 1, cp, nil, nil, ctx)
-
-	ctx = data.NewIntMap(map[int]int{
-		p1Index: 1,
-		p2Index: 1,
-	})
-	cp, rs, err, found := h.GetResults(p1Index, 1, ctx)
-	assert.Equal(t, parser.NoCurtailingParsers(), cp)
-	assert.Nil(t, rs)
-	assert.Nil(t, err)
-	assert.False(t, found)
-}
-
-func TestGetResultsShouldReturnCurtailedResult(t *testing.T) {
-	h := parser.NewHistory()
-	p1Index := 1
-	p2Index := 2
-	ctx := data.NewIntMap(map[int]int{
-		p1Index: 2,
-		p2Index: 1,
-	})
-	cp := data.NewIntSet(p1Index)
-	rs := parser.NewResult(nil, nil).AsSet()
-	h.RegisterResults(p1Index, 1, cp, rs, nil, ctx)
-
-	ctx = data.NewIntMap(map[int]int{
-		p1Index: 1,
-		p2Index: 1,
+	BeforeEach(func() {
+		p = &parsleyfakes.FakeParser{}
+		h = parser.NewHistory()
 	})
 
-	ctx = ctx.Inc(p1Index)
-	actualCP, actualRS, err, found := h.GetResults(p1Index, 1, ctx)
-	assert.Equal(t, cp, actualCP)
-	assert.Equal(t, rs, actualRS)
-	assert.Nil(t, err)
-	assert.True(t, found)
-}
+	Describe("SaveResult/GetResult", func() {
+		var (
+			parserIndex           int
+			pos                   parsley.Pos
+			res, res1, res2, res3 *parsley.Result
+			found                 bool
+			leftRecCtx            data.IntMap
+		)
 
-func TestRegisterCallShouldIncreaseCallCount(t *testing.T) {
-	h := parser.NewHistory()
-	assert.Equal(t, h.CallCount(), 0)
-	h.RegisterCall()
-	assert.Equal(t, h.CallCount(), 1)
-}
+		BeforeEach(func() {
+			res1 = &parsley.Result{
+				CurtailingParsers: data.EmptyIntSet,
+				Err:               parsley.NewError(parsley.Pos(2), "some error"),
+				LeftRecCtx:        data.EmptyIntMap,
+				Node:              &parsleyfakes.FakeNode{},
+			}
+			res2 = &parsley.Result{
+				CurtailingParsers: data.EmptyIntSet,
+				Err:               nil,
+				LeftRecCtx:        data.EmptyIntMap,
+				Node:              &parsleyfakes.FakeNode{},
+			}
+			res3 = &parsley.Result{
+				CurtailingParsers: data.EmptyIntSet,
+				Err:               nil,
+				LeftRecCtx:        data.EmptyIntMap,
+				Node:              &parsleyfakes.FakeNode{},
+			}
+
+			leftRecCtx = data.EmptyIntMap
+			parserIndex = 1
+			pos = parsley.Pos(1)
+		})
+
+		JustBeforeEach(func() {
+			h.SaveResult(1, parsley.Pos(1), res1)
+			h.SaveResult(1, parsley.Pos(2), res2)
+			h.SaveResult(2, parsley.Pos(1), res3)
+			res, found = h.GetResult(parserIndex, pos, leftRecCtx)
+		})
+
+		It("should return previously saved result", func() {
+			Expect(res).To(BeEquivalentTo(res1))
+			Expect(found).To(BeTrue())
+		})
+
+		Context("when getting a result for the same parser but different position", func() {
+			BeforeEach(func() {
+				pos = parsley.Pos(2)
+			})
+			It("should return a different result", func() {
+				Expect(res).To(BeEquivalentTo(res2))
+				Expect(found).To(BeTrue())
+			})
+		})
+
+		Context("when getting a result for a different parser but the same position", func() {
+			BeforeEach(func() {
+				parserIndex = 2
+			})
+			It("should return a different result", func() {
+				Expect(res).To(BeEquivalentTo(res3))
+				Expect(found).To(BeTrue())
+			})
+		})
+
+		Context("when there is no result for the parser", func() {
+			BeforeEach(func() {
+				parserIndex = 99
+			})
+			It("should return nil", func() {
+				Expect(res).To(BeNil())
+				Expect(found).To(BeFalse())
+			})
+		})
+
+		Context("when there is no result for the position", func() {
+			BeforeEach(func() {
+				pos = parsley.Pos(99)
+			})
+			It("should return nil", func() {
+				Expect(res).To(BeNil())
+				Expect(found).To(BeFalse())
+			})
+		})
+
+		Context("when there is no result for the position", func() {
+			BeforeEach(func() {
+				pos = parsley.Pos(99)
+			})
+			It("should return nil", func() {
+				Expect(res).To(BeNil())
+				Expect(found).To(BeFalse())
+			})
+		})
+
+		Context("when in the saved result any of the left-rec counts are higher for a parser", func() {
+			BeforeEach(func() {
+				res1.LeftRecCtx = data.NewIntMap(map[int]int{1: 2, 2: 1})
+				leftRecCtx = data.NewIntMap(map[int]int{1: 1, 2: 1})
+			})
+			It("should not be returned", func() {
+				Expect(res).To(BeNil())
+				Expect(found).To(BeFalse())
+			})
+		})
+	})
+
+	Describe("RegisterCall/CallCount", func() {
+		It("should register a call count", func() {
+			Expect(h.CallCount()).To(Equal(0))
+			h.RegisterCall()
+			Expect(h.CallCount()).To(Equal(1))
+		})
+	})
+
+})

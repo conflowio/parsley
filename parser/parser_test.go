@@ -7,34 +7,76 @@
 package parser_test
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
-	"github.com/opsidian/parsley/test"
-	"github.com/stretchr/testify/assert"
+	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-func TestParserFuncShouldCallFunction(t *testing.T) {
-	expectedLeftRecCtx := data.NewIntMap(map[int]int{1: 2})
-	expectedReader := test.NewReader(0, 1, false, false)
-	expectedCurtailingParsers := data.NewIntSet(1)
-	expectedResultSet := parser.NewResult(nil, test.NewReader(1, 0, false, false)).AsSet()
-	expectedErr := reader.NewError(test.NewPosition(1), "testerr")
-	var actualLeftRecCtx data.IntMap
-	var actualReader reader.Reader
-	parserFunc := parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
-		actualLeftRecCtx = leftRecCtx
-		actualReader = r
-		return expectedCurtailingParsers, expectedResultSet, expectedErr
+var _ = Describe("Func", func() {
+
+	It("should call the function and return the result", func() {
+		expectedHistory := &parsleyfakes.FakeHistory{}
+		expectedLeftRecCtx := data.NewIntMap(map[int]int{1: 2})
+		expectedReader := &parsleyfakes.FakeReader{}
+		expectedPos := parsley.Pos(2)
+		expectedCurtailingParsers := data.NewIntSet(1)
+		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), parsley.Pos(2))
+		expectedErr := parsley.NewError(parsley.Pos(1), "testerr")
+		var actualHistory parsley.History
+		var actualLeftRecCtx data.IntMap
+		var actualReader parsley.Reader
+		var actualPos parsley.Pos
+		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+			actualHistory = h
+			actualLeftRecCtx = leftRecCtx
+			actualReader = r
+			actualPos = pos
+			return expectedNodes, expectedErr, expectedCurtailingParsers
+		})
+
+		actualNodes, actualErr, actualCurtailingParsers := p.Parse(expectedHistory, expectedLeftRecCtx, expectedReader, expectedPos)
+
+		Expect(actualHistory).To(BeIdenticalTo(expectedHistory))
+		Expect(actualCurtailingParsers).To(Equal(expectedCurtailingParsers))
+		Expect(actualNodes).To(Equal(expectedNodes))
+		Expect(actualLeftRecCtx).To(Equal(expectedLeftRecCtx))
+		Expect(actualReader).To(BeIdenticalTo(expectedReader))
+		Expect(actualErr).To(BeIdenticalTo(expectedErr))
 	})
 
-	actualCurtailingParsers, actualResultSet, actualErr := parserFunc.Parse(parser.NewHistory(), expectedLeftRecCtx, expectedReader)
+	Describe("WithName", func() {
+		It("should create a named parser", func() {
+			f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+				return nil, nil, data.EmptyIntSet
+			})
+			p := f.WithName("p1")
+			Expect(p.Name()).To(Equal("p1"))
+		})
 
-	assert.Equal(t, expectedCurtailingParsers, actualCurtailingParsers)
-	assert.Equal(t, expectedResultSet, actualResultSet)
-	assert.Equal(t, expectedLeftRecCtx, actualLeftRecCtx)
-	assert.Equal(t, expectedReader, actualReader)
-	assert.Equal(t, expectedErr, actualErr)
-}
+		Context("when a function is passed as name", func() {
+			It("should call the function to get the name", func() {
+				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+					return nil, nil, data.EmptyIntSet
+				})
+				name := func() string {
+					return "p1"
+				}
+				p := f.WithName(name)
+				Expect(p.Name()).To(Equal("p1"))
+			})
+		})
+
+		Context("called with an invalid parameter", func() {
+			It("should panic", func() {
+				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+					return nil, nil, data.EmptyIntSet
+				})
+				Expect(func() { f.WithName(nil) }).To(Panic())
+			})
+		})
+	})
+})

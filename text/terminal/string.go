@@ -12,38 +12,49 @@ import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // String matches a string literal enclosed in double quotes
-func String() parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func String(allowBackquote bool) *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
-		matches, pos, ok := tr.ReadMatch("\"|`", false)
-		if !ok {
-			return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting string literal")
+		quote := '"'
+		readerPos, found := tr.ReadRune(pos, quote)
+		if !found {
+			if allowBackquote {
+				quote = '`'
+				readerPos, found = tr.ReadRune(pos, quote)
+			}
 		}
-		quote := matches[0]
 
-		var value string
-		if quote == "`" {
-			var matches []string
-			matches, _, _ = tr.ReadMatch("[^`]*", true)
-			value = matches[0]
+		if !found {
+			return nil, nil, data.EmptyIntSet
+		}
+
+		// check for empty string
+		readerPos, found = tr.ReadRune(readerPos, quote)
+		if found {
+			return ast.NewTerminalNode("STRING", "", pos, readerPos), nil, data.EmptyIntSet
+		}
+
+		var value []byte
+		if quote == '`' {
+			readerPos, value = tr.ReadRegexp(readerPos, "[^`]+")
 		} else {
-			value, _, _ = tr.Readf(unquoteString, true)
+			readerPos, value = tr.Readf(readerPos, unquoteString)
 		}
 
-		endQuote, _, err := tr.ReadRune()
-		if err != nil || string(endQuote) != quote {
-			return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting '%s'", quote)
+		readerPos, found = tr.ReadRune(readerPos, quote)
+		if !found {
+			return nil, parsley.NewError(readerPos, "was expecting '%s'", string(quote)), data.EmptyIntSet
 		}
-		return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("STRING", pos, value), tr).AsSet(), nil
-	})
+		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), nil, data.EmptyIntSet
+	}).WithName("string value")
 }
 
-func unquoteString(b []byte) (string, int, bool) {
+func unquoteString(b []byte) ([]byte, int) {
 	str := string(b)
 	var tail, res string
 	var err error
@@ -59,5 +70,5 @@ func unquoteString(b []byte) (string, int, bool) {
 		res += string(ch)
 		str = tail
 	}
-	return res, len(b) - len(str), true
+	return []byte(res), len(b) - len(str)
 }

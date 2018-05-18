@@ -7,31 +7,41 @@
 package terminal
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/reader"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
 
 // Char matches a character literal enclosed in single quotes
-func Char() parser.Func {
-	return parser.Func(func(h *parser.History, leftRecCtx data.IntMap, r reader.Reader) (data.IntSet, parser.ResultSet, reader.Error) {
+func Char() *parser.NamedFunc {
+	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
 		tr := r.(*text.Reader)
-		if matches, pos, ok := tr.ReadMatch("'(.|\\\\[abfnrtv]|\\\\x[0-9a-fA-F]{2,2}|\\\\u[0-9a-fA-F]{4,4}|\\\\U[0-9a-fA-F]{8,8})'", false); ok {
-			match := matches[1]
-			value, _, tail, err := strconv.UnquoteChar(match, '"')
-			if tail != "" {
-				// This should never happen
-				panic(fmt.Sprintf("Unprocessed string segment: %s", tail))
-			}
-			if err == nil {
-				return parser.NoCurtailingParsers(), parser.NewResult(ast.NewTerminalNode("CHAR", pos, value), r).AsSet(), nil
-			}
+		readerPos, found := tr.ReadRune(pos, '\'')
+		if !found {
+			return nil, nil, data.EmptyIntSet
 		}
-		return parser.NoCurtailingParsers(), nil, reader.NewError(r.Cursor(), "was expecting char literal")
-	})
+
+		readerPos, res := tr.ReadRegexp(
+			readerPos, `\\[abfnrtv']|\\x[0-9a-fA-F]{2,2}|\\u[0-9a-fA-F]{4,4}|\\U[0-9a-fA-F]{8,8}|[^']`,
+		)
+		if res == nil {
+			return nil, parsley.NewError(readerPos, "was expecting one character"), data.EmptyIntSet
+		}
+
+		readerPos, found = tr.ReadRune(readerPos, '\'')
+		if !found {
+			return nil, parsley.NewError(readerPos, "was expecting \"'\""), data.EmptyIntSet
+		}
+
+		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
+		if tail != "" || err != nil {
+			return nil, parsley.NewError(readerPos, "invalid character value"), data.EmptyIntSet
+		}
+
+		return ast.NewTerminalNode("CHAR", value, pos, readerPos), nil, data.EmptyIntSet
+	}).WithName("char value")
 }

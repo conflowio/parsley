@@ -6,17 +6,12 @@
 
 package ast
 
-import "github.com/opsidian/parsley/reader"
-
-// Interpreter defines an interface to evaluate AST nodes
-type Interpreter interface {
-	Eval(ctx interface{}, nodes []Node) (interface{}, reader.Error)
-}
+import "github.com/opsidian/parsley/parsley"
 
 // InterpreterFunc defines a helper to implement the Interpreter interface with functions
-type InterpreterFunc func(ctx interface{}, nodes []Node) (interface{}, reader.Error)
+type InterpreterFunc func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error)
 
 // Eval evaluates the given nodes and returns with a single result.
-func (f InterpreterFunc) Eval(ctx interface{}, nodes []Node) (interface{}, reader.Error) {
+func (f InterpreterFunc) Eval(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 	return f(ctx, nodes)
 }
