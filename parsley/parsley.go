@@ -7,6 +7,8 @@
 package parsley
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/data"
 )
 
@@ -19,7 +21,7 @@ func Parse(h History, r Reader, p Parser) (Node, Error) {
 		if err != nil {
 			return nil, WrapError(err, "failed to parse the input: {{err}}")
 		}
-		return nil, NewError(r.Pos(0), "failed to parse the input: was expecting %s", p.Name())
+		return nil, NewError(r.Pos(0), fmt.Errorf("failed to parse the input: was expecting %s", p.Name()))
 	}
 	return node, nil
 }

@@ -97,7 +97,7 @@ var _ = Describe("Any", func() {
 			parsers = []parsley.Parser{p1}
 			p1CP = data.NewIntSet(1)
 			p1Res = n1
-			p1Err = parsley.NewError(parsley.Pos(1), "some error")
+			p1Err = parsley.NewErrorf(parsley.Pos(1), "some error")
 		})
 
 		It("should return the result of that parser", func() {
@@ -147,8 +147,8 @@ var _ = Describe("Any", func() {
 
 		Context("when there are multiple errors", func() {
 			BeforeEach(func() {
-				p1Err = parsley.NewError(parsley.Pos(1), "err1")
-				p2Err = parsley.NewError(parsley.Pos(2), "err2")
+				p1Err = parsley.NewErrorf(parsley.Pos(1), "err1")
+				p2Err = parsley.NewErrorf(parsley.Pos(2), "err2")
 			})
 			It("should return with the error with the higher position", func() {
 				Expect(parserErr).To(MatchError("err2"))
@@ -174,7 +174,7 @@ var _ = Describe("Any", func() {
 			BeforeEach(func() {
 				p1Res = n1
 				p2Res = n2
-				p1Err = parsley.NewError(parsley.Pos(1), "some error")
+				p1Err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			})
 			It("should return with all results", func() {
 				Expect(res).To(Equal(ast.NodeList([]parsley.Node{n1, n2})))

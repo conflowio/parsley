@@ -150,7 +150,7 @@ var _ = Describe("File set", func() {
 		})
 
 		It("should return with a human-readable error message", func() {
-			err := fs.ErrorWithPosition(parsley.NewError(parsley.Pos(2), "test error"))
+			err := fs.ErrorWithPosition(parsley.NewErrorf(parsley.Pos(2), "test error"))
 			Expect(err).To(MatchError("test error at testpos"))
 
 			Expect(f.PositionCallCount()).To(Equal(1))
@@ -160,7 +160,7 @@ var _ = Describe("File set", func() {
 
 		Context("when the position is invalid", func() {
 			It("should return the original error", func() {
-				err := parsley.NewError(parsley.Pos(99), "test error")
+				err := parsley.NewErrorf(parsley.Pos(99), "test error")
 				errWithPos := fs.ErrorWithPosition(err)
 				Expect(err).To(Equal(errWithPos))
 			})
@@ -168,7 +168,7 @@ var _ = Describe("File set", func() {
 
 		Context("when the position is nil", func() {
 			It("should return the original error", func() {
-				err := parsley.NewError(parsley.NilPos, "test error")
+				err := parsley.NewErrorf(parsley.NilPos, "test error")
 				errWithPos := fs.ErrorWithPosition(err)
 				Expect(err).To(Equal(errWithPos))
 			})

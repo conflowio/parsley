@@ -48,7 +48,7 @@ func String(allowBackquote bool) *parser.NamedFunc {
 
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
-			return nil, parsley.NewError(readerPos, "was expecting '%s'", string(quote)), data.EmptyIntSet
+			return nil, parsley.NewErrorf(readerPos, "was expecting '%s'", string(quote)), data.EmptyIntSet
 		}
 		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), nil, data.EmptyIntSet
 	}).WithName("string value")

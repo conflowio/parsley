@@ -43,7 +43,7 @@ var _ = Describe("Trim parsers", func() {
 		h = parser.NewHistory()
 		leftRectCtx = data.EmptyIntMap.Inc(1)
 		parserRes = &parsleyfakes.FakeNode{}
-		parserErr = parsley.NewError(parsley.Pos(1), "some error")
+		parserErr = parsley.NewErrorf(parsley.Pos(1), "some error")
 		parserCP = data.EmptyIntSet.Insert(1)
 	})
 
@@ -168,7 +168,7 @@ var _ = Describe("Trim parsers", func() {
 		Context("When there is error", func() {
 			BeforeEach(func() {
 				parserRes = nil
-				parserErr = parsley.NewError(parsley.Pos(4), "some error")
+				parserErr = parsley.NewErrorf(parsley.Pos(4), "some error")
 			})
 
 			Context("when whitespace mode is no whitespaces", func() {

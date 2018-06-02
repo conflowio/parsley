@@ -20,7 +20,7 @@ var _ = Describe("Interpreter", func() {
 			passedCtx   interface{}
 			passedNodes []parsley.Node
 			fResult     = "some result"
-			fErr        = parsley.NewError(parsley.Pos(1), "some error")
+			fErr        = parsley.NewErrorf(parsley.Pos(1), "some error")
 			ctx         = "some context"
 			nodes       = []parsley.Node{nil}
 		)

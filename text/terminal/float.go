@@ -23,7 +23,7 @@ func Float() *parser.NamedFunc {
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
 			val, err := strconv.ParseFloat(string(result), 64)
 			if err != nil {
-				return nil, parsley.NewError(pos, "invalid float value encountered"), data.EmptyIntSet
+				return nil, parsley.NewErrorf(pos, "invalid float value encountered"), data.EmptyIntSet
 			}
 			return ast.NewTerminalNode("FLOAT", val, pos, readerPos), nil, data.EmptyIntSet
 		}

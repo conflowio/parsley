@@ -23,9 +23,9 @@ var _ = Describe("Interpreter", func() {
 
 	BeforeEach(func() {
 		node1 = &parsleyfakes.FakeNode{}
-		node1.ValueReturns(1, parsley.NewError(parsley.Pos(1), "err1"))
+		node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
 		node2 = &parsleyfakes.FakeNode{}
-		node2.ValueReturns(2, parsley.NewError(parsley.Pos(2), "err2"))
+		node2.ValueReturns(2, parsley.NewErrorf(parsley.Pos(2), "err2"))
 		ctx = "context"
 	})
 
@@ -63,7 +63,7 @@ var _ = Describe("Interpreter", func() {
 			ctx := "context"
 			f := interpreter.Nil()
 			node1 := &parsleyfakes.FakeNode{}
-			node1.ValueReturns(1, parsley.NewError(parsley.Pos(1), "err1"))
+			node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
 			val, err := f.Eval(ctx, []parsley.Node{node1})
 			Expect(val).To(BeNil())
 			Expect(err).ToNot(HaveOccurred())
@@ -119,7 +119,7 @@ var _ = Describe("Interpreter", func() {
 		})
 
 		Context("when a node evaluation has an error", func() {
-			var err = parsley.NewError(parsley.Pos(1), "some error")
+			var err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			BeforeEach(func() {
 				child1.ValueReturns(nil, err)
 			})
@@ -191,7 +191,7 @@ var _ = Describe("Interpreter", func() {
 		})
 
 		Context("when a key node evaluation has an error", func() {
-			var err = parsley.NewError(parsley.Pos(1), "some error")
+			var err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			BeforeEach(func() {
 				nodes[0].(*ast.NonTerminalNode).Children()[0].(*parsleyfakes.FakeNode).ValueReturns(0, err)
 			})
@@ -202,7 +202,7 @@ var _ = Describe("Interpreter", func() {
 		})
 
 		Context("when a value node evaluation has an error", func() {
-			var err = parsley.NewError(parsley.Pos(1), "some error")
+			var err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			BeforeEach(func() {
 				nodes[0].(*ast.NonTerminalNode).Children()[2].(*parsleyfakes.FakeNode).ValueReturns(0, err)
 			})

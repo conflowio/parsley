@@ -120,7 +120,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 		} else {
 			if depth > 0 && nextParser != nil && nextParser.Name() != "" {
 				if err == nil && (rp.err == nil || pos > rp.err.Pos()) {
-					rp.err = parsley.NewError(pos, "was expecting %s", nextParser.Name())
+					rp.err = parsley.NewErrorf(pos, "was expecting %s", nextParser.Name())
 				}
 			}
 		}

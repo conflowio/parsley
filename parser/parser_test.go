@@ -25,7 +25,7 @@ var _ = Describe("Func", func() {
 		expectedPos := parsley.Pos(2)
 		expectedCurtailingParsers := data.NewIntSet(1)
 		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), parsley.Pos(2))
-		expectedErr := parsley.NewError(parsley.Pos(1), "testerr")
+		expectedErr := parsley.NewErrorf(parsley.Pos(1), "testerr")
 		var actualHistory parsley.History
 		var actualLeftRecCtx data.IntMap
 		var actualReader parsley.Reader

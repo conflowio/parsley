@@ -105,7 +105,7 @@ var _ = Describe("NonTerminalNode", func() {
 		interpreter     parsley.Interpreter
 		fakeInterpreter *parsleyfakes.FakeInterpreter
 		value           = "someValue"
-		evalErr         = parsley.NewError(parsley.Pos(1), "eval error")
+		evalErr         = parsley.NewErrorf(parsley.Pos(1), "eval error")
 	)
 
 	BeforeEach(func() {
@@ -298,7 +298,7 @@ var _ = Describe("NodeList", func() {
 				nl = ast.NodeList([]parsley.Node{n1, n2})
 			})
 			It("should return the value of the first item", func() {
-				err := parsley.NewError(parsley.Pos(1), "some error")
+				err := parsley.NewErrorf(parsley.Pos(1), "some error")
 				n1.ValueReturns("res", err)
 
 				ctx := "foo"

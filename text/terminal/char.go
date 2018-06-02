@@ -29,17 +29,17 @@ func Char() *parser.NamedFunc {
 			readerPos, `\\[abfnrtv']|\\x[0-9a-fA-F]{2,2}|\\u[0-9a-fA-F]{4,4}|\\U[0-9a-fA-F]{8,8}|[^']`,
 		)
 		if res == nil {
-			return nil, parsley.NewError(readerPos, "was expecting one character"), data.EmptyIntSet
+			return nil, parsley.NewErrorf(readerPos, "was expecting one character"), data.EmptyIntSet
 		}
 
 		readerPos, found = tr.ReadRune(readerPos, '\'')
 		if !found {
-			return nil, parsley.NewError(readerPos, "was expecting \"'\""), data.EmptyIntSet
+			return nil, parsley.NewErrorf(readerPos, "was expecting \"'\""), data.EmptyIntSet
 		}
 
 		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
 		if tail != "" || err != nil {
-			return nil, parsley.NewError(readerPos, "invalid character value"), data.EmptyIntSet
+			return nil, parsley.NewErrorf(readerPos, "invalid character value"), data.EmptyIntSet
 		}
 
 		return ast.NewTerminalNode("CHAR", value, pos, readerPos), nil, data.EmptyIntSet

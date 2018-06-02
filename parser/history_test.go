@@ -32,7 +32,7 @@ var _ = Describe("History", func() {
 		BeforeEach(func() {
 			res1 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               parsley.NewError(parsley.Pos(2), "some error"),
+				Err:               parsley.NewErrorf(parsley.Pos(2), "some error"),
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}

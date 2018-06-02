@@ -120,7 +120,7 @@ var _ = Describe("Parse", func() {
 	Context("when parser returned with no result and an error", func() {
 		BeforeEach(func() {
 			parserRes = nil
-			parserErr = parsley.NewError(parsley.Pos(1), "some error")
+			parserErr = parsley.NewErrorf(parsley.Pos(1), "some error")
 		})
 		It("should return the error", func() {
 			Expect(res).To(BeNil())
@@ -216,7 +216,7 @@ var _ = Describe("Evaluate", func() {
 	Context("if the parser has an error", func() {
 		BeforeEach(func() {
 			parserRes = nil
-			parserErr = parsley.NewError(parsley.Pos(1), "some error")
+			parserErr = parsley.NewErrorf(parsley.Pos(1), "some error")
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
@@ -228,7 +228,7 @@ var _ = Describe("Evaluate", func() {
 	Context("if the node evaluation has an error", func() {
 		BeforeEach(func() {
 			nodeVal = nil
-			nodeValErr = parsley.NewError(parsley.Pos(1), "some error")
+			nodeValErr = parsley.NewErrorf(parsley.Pos(1), "some error")
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
