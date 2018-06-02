@@ -96,7 +96,7 @@ We'll need the following components:
 sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 	value0, _ := nodes[0].Value(ctx)
 	value1, _ := nodes[2].Value(ctx)
-	return value0.(int) + value1.(int), nil
+	return value0.(int64) + value1.(int64), nil
 })
 
 p := combinator.Seq("ADD", "addition",
@@ -110,7 +110,7 @@ value, err := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), n
 if err != nil {
 	panic(err)
 }
-fmt.Printf("Result: %d\n", value.(int))
+fmt.Printf("Result: %d\n", value.(int64))
 // Output: Result: 3
 ```
 

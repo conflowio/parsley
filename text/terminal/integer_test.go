@@ -26,7 +26,7 @@ var _ = Describe("Integer", func() {
 	})
 
 	DescribeTable("should match",
-		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
+		func(input string, startPos int, value int, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
 			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
@@ -34,7 +34,7 @@ var _ = Describe("Integer", func() {
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("INT"))
-			Expect(node.Value(nil)).To(Equal(value))
+			Expect(node.Value(nil)).To(Equal(int64(value)))
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},

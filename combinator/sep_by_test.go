@@ -23,10 +23,10 @@ import (
 // The grammar is: S -> [I(,I)*], I -> any integer
 func ExampleSepBy() {
 	arr := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-		var res []int
+		var res []int64
 		for i := 0; i < len(nodes); i += 2 {
 			val, _ := nodes[i].Value(ctx)
-			res = append(res, val.(int))
+			res = append(res, val.(int64))
 		}
 		return res, nil
 	})
@@ -46,8 +46,8 @@ func ExampleSepBy() {
 	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 
-	// Output: []int []
-	// []int [1 2 3]
+	// Output: []int64 []
+	// []int64 [1 2 3]
 }
 
 // Let's define a simple language where you can add integer numbers.
@@ -55,10 +55,10 @@ func ExampleSepBy() {
 // The grammar is: S -> I(+I)*, I -> any integer
 func ExampleSepBy1() {
 	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-		sum := 0
+		var sum int64
 		for i := 0; i < len(nodes); i += 2 {
 			val, _ := nodes[i].Value(ctx)
-			sum += val.(int)
+			sum += val.(int64)
 		}
 		return sum, nil
 	})
@@ -72,8 +72,8 @@ func ExampleSepBy1() {
 	r = text.NewReader(text.NewFile("example.file", []byte("1+2+3")))
 	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
-	// Output: int 1
-	// int 6
+	// Output: int64 1
+	// int64 6
 }
 
 //
