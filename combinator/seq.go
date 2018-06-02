@@ -39,5 +39,5 @@ func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recu
 	lenCheck := func(len int) bool {
 		return len >= min && len <= l
 	}
-	return NewRecursive(token, namef, lookup, lenCheck)
+	return NewRecursive(token, namef, false, lookup, lenCheck)
 }
