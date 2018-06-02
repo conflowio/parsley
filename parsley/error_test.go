@@ -1,15 +1,19 @@
 package parsley_test
 
 import (
+	"errors"
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/parsley"
 )
 
-var _ = Describe("Error", func() {
+var _ = Describe("NewError", func() {
 
 	var (
 		err    parsley.Error
+		cause  error
 		format string
 		values []interface{}
 		pos    parsley.Pos
@@ -19,10 +23,11 @@ var _ = Describe("Error", func() {
 		format = "some %s"
 		values = []interface{}{"error"}
 		pos = parsley.Pos(1)
+		cause = fmt.Errorf(format, values...)
 	})
 
 	JustBeforeEach(func() {
-		err = parsley.NewError(pos, format, values...)
+		err = parsley.NewError(pos, cause)
 	})
 
 	It("implements error", func() {
@@ -40,12 +45,71 @@ var _ = Describe("Error", func() {
 			Expect(err.Error()).To(Equal("some error"))
 		})
 	})
+
+	Describe("Cause()", func() {
+		It("returns with the original error", func() {
+			Expect(err.Cause()).To(BeIdenticalTo(cause))
+		})
+	})
+
+	Context("When the cause is a parlsey error", func() {
+		BeforeEach(func() {
+			cause = parsley.NewErrorf(parsley.Pos(2), "parsley error")
+		})
+
+		It("should return the cause and not wrap it", func() {
+			Expect(err).To(BeIdenticalTo(cause))
+		})
+	})
+})
+
+var _ = Describe("NewErrorf", func() {
+
+	var (
+		err    parsley.Error
+		format string
+		values []interface{}
+		pos    parsley.Pos
+	)
+
+	BeforeEach(func() {
+		format = "some %s"
+		values = []interface{}{"error"}
+		pos = parsley.Pos(1)
+	})
+
+	JustBeforeEach(func() {
+		err = parsley.NewErrorf(pos, format, values...)
+	})
+
+	It("implements error", func() {
+		var _ error = err
+	})
+
+	Describe("Pos()", func() {
+		It("returns with the position", func() {
+			Expect(err.Pos()).To(BeIdenticalTo(pos))
+		})
+	})
+
+	Describe("Error()", func() {
+		It("returns with the formatted error message", func() {
+			Expect(err.Error()).To(Equal("some error"))
+		})
+	})
+
+	Describe("Cause()", func() {
+		It("returns with the original error", func() {
+			Expect(err.Cause()).To(MatchError(errors.New("some error")))
+		})
+	})
 })
 
 var _ = Describe("WrapError", func() {
 
 	var (
 		err        parsley.Error
+		cause      error
 		wrappedErr parsley.Error
 		pos        parsley.Pos
 		format     string
@@ -54,7 +118,8 @@ var _ = Describe("WrapError", func() {
 
 	BeforeEach(func() {
 		pos = parsley.Pos(1)
-		wrappedErr = parsley.NewError(pos, "some error")
+		cause = errors.New("some error")
+		wrappedErr = parsley.NewError(pos, cause)
 		format = "I wrap {{err}} as a %s"
 		values = []interface{}{"test"}
 	})
@@ -69,6 +134,10 @@ var _ = Describe("WrapError", func() {
 
 	It("should replace {{err}} and the placeholders in the error message", func() {
 		Expect(err.Error()).To(Equal("I wrap some error as a test"))
+	})
+
+	It("should keep the original cause", func() {
+		Expect(err.Cause()).To(BeIdenticalTo(cause))
 	})
 
 	Context("when the error is not wrapped in a message", func() {

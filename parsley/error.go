@@ -14,21 +14,39 @@ import (
 // Error is an error with a position
 type Error interface {
 	error
+	Cause() error
 	Pos() Pos
 }
 
 type err struct {
-	msg string
-	pos Pos
+	cause error
+	msg   string
+	pos   Pos
 }
 
 // NewError creates a new error with the given position
 // If the passed error is already a parsley.Error it returns the original error
 // as it should have already the correct position.
-func NewError(pos Pos, format string, values ...interface{}) Error {
+func NewError(pos Pos, cause error) Error {
+	switch c := cause.(type) {
+	case Error:
+		return c
+	default:
+		return &err{
+			cause: cause,
+			msg:   cause.Error(),
+			pos:   pos,
+		}
+	}
+}
+
+// NewErrorf creates a new error with the given position and message
+func NewErrorf(pos Pos, format string, values ...interface{}) Error {
+	cause := fmt.Errorf(format, values...)
 	return &err{
-		msg: fmt.Sprintf(format, values...),
-		pos: pos,
+		cause: cause,
+		msg:   cause.Error(),
+		pos:   pos,
 	}
 }
 
@@ -42,6 +60,11 @@ func (e *err) Pos() Pos {
 	return e.pos
 }
 
+// Cause returns with the original error
+func (e *err) Cause() error {
+	return e.cause
+}
+
 // WrapError wraps the given error in a error
 // If format contains the "{{err}}" placeholder it will be replaced with the original error message
 func WrapError(e Error, format string, values ...interface{}) Error {
@@ -50,7 +73,8 @@ func WrapError(e Error, format string, values ...interface{}) Error {
 		return e
 	}
 	return &err{
-		msg: strings.Replace(msg, "{{err}}", e.Error(), -1),
-		pos: e.Pos(),
+		cause: e.Cause(),
+		pos:   e.Pos(),
+		msg:   strings.Replace(msg, "{{err}}", e.Error(), -1),
 	}
 }
