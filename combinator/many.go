@@ -33,5 +33,5 @@ func newMany(p parsley.Parser, allowEmpty bool) *Recursive {
 	lenCheck := func(len int) bool {
 		return allowEmpty || len >= 0
 	}
-	return NewRecursive("MANY", name, lookup, lenCheck)
+	return NewRecursive("MANY", name, false, lookup, lenCheck)
 }

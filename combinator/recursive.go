@@ -16,16 +16,18 @@ import (
 type Recursive struct {
 	name         func() string
 	token        string
+	returnSingle bool
 	parserLookUp func(int) parsley.Parser
 	lenCheck     func(int) bool
 	interpreter  parsley.Interpreter
 }
 
 // NewRecursive creates a new recursive instance
-func NewRecursive(token string, name func() string, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
+func NewRecursive(token string, name func() string, returnSingle bool, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
 	return &Recursive{
 		token:        token,
 		name:         name,
+		returnSingle: returnSingle,
 		parserLookUp: parserLookUp,
 		lenCheck:     lenCheck,
 	}
@@ -44,6 +46,7 @@ func (rp *Recursive) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos par
 		parserLookUp:      rp.parserLookUp,
 		lenCheck:          rp.lenCheck,
 		interpreter:       rp.interpreter,
+		returnSingle:      rp.returnSingle,
 		curtailingParsers: data.EmptyIntSet,
 		nodes:             []parsley.Node{},
 	}
@@ -61,6 +64,7 @@ type recursive struct {
 	parserLookUp      func(i int) parsley.Parser
 	lenCheck          func(i int) bool
 	interpreter       parsley.Interpreter
+	returnSingle      bool
 	curtailingParsers data.IntSet
 	result            parsley.Node
 	nodes             []parsley.Node
@@ -103,9 +107,13 @@ func (rp *recursive) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntM
 	if res == nil {
 		if rp.lenCheck(depth) {
 			if depth > 0 {
-				nodesCopy := make([]parsley.Node, depth)
-				copy(nodesCopy[0:depth], rp.nodes[0:depth])
-				rp.result = ast.AppendNode(rp.result, ast.NewNonTerminalNode(rp.token, nodesCopy, rp.interpreter))
+				if depth == 1 && rp.returnSingle {
+					rp.result = ast.AppendNode(rp.result, rp.nodes[0])
+				} else {
+					nodesCopy := make([]parsley.Node, depth)
+					copy(nodesCopy[0:depth], rp.nodes[0:depth])
+					rp.result = ast.AppendNode(rp.result, ast.NewNonTerminalNode(rp.token, nodesCopy, rp.interpreter))
+				}
 				if rp.nodes[depth-1] != nil && rp.nodes[depth-1].Token() == ast.EOF {
 					return true
 				}
