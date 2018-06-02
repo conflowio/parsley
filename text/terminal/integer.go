@@ -25,12 +25,12 @@ func Integer() *parser.NamedFunc {
 			if _, isFloat := tr.ReadRune(readerPos, '.'); isFloat {
 				return nil, nil, data.EmptyIntSet
 			}
-			intValue, err := strconv.ParseInt(string(result), 0, 0)
+			intValue, err := strconv.ParseInt(string(result), 0, 64)
 			if err != nil {
 				// This should never happen
 				panic(fmt.Sprintf("Could not convert %s to integer", string(result)))
 			}
-			return ast.NewTerminalNode("INT", int(intValue), pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode("INT", intValue, pos, readerPos), nil, data.EmptyIntSet
 		}
 		return nil, nil, data.EmptyIntSet
 	}).WithName("integer value")

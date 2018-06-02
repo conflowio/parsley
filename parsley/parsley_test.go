@@ -26,7 +26,7 @@ func ExampleParse() {
 	sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 		value0, _ := nodes[0].Value(ctx)
 		value1, _ := nodes[2].Value(ctx)
-		return value0.(int) + value1.(int), nil
+		return value0.(int64) + value1.(int64), nil
 	})
 
 	p := combinator.Seq("ADD", "addition",
@@ -45,7 +45,7 @@ func ExampleParse() {
 	if err2 != nil {
 		panic(err2)
 	}
-	fmt.Printf("Result: %d\n", value.(int))
+	fmt.Printf("Result: %d\n", value.(int64))
 	// Output: Result: 3
 }
 
@@ -54,7 +54,7 @@ func ExampleEvaluate() {
 	sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 		value0, _ := nodes[0].Value(ctx)
 		value1, _ := nodes[2].Value(ctx)
-		return value0.(int) + value1.(int), nil
+		return value0.(int64) + value1.(int64), nil
 	})
 
 	p := combinator.Seq("ADD", "addition",
@@ -68,7 +68,7 @@ func ExampleEvaluate() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Result: %d\n", value.(int))
+	fmt.Printf("Result: %d\n", value.(int64))
 	// Output: Result: 3
 }
 
@@ -284,7 +284,7 @@ var _ = Describe("Parsley", func() {
 		add := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 			value0, _ := nodes[0].Value(ctx)
 			value1, _ := nodes[2].Value(ctx)
-			return value0.(int) + value1.(int), nil
+			return value0.(int64) + value1.(int64), nil
 		})
 
 		var p parser.NamedFunc
@@ -305,7 +305,7 @@ var _ = Describe("Parsley", func() {
 		result, err := parsley.Evaluate(h, r, combinator.Sentence(&p), nil)
 
 		Expect(err).ToNot(HaveOccurred())
-		Expect(result).To(Equal(55))
+		Expect(result).To(Equal(int64(55)))
 		Expect(h.CallCount()).To(Equal(237770))
 
 	})
