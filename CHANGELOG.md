@@ -1,3 +1,11 @@
+## 0.7.0
+
+BACKWARDS INCOMPATIBILITIES:
+* extend parsley.Error to have a `Cause() error` method
+* rename parsley.NewError() to parsley.NewErrorf()
+* add parsley.NewError with error type as input
+* parsley.WrapError will store the original cause but update the error message
+
 ## 0.6.0
 
 BACKWARDS INCOMPATIBILITIES:
