@@ -56,7 +56,8 @@ func String(allowBackquote bool) *parser.NamedFunc {
 
 func unquoteString(b []byte) ([]byte, int) {
 	str := string(b)
-	var tail, res string
+	var tail string
+	var res = make([]byte, 0, 64)
 	var err error
 	var ch rune
 	for {
@@ -67,8 +68,8 @@ func unquoteString(b []byte) ([]byte, int) {
 		if err != nil {
 			break
 		}
-		res += string(ch)
+		res = append(res, string(ch)...)
 		str = tail
 	}
-	return []byte(res), len(b) - len(str)
+	return res, len(b) - len(str)
 }
