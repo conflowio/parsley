@@ -153,6 +153,26 @@ You can find the change log in the [CHANGELOG.md](CHANGELOG.md) file.
 
 To run all the tests simply run: `make test`.
 
+## Benchmarking
+
+There are some benchmarks for parsing JSON (which is obviously not the best comparison, but at least it's something).
+
+```
+$ cd examples/json/json
+$ go test -bench=. -benchmem
+goos: darwin
+goarch: amd64
+pkg: github.com/opsidian/parsley/examples/json/json
+BenchmarkParsleyJSON1k-4      	   20000	     79929 ns/op	   26557 B/op	     570 allocs/op
+BenchmarkParsleyJSON10k-4     	    2000	    681273 ns/op	  248000 B/op	    4435 allocs/op
+BenchmarkParsleyJSON100k-4    	     200	   6999517 ns/op	 6011530 B/op	   41647 allocs/op
+BenchmarkEncodingJSON1k-4     	   50000	     23834 ns/op	    5794 B/op	     113 allocs/op
+BenchmarkEncodingJSON10k-4    	   10000	    190699 ns/op	   44140 B/op	     869 allocs/op
+BenchmarkEncodingJSON100k-4   	    1000	   1880887 ns/op	  418492 B/op	    8153 allocs/op
+PASS
+ok  	github.com/opsidian/parsley/examples/json/json	11.410s
+```
+
 ## LICENSE
 
 This software is distributed under the Mozilla Public License, version 2.0. See the [LICENSE](LICENSE) file for more details.
