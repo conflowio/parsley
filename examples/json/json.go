@@ -38,9 +38,10 @@ func main() {
 
 	h := parser.NewHistory()
 	reader := text.NewReader(file)
+	ctx := parsley.NewContext(reader, h)
 	s := combinator.Sentence(json.NewParser())
 
-	res, evalErr := parsley.Evaluate(h, reader, s, nil)
+	res, evalErr := parsley.Evaluate(ctx, s, nil)
 	if evalErr != nil {
 		panic(fs.ErrorWithPosition(evalErr))
 	}
