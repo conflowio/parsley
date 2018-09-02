@@ -30,19 +30,16 @@ var _ = Describe("History", func() {
 		BeforeEach(func() {
 			res1 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               parsley.NewErrorf(parsley.Pos(2), "some error"),
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res2 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res3 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}

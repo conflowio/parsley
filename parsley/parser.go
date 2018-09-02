@@ -16,7 +16,6 @@ type Result struct {
 	LeftRecCtx        data.IntMap
 	CurtailingParsers data.IntSet
 	Node              Node
-	Err               Error
 }
 
 // History records information about parser calls
