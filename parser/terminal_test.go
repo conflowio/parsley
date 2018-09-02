@@ -13,14 +13,12 @@ import (
 var _ = Describe("Nil", func() {
 
 	var (
-		p = parser.Nil()
-		r *parsleyfakes.FakeReader
-		h *parsleyfakes.FakeHistory
+		p   = parser.Nil()
+		ctx *parsley.Context
 	)
 
 	BeforeEach(func() {
-		r = &parsleyfakes.FakeReader{}
-		h = &parsleyfakes.FakeHistory{}
+		ctx = parsley.NewContext(&parsleyfakes.FakeReader{})
 	})
 
 	It("should have no name", func() {
@@ -28,10 +26,10 @@ var _ = Describe("Nil", func() {
 	})
 
 	It("should return with an empty node", func() {
-		res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 1)
+		res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 1)
 		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 		Expect(res).To(Equal(ast.NilNode(1)))
-		Expect(err).ToNot(HaveOccurred())
+		Expect(ctx.Error()).ToNot(HaveOccurred())
 	})
 
 })
@@ -39,14 +37,14 @@ var _ = Describe("Nil", func() {
 var _ = Describe("End", func() {
 
 	var (
-		p = parser.End()
-		r *parsleyfakes.FakeReader
-		h *parsleyfakes.FakeHistory
+		p   = parser.End()
+		r   *parsleyfakes.FakeReader
+		ctx *parsley.Context
 	)
 
 	BeforeEach(func() {
 		r = &parsleyfakes.FakeReader{}
-		h = &parsleyfakes.FakeHistory{}
+		ctx = parsley.NewContext(r)
 	})
 
 	It("should have a name", func() {
@@ -57,10 +55,10 @@ var _ = Describe("End", func() {
 		It("should return with an EOF node", func() {
 			r.IsEOFReturns(true)
 			r.PosReturns(parsley.Pos(2))
-			res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 2)
+			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 2)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), parsley.Pos(2))))
-			Expect(err).ToNot(HaveOccurred())
+			Expect(ctx.Error()).ToNot(HaveOccurred())
 		})
 	})
 
@@ -68,10 +66,10 @@ var _ = Describe("End", func() {
 		It("should return with a nil result", func() {
 			r.IsEOFReturns(false)
 			r.PosReturns(parsley.Pos(2))
-			res, err, curtailingParsers := p.Parse(h, data.EmptyIntMap, r, 1)
+			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 1)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(BeNil())
-			Expect(err).To(BeNil())
+			Expect(ctx.Error()).To(BeNil())
 		})
 	})
 

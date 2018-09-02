@@ -33,9 +33,10 @@ var _ = Describe("String", func() {
 			func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				ctx := parsley.NewContext(r)
+				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(err).ToNot(HaveOccurred())
+				Expect(ctx.Error()).ToNot(HaveOccurred())
 				node := res.(*ast.TerminalNode)
 				Expect(node.Token()).To(Equal("STRING"))
 				Expect(node.Value(nil)).To(Equal(value))
@@ -71,9 +72,10 @@ var _ = Describe("String", func() {
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+				ctx := parsley.NewContext(r)
+				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(err).ToNot(HaveOccurred())
+				Expect(ctx.Error()).ToNot(HaveOccurred())
 				Expect(res).To(BeNil())
 			},
 			Entry("empty", ``, 0),
@@ -86,10 +88,11 @@ var _ = Describe("String", func() {
 			func(input string) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
+				ctx := parsley.NewContext(r)
+				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(err).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
-				Expect(err.Pos()).To(Equal(parsley.Pos(5)))
+				Expect(ctx.Error()).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
+				Expect(ctx.Error().Pos()).To(Equal(parsley.Pos(5)))
 				Expect(res).To(BeNil())
 			},
 			Entry("`foo", "`foo"),
@@ -108,16 +111,18 @@ var _ = Describe("String", func() {
 		It("should match double-quoted strings", func() {
 			f := text.NewFile("textfile", []byte(`"foo"`))
 			r := text.NewReader(f)
-			res, err, _ := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
-			Expect(err).ToNot(HaveOccurred())
+			ctx := parsley.NewContext(r)
+			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			Expect(ctx.Error()).ToNot(HaveOccurred())
 			Expect(res).ToNot(BeNil())
 		})
 
 		It("should not match backquoted strings", func() {
 			f := text.NewFile("textfile", []byte("`foo`"))
 			r := text.NewReader(f)
-			res, err, _ := p.Parse(nil, data.EmptyIntMap, r, f.Pos(0))
-			Expect(err).ToNot(HaveOccurred())
+			ctx := parsley.NewContext(r)
+			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			Expect(ctx.Error()).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		})
 	})

@@ -13,11 +13,11 @@ import (
 )
 
 // Func defines a helper to implement the Parser interface with functions
-type Func func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet)
+type Func func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet)
 
 // Parse parses the input using the function
-func (f Func) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-	return f(h, leftRecCtx, r, pos)
+func (f Func) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	return f(ctx, leftRecCtx, pos)
 }
 
 // Name returns with an empty name
@@ -49,8 +49,8 @@ type NamedFunc struct {
 }
 
 // Parse parses the input using the function
-func (nf *NamedFunc) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-	return nf.f(h, leftRecCtx, r, pos)
+func (nf *NamedFunc) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	return nf.f(ctx, leftRecCtx, pos)
 }
 
 // Name returns with the parser name

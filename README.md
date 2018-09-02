@@ -28,8 +28,9 @@ type Node interface {
 ```
 
 There are two types of nodes:
- - **terminal node**: a leaf node - contains the smallest valid token, always has a constant value, e.g. a number, a string, etc.
- - **non-terminal node**: a branch node - contains other nodes and an interpreter which defines how to evaluate its children together (example: the non-terminal node has the token "+", the terminal children are: [1, 2] and the interpreter would add the numbers and return 3)
+
+- **terminal node**: a leaf node - contains the smallest valid token, always has a constant value, e.g. a number, a string, etc.
+- **non-terminal node**: a branch node - contains other nodes and an interpreter which defines how to evaluate its children together (example: the non-terminal node has the token "+", the terminal children are: [1, 2] and the interpreter would add the numbers and return 3)
 
 The **ctx** evaluation context can be anything you would need for evaluating a tree. (e.g. looking up named variables in a variable store)
 
@@ -53,7 +54,7 @@ A parser has a simple interface:
 
 ```
 type Parser interface {
-	Parse(h History, leftRecCtx data.IntMap, r Reader, pos Pos) (Node, Error, data.IntSet)
+	Parse(ctx Context, leftRecCtx data.IntMap, pos Pos) (Node, Error, data.IntSet)
 	Name() string
 }
 ```
@@ -75,22 +76,19 @@ Also if your language contains left-recursion you need to use Memoize for any pa
 The following code will wrap the integer parser with a memoizer:
 
 ```
-s := combinator.Memoize(terminal.Integer())
-h := parser.NewHistory()
-value, _ := parsley.Evaluate(h, r, s, nil)
+p := combinator.Memoize(terminal.Integer())
 ```
-
-The history object will store the result cache and also track left recursion counts and curtailing parsers, so you should only create it once.
 
 #### A simple example
 
 Let's write a parser which is able to parse the following expression: "INTEGER + INTEGER"
 
 We'll need the following components:
- - a parser which is able to match integer numbers ([terminal.Integer](text/terminal/integer.go))
- - a parser which is able to match the "+" character ([terminal.Rune](text/terminal/rune.go))
- - a combinator which is able to match multiple parsers in order ([combinator.Seq](combinator/seq.go))
- - an interpreter function which will calculate the result
+
+- a parser which is able to match integer numbers ([terminal.Integer](text/terminal/integer.go))
+- a parser which is able to match the "+" character ([terminal.Rune](text/terminal/rune.go))
+- a combinator which is able to match multiple parsers in order ([combinator.Seq](combinator/seq.go))
+- an interpreter function which will calculate the result
 
 ```
 sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
@@ -106,7 +104,8 @@ p := combinator.Seq("ADD", "addition",
 ).Bind(sum)
 
 r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
-value, err := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+ctx := parsley.NewContext(r)
+value, err := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 if err != nil {
 	panic(err)
 }
@@ -128,23 +127,23 @@ Please more information about the available parsers and combinators please check
 
 ## Library packages
 
- - parsley (root): top level helper functions for parsing
- - [ast](ast): abstract syntax tree related structs and interfaces
- - [ast/interpreter](ast/interpreter): AST node interpreters
- - [combinator](combinator): parser combinator implementations including memoization
- - [data](data): int map and int set implementations
- - [examples](examples): examples for how to use this library
- - [parser](parser): the main parsing logic
- - [parsley](parsley): common interfaces and the top-level parser/evaluate methods
- - [text](text): text reader implementation
- - [text/terminal](text/terminal): common parsers for text literals (string literal, int, float, etc.)
+- parsley (root): top level helper functions for parsing
+- [ast](ast): abstract syntax tree related structs and interfaces
+- [ast/interpreter](ast/interpreter): AST node interpreters
+- [combinator](combinator): parser combinator implementations including memoization
+- [data](data): int map and int set implementations
+- [examples](examples): examples for how to use this library
+- [parser](parser): the main parsing logic
+- [parsley](parsley): common interfaces and the top-level parser/evaluate methods
+- [text](text): text reader implementation
+- [text/terminal](text/terminal): common parsers for text literals (string literal, int, float, etc.)
 
 ## Versioning
 
 The library is expected to have occasional minor API changes while the version is 0.MAJOR.MINOR.
 
- * MAJOR version will be increased for backward incompatible changes
- * MINOR version will be increased for improvements and bugfixes
+- MAJOR version will be increased for backward incompatible changes
+- MINOR version will be increased for improvements and bugfixes
 
 Starting from 1.0.0 the library will use the [Semantic Versioning 2.0.0](http://semver.org/spec/v2.0.0.html).
 
@@ -152,7 +151,27 @@ You can find the change log in the [CHANGELOG.md](CHANGELOG.md) file.
 
 ## Testing
 
-To run all the tests simply run: ```make test```.
+To run all the tests simply run: `make test`.
+
+## Benchmarking
+
+There are some benchmarks for parsing JSON (which is obviously not the best comparison, but at least it's something).
+
+```
+$ cd examples/json/json
+$ go test -bench=. -benchmem
+goos: darwin
+goarch: amd64
+pkg: github.com/opsidian/parsley/examples/json/json
+BenchmarkParsleyJSON1k-4      	   20000	     79929 ns/op	   26557 B/op	     570 allocs/op
+BenchmarkParsleyJSON10k-4     	    2000	    681273 ns/op	  248000 B/op	    4435 allocs/op
+BenchmarkParsleyJSON100k-4    	     200	   6999517 ns/op	 6011530 B/op	   41647 allocs/op
+BenchmarkEncodingJSON1k-4     	   50000	     23834 ns/op	    5794 B/op	     113 allocs/op
+BenchmarkEncodingJSON10k-4    	   10000	    190699 ns/op	   44140 B/op	     869 allocs/op
+BenchmarkEncodingJSON100k-4   	    1000	   1880887 ns/op	  418492 B/op	    8153 allocs/op
+PASS
+ok  	github.com/opsidian/parsley/examples/json/json	11.410s
+```
 
 ## LICENSE
 

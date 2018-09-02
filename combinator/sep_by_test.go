@@ -12,7 +12,6 @@ import (
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/combinator"
-	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
@@ -39,11 +38,14 @@ func ExampleSepBy() {
 	).Bind(interpreter.Select(1))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
-	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	ctx := parsley.NewContext(r)
+
+	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("[1,2,3]")))
-	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	ctx = parsley.NewContext(r)
+	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 
 	// Output: []int64 []
@@ -66,11 +68,13 @@ func ExampleSepBy1() {
 	p := combinator.SepBy1(terminal.Integer(), terminal.Rune('+')).Bind(interpreter)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1")))
-	value1, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	ctx := parsley.NewContext(r)
+	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("1+2+3")))
-	value2, _ := parsley.Evaluate(parser.NewHistory(), r, combinator.Sentence(p), nil)
+	ctx = parsley.NewContext(r)
+	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 	// Output: int64 1
 	// int64 6

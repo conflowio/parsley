@@ -14,17 +14,17 @@ import (
 
 // Nil always matches and returns with an nil node result
 func Nil() Func {
-	return Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		return ast.NilNode(pos), nil, data.EmptyIntSet
+	return Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		return ast.NilNode(pos), data.EmptyIntSet
 	})
 }
 
 // End matches the end of the input
 func End() *NamedFunc {
-	return Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		if r.IsEOF(pos) {
-			return ast.NewTerminalNode(ast.EOF, nil, pos, pos), nil, data.EmptyIntSet
+	return Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		if ctx.Reader().IsEOF(pos) {
+			return ast.NewTerminalNode(ast.EOF, nil, pos, pos), data.EmptyIntSet
 		}
-		return nil, nil, data.EmptyIntSet
+		return nil, data.EmptyIntSet
 	}).WithName("the end of input")
 }

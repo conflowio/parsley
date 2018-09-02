@@ -19,39 +19,36 @@ import (
 var _ = Describe("Func", func() {
 
 	It("should call the function and return the result", func() {
-		expectedHistory := &parsleyfakes.FakeHistory{}
+		expectedCtx := parsley.NewContext(
+			&parsleyfakes.FakeReader{},
+		)
 		expectedLeftRecCtx := data.NewIntMap(map[int]int{1: 2})
-		expectedReader := &parsleyfakes.FakeReader{}
 		expectedPos := parsley.Pos(2)
 		expectedCurtailingParsers := data.NewIntSet(1)
 		expectedNodes := ast.NewTerminalNode("x", nil, parsley.Pos(1), parsley.Pos(2))
-		expectedErr := parsley.NewErrorf(parsley.Pos(1), "testerr")
-		var actualHistory parsley.History
+		var actualCtx *parsley.Context
 		var actualLeftRecCtx data.IntMap
-		var actualReader parsley.Reader
 		var actualPos parsley.Pos
-		p := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-			actualHistory = h
+		p := parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+			actualCtx = ctx
 			actualLeftRecCtx = leftRecCtx
-			actualReader = r
 			actualPos = pos
-			return expectedNodes, expectedErr, expectedCurtailingParsers
+			return expectedNodes, expectedCurtailingParsers
 		})
 
-		actualNodes, actualErr, actualCurtailingParsers := p.Parse(expectedHistory, expectedLeftRecCtx, expectedReader, expectedPos)
+		actualNodes, actualCurtailingParsers := p.Parse(expectedCtx, expectedLeftRecCtx, expectedPos)
 
-		Expect(actualHistory).To(BeIdenticalTo(expectedHistory))
+		Expect(actualCtx).To(BeIdenticalTo(expectedCtx))
 		Expect(actualCurtailingParsers).To(Equal(expectedCurtailingParsers))
 		Expect(actualNodes).To(Equal(expectedNodes))
 		Expect(actualLeftRecCtx).To(Equal(expectedLeftRecCtx))
-		Expect(actualReader).To(BeIdenticalTo(expectedReader))
-		Expect(actualErr).To(BeIdenticalTo(expectedErr))
+		Expect(actualPos).To(BeIdenticalTo(expectedPos))
 	})
 
 	Describe("WithName", func() {
 		It("should create a named parser", func() {
-			f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-				return nil, nil, data.EmptyIntSet
+			f := parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+				return nil, data.EmptyIntSet
 			})
 			p := f.WithName("p1")
 			Expect(p.Name()).To(Equal("p1"))
@@ -59,8 +56,8 @@ var _ = Describe("Func", func() {
 
 		Context("when a function is passed as name", func() {
 			It("should call the function to get the name", func() {
-				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-					return nil, nil, data.EmptyIntSet
+				f := parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+					return nil, data.EmptyIntSet
 				})
 				name := func() string {
 					return "p1"
@@ -72,8 +69,8 @@ var _ = Describe("Func", func() {
 
 		Context("called with an invalid parameter", func() {
 			It("should panic", func() {
-				f := parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-					return nil, nil, data.EmptyIntSet
+				f := parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+					return nil, data.EmptyIntSet
 				})
 				Expect(func() { f.WithName(nil) }).To(Panic())
 			})

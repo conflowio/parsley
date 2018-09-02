@@ -38,7 +38,7 @@ func (rp *Recursive) Bind(interpreter parsley.Interpreter) *Recursive {
 }
 
 // Parse parses the given input
-func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
+func (rp *Recursive) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
 	p := &recursive{
 		token:             rp.token,
 		parserLookUp:      rp.parserLookUp,
@@ -47,7 +47,7 @@ func (rp *Recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.
 		curtailingParsers: data.EmptyIntSet,
 		nodes:             []parsley.Node{},
 	}
-	return p.Parse(h, leftRecCtx, r, pos)
+	return p.Parse(ctx, leftRecCtx, pos)
 }
 
 // Name returns with the parser's descriptive name
@@ -63,27 +63,22 @@ type recursive struct {
 	interpreter       parsley.Interpreter
 	curtailingParsers data.IntSet
 	result            parsley.Node
-	err               parsley.Error
 	nodes             []parsley.Node
 }
 
 // Parse runs the recursive parser
-func (rp *recursive) Parse(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-	rp.parse(0, h, leftRecCtx, r, pos, true)
-	return rp.result, rp.err, rp.curtailingParsers
+func (rp *recursive) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	rp.parse(0, ctx, leftRecCtx, pos, true)
+	return rp.result, rp.curtailingParsers
 }
 
-func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos, mergeCurtailingParsers bool) bool {
 	var cp data.IntSet
 	var res parsley.Node
-	var err parsley.Error
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
-		h.RegisterCall()
-		res, err, cp = nextParser.Parse(h, leftRecCtx, r, pos)
-		if err != nil && (rp.err == nil || err.Pos() >= rp.err.Pos()) {
-			rp.err = err
-		}
+		ctx.RegisterCall()
+		res, cp = nextParser.Parse(ctx, leftRecCtx, pos)
 	}
 
 	if mergeCurtailingParsers {
@@ -94,12 +89,12 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 		switch rest := res.(type) {
 		case ast.NodeList:
 			for i, node := range rest {
-				if rp.parseNext(i, node, depth, h, leftRecCtx, r, pos, mergeCurtailingParsers) {
+				if rp.parseNext(i, node, depth, ctx, leftRecCtx, pos, mergeCurtailingParsers) {
 					return true
 				}
 			}
 		default:
-			if rp.parseNext(0, rest, depth, h, leftRecCtx, r, pos, mergeCurtailingParsers) {
+			if rp.parseNext(0, rest, depth, ctx, leftRecCtx, pos, mergeCurtailingParsers) {
 				return true
 			}
 		}
@@ -119,8 +114,8 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 			}
 		} else {
 			if depth > 0 && nextParser != nil && nextParser.Name() != "" {
-				if err == nil && (rp.err == nil || pos > rp.err.Pos()) {
-					rp.err = parsley.NewErrorf(pos, "was expecting %s", nextParser.Name())
+				if ctx.Error() == nil || pos > ctx.Error().Pos() {
+					ctx.SetErrorf(pos, "was expecting %s", nextParser.Name())
 				}
 			}
 		}
@@ -128,7 +123,7 @@ func (rp *recursive) parse(depth int, h parsley.History, leftRecCtx data.IntMap,
 	return false
 }
 
-func (rp *recursive) parseNext(i int, node parsley.Node, depth int, h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos, mergeCurtailingParsers bool) bool {
+func (rp *recursive) parseNext(i int, node parsley.Node, depth int, ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos, mergeCurtailingParsers bool) bool {
 	if len(rp.nodes) < depth+1 {
 		rp.nodes = append(rp.nodes, node)
 	} else {
@@ -138,7 +133,7 @@ func (rp *recursive) parseNext(i int, node parsley.Node, depth int, h parsley.Hi
 		leftRecCtx = data.EmptyIntMap
 		mergeCurtailingParsers = false
 	}
-	if rp.parse(depth+1, h, leftRecCtx, r, node.ReaderPos(), mergeCurtailingParsers) {
+	if rp.parse(depth+1, ctx, leftRecCtx, node.ReaderPos(), mergeCurtailingParsers) {
 		return true
 	}
 	return false

@@ -18,30 +18,33 @@ import (
 
 // Char matches a character literal enclosed in single quotes
 func Char() *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		readerPos, found := tr.ReadRune(pos, '\'')
 		if !found {
-			return nil, nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet
 		}
 
 		readerPos, res := tr.ReadRegexp(
 			readerPos, `\\[abfnrtv']|\\x[0-9a-fA-F]{2,2}|\\u[0-9a-fA-F]{4,4}|\\U[0-9a-fA-F]{8,8}|[^']`,
 		)
 		if res == nil {
-			return nil, parsley.NewErrorf(readerPos, "was expecting one character"), data.EmptyIntSet
+			ctx.SetErrorf(readerPos, "was expecting one character")
+			return nil, data.EmptyIntSet
 		}
 
 		readerPos, found = tr.ReadRune(readerPos, '\'')
 		if !found {
-			return nil, parsley.NewErrorf(readerPos, "was expecting \"'\""), data.EmptyIntSet
+			ctx.SetErrorf(readerPos, "was expecting \"'\"")
+			return nil, data.EmptyIntSet
 		}
 
 		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
 		if tail != "" || err != nil {
-			return nil, parsley.NewErrorf(readerPos, "invalid character value"), data.EmptyIntSet
+			ctx.SetErrorf(readerPos, "invalid character value")
+			return nil, data.EmptyIntSet
 		}
 
-		return ast.NewTerminalNode("CHAR", value, pos, readerPos), nil, data.EmptyIntSet
+		return ast.NewTerminalNode("CHAR", value, pos, readerPos), data.EmptyIntSet
 	}).WithName("char value")
 }

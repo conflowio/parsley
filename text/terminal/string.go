@@ -8,6 +8,7 @@ package terminal
 
 import (
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
@@ -18,8 +19,8 @@ import (
 
 // String matches a string literal enclosed in double quotes
 func String(allowBackquote bool) *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		quote := '"'
 		readerPos, found := tr.ReadRune(pos, quote)
 		if !found {
@@ -30,13 +31,13 @@ func String(allowBackquote bool) *parser.NamedFunc {
 		}
 
 		if !found {
-			return nil, nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet
 		}
 
 		// check for empty string
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
-			return ast.NewTerminalNode("STRING", "", pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode("STRING", "", pos, readerPos), data.EmptyIntSet
 		}
 
 		var value []byte
@@ -48,16 +49,31 @@ func String(allowBackquote bool) *parser.NamedFunc {
 
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
-			return nil, parsley.NewErrorf(readerPos, "was expecting '%s'", string(quote)), data.EmptyIntSet
+			ctx.SetErrorf(readerPos, "was expecting '%s'", string(quote))
+			return nil, data.EmptyIntSet
 		}
-		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), nil, data.EmptyIntSet
+		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), data.EmptyIntSet
 	}).WithName("string value")
 }
 
 func unquoteString(b []byte) ([]byte, int) {
-	str := string(b)
+	i := 0
+	for {
+		if i >= len(b) {
+			return b, len(b)
+		}
+		if b[i] == '"' {
+			return b[0:i], i
+		} else if b[i] == '\\' || b[i] >= utf8.RuneSelf {
+			break
+		}
+		i++
+	}
+
+	str := string(b[i:])
 	var tail string
-	var res = make([]byte, 0, 64)
+	var res = make([]byte, 0, i)
+	res = append(res, b[0:i]...)
 	var err error
 	var ch rune
 	for {

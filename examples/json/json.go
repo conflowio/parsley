@@ -19,7 +19,6 @@ import (
 
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/examples/json/json"
-	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
@@ -36,14 +35,14 @@ func main() {
 	}
 	fs.AddFile(file)
 
-	h := parser.NewHistory()
 	reader := text.NewReader(file)
+	ctx := parsley.NewContext(reader)
 	s := combinator.Sentence(json.NewParser())
 
-	res, evalErr := parsley.Evaluate(h, reader, s, nil)
+	res, evalErr := parsley.Evaluate(ctx, s, nil)
 	if evalErr != nil {
 		panic(fs.ErrorWithPosition(evalErr))
 	}
-	fmt.Printf("Parser calls: %d\n", h.CallCount())
+	fmt.Printf("Parser calls: %d\n", ctx.CallCount())
 	fmt.Printf("%v\n", res)
 }

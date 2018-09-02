@@ -1,23 +1,26 @@
-package parser_test
+// Copyright (c) 2017 Opsidian Ltd.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+package parsley_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-var _ = Describe("History", func() {
+var _ = Describe("Result Cache", func() {
 	var (
-		h *parser.History
-		p *parsleyfakes.FakeParser
+		rc parsley.ResultCache
 	)
 
 	BeforeEach(func() {
-		p = &parsleyfakes.FakeParser{}
-		h = parser.NewHistory()
+		rc = parsley.NewResultCache()
 	})
 
 	Describe("SaveResult/GetResult", func() {
@@ -32,19 +35,16 @@ var _ = Describe("History", func() {
 		BeforeEach(func() {
 			res1 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               parsley.NewErrorf(parsley.Pos(2), "some error"),
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res2 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res3 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
-				Err:               nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
@@ -55,10 +55,10 @@ var _ = Describe("History", func() {
 		})
 
 		JustBeforeEach(func() {
-			h.SaveResult(1, parsley.Pos(1), res1)
-			h.SaveResult(1, parsley.Pos(2), res2)
-			h.SaveResult(2, parsley.Pos(1), res3)
-			res, found = h.GetResult(parserIndex, pos, leftRecCtx)
+			rc.Save(1, parsley.Pos(1), res1)
+			rc.Save(1, parsley.Pos(2), res2)
+			rc.Save(2, parsley.Pos(1), res3)
+			res, found = rc.Get(parserIndex, pos, leftRecCtx)
 		})
 
 		It("should return previously saved result", func() {
@@ -127,13 +127,4 @@ var _ = Describe("History", func() {
 			})
 		})
 	})
-
-	Describe("RegisterCall/CallCount", func() {
-		It("should register a call count", func() {
-			Expect(h.CallCount()).To(Equal(0))
-			h.RegisterCall()
-			Expect(h.CallCount()).To(Equal(1))
-		})
-	})
-
 })
