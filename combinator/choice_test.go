@@ -28,7 +28,7 @@ func ExampleChoice() {
 		terminal.Integer(),
 	)
 	r := text.NewReader(text.NewFile("example.file", []byte("1.23")))
-	ctx := parsley.NewContext(r, parser.NewHistory())
+	ctx := parsley.NewContext(r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: float64 1.23
@@ -38,7 +38,6 @@ var _ = Describe("Choice", func() {
 
 	var (
 		p                 *parser.NamedFunc
-		h                 *parsleyfakes.FakeHistory
 		r                 *parsleyfakes.FakeReader
 		parsers           []parsley.Parser
 		p1, p2            *parsleyfakes.FakeParser
@@ -51,9 +50,8 @@ var _ = Describe("Choice", func() {
 	)
 
 	BeforeEach(func() {
-		h = &parsleyfakes.FakeHistory{}
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r, h)
+		ctx = parsley.NewContext(r)
 		p1 = &parsleyfakes.FakeParser{}
 		p1.NameReturns("p1")
 		p2 = &parsleyfakes.FakeParser{}

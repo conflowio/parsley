@@ -2,16 +2,17 @@ package parsley
 
 // Context is the parsing context passed to all parsers
 type Context struct {
-	reader  Reader
-	history History
-	err     Error
+	reader      Reader
+	resultCache ResultCache
+	err         Error
+	callCount   int
 }
 
 // NewContext creates a new parsing context
-func NewContext(reader Reader, history History) *Context {
+func NewContext(reader Reader) *Context {
 	return &Context{
-		reader:  reader,
-		history: history,
+		reader:      reader,
+		resultCache: NewResultCache(),
 	}
 }
 
@@ -20,9 +21,9 @@ func (c *Context) Reader() Reader {
 	return c.reader
 }
 
-// History returns with the history object
-func (c *Context) History() History {
-	return c.history
+// ResultCache returns with the result cache object
+func (c *Context) ResultCache() ResultCache {
+	return c.resultCache
 }
 
 // SetError saves the error if it has the highest position for found errors
@@ -47,4 +48,14 @@ func (c *Context) OverrideError(err Error) {
 // Error returns with the parse error with the highest position (if any)
 func (c *Context) Error() Error {
 	return c.err
+}
+
+// RegisterCall registers a call
+func (c *Context) RegisterCall() {
+	c.callCount++
+}
+
+// CallCount returns with the call count
+func (c *Context) CallCount() int {
+	return c.callCount
 }

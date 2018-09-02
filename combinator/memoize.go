@@ -20,7 +20,7 @@ var nextParserIndex int32
 func Memoize(p parsley.Parser) *parser.NamedFunc {
 	parserIndex := int(atomic.AddInt32(&nextParserIndex, 1))
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
-		if result, found := ctx.History().GetResult(parserIndex, pos, leftRecCtx); found {
+		if result, found := ctx.ResultCache().Get(parserIndex, pos, leftRecCtx); found {
 			return result.Node, result.CurtailingParsers
 		}
 
@@ -36,7 +36,7 @@ func Memoize(p parsley.Parser) *parser.NamedFunc {
 			CurtailingParsers: cp,
 			Node:              node,
 		}
-		ctx.History().SaveResult(parserIndex, pos, res)
+		ctx.ResultCache().Save(parserIndex, pos, res)
 
 		return node, cp
 	}).WithName(p.Name)

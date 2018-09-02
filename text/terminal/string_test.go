@@ -33,7 +33,7 @@ var _ = Describe("String", func() {
 			func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r, nil)
+				ctx := parsley.NewContext(r)
 				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(ctx.Error()).ToNot(HaveOccurred())
@@ -72,7 +72,7 @@ var _ = Describe("String", func() {
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r, nil)
+				ctx := parsley.NewContext(r)
 				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(ctx.Error()).ToNot(HaveOccurred())
@@ -88,7 +88,7 @@ var _ = Describe("String", func() {
 			func(input string) {
 				f := text.NewFile("textfile", []byte(input))
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r, nil)
+				ctx := parsley.NewContext(r)
 				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(ctx.Error()).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
@@ -111,7 +111,7 @@ var _ = Describe("String", func() {
 		It("should match double-quoted strings", func() {
 			f := text.NewFile("textfile", []byte(`"foo"`))
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r, nil)
+			ctx := parsley.NewContext(r)
 			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 			Expect(ctx.Error()).ToNot(HaveOccurred())
 			Expect(res).ToNot(BeNil())
@@ -120,7 +120,7 @@ var _ = Describe("String", func() {
 		It("should not match backquoted strings", func() {
 			f := text.NewFile("textfile", []byte("`foo`"))
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r, nil)
+			ctx := parsley.NewContext(r)
 			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 			Expect(ctx.Error()).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())

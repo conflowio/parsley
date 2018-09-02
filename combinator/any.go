@@ -23,7 +23,7 @@ func Any(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 		cp := data.EmptyIntSet
 		var res parsley.Node
 		for _, p := range parsers {
-			ctx.History().RegisterCall()
+			ctx.RegisterCall()
 			res2, cp2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
 			res = ast.AppendNode(res, res2)

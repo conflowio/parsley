@@ -18,7 +18,7 @@ var _ = Describe("Nil", func() {
 	)
 
 	BeforeEach(func() {
-		ctx = parsley.NewContext(&parsleyfakes.FakeReader{}, nil)
+		ctx = parsley.NewContext(&parsleyfakes.FakeReader{})
 	})
 
 	It("should have no name", func() {
@@ -44,7 +44,7 @@ var _ = Describe("End", func() {
 
 	BeforeEach(func() {
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r, nil)
+		ctx = parsley.NewContext(r)
 	})
 
 	It("should have a name", func() {

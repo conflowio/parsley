@@ -16,7 +16,6 @@ import (
 
 var _ = Describe("Evaluate", func() {
 	var (
-		h          *parsleyfakes.FakeHistory
 		r          *parsleyfakes.FakeReader
 		p          *parsleyfakes.FakeParser
 		ctx        *parsley.Context
@@ -30,9 +29,8 @@ var _ = Describe("Evaluate", func() {
 	)
 
 	BeforeEach(func() {
-		h = &parsleyfakes.FakeHistory{}
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r, h)
+		ctx = parsley.NewContext(r)
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
 		p.NameReturns("p1")

@@ -21,7 +21,7 @@ func Choice(name string, parsers ...parsley.Parser) *parser.NamedFunc {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
 		cp := data.EmptyIntSet
 		for _, p := range parsers {
-			ctx.History().RegisterCall()
+			ctx.RegisterCall()
 			node, cp2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
 			if node != nil {

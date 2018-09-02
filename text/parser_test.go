@@ -32,7 +32,7 @@ var _ = Describe("Trim parsers", func() {
 		fakep.ParseReturns(parserRes, parserCP)
 		f = text.NewFile("testfile", input)
 		r = text.NewReader(f)
-		ctx = parsley.NewContext(r, nil)
+		ctx = parsley.NewContext(r)
 		ctx.OverrideError(parserErr)
 	})
 

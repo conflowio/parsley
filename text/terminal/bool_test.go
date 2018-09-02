@@ -36,7 +36,7 @@ var _ = Describe("Bool", func() {
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r, nil)
+			ctx := parsley.NewContext(r)
 			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(ctx.Error()).ToNot(HaveOccurred())
@@ -58,7 +58,7 @@ var _ = Describe("Bool", func() {
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r, nil)
+			ctx := parsley.NewContext(r)
 			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(ctx.Error()).ToNot(HaveOccurred())

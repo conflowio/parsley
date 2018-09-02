@@ -30,7 +30,7 @@ func ExampleParse() {
 	).Bind(sum)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
-	ctx := parsley.NewContext(r, parser.NewHistory())
+	ctx := parsley.NewContext(r)
 	node, err := parsley.Parse(ctx, combinator.Sentence(p))
 	if err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func ExampleEvaluate() {
 	).Bind(sum)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
-	ctx := parsley.NewContext(r, parser.NewHistory())
+	ctx := parsley.NewContext(r)
 	value, err := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	if err != nil {
 		panic(err)
@@ -70,7 +70,6 @@ func ExampleEvaluate() {
 
 var _ = Describe("Parse", func() {
 	var (
-		h         *parsleyfakes.FakeHistory
 		r         *parsleyfakes.FakeReader
 		ctx       *parsley.Context
 		p         *parsleyfakes.FakeParser
@@ -81,9 +80,8 @@ var _ = Describe("Parse", func() {
 	)
 
 	BeforeEach(func() {
-		h = &parsleyfakes.FakeHistory{}
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r, h)
+		ctx = parsley.NewContext(r)
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
 		p.NameReturns("p1")
@@ -182,15 +180,14 @@ var _ = Describe("Parsley", func() {
 			terminal.Rune('a'),
 		))
 
-		h := parser.NewHistory()
 		f := text.NewFile("testfile", []byte(input))
 		r := text.NewReader(f)
-		ctx := parsley.NewContext(r, h)
+		ctx := parsley.NewContext(r)
 		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p), nil)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(input))
-		Expect(h.CallCount()).To(Equal(299))
+		Expect(ctx.CallCount()).To(Equal(299))
 	})
 
 	It("should handle highly ambiguous left-recursive grammar", func() {
@@ -214,15 +211,14 @@ var _ = Describe("Parsley", func() {
 			value,
 		).Bind(add))
 
-		h := parser.NewHistory()
 		f := text.NewFile("testfile", []byte(input))
 		r := text.NewReader(f)
-		ctx := parsley.NewContext(r, h)
+		ctx := parsley.NewContext(r)
 		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p), nil)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(int64(55)))
-		Expect(h.CallCount()).To(Equal(237770))
+		Expect(ctx.CallCount()).To(Equal(237770))
 
 	})
 })

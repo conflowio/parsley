@@ -77,7 +77,7 @@ func (rp *recursive) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntM
 	var res parsley.Node
 	nextParser := rp.parserLookUp(depth)
 	if nextParser != nil {
-		ctx.History().RegisterCall()
+		ctx.RegisterCall()
 		res, cp = nextParser.Parse(ctx, leftRecCtx, pos)
 	}
 

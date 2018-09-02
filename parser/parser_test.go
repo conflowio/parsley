@@ -21,7 +21,6 @@ var _ = Describe("Func", func() {
 	It("should call the function and return the result", func() {
 		expectedCtx := parsley.NewContext(
 			&parsleyfakes.FakeReader{},
-			&parsleyfakes.FakeHistory{},
 		)
 		expectedLeftRecCtx := data.NewIntMap(map[int]int{1: 2})
 		expectedPos := parsley.Pos(2)
