@@ -12,11 +12,9 @@ import (
 var _ = Describe("History", func() {
 	var (
 		h *parser.History
-		p *parsleyfakes.FakeParser
 	)
 
 	BeforeEach(func() {
-		p = &parsleyfakes.FakeParser{}
 		h = parser.NewHistory()
 	})
 

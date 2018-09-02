@@ -5,7 +5,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 	"github.com/opsidian/parsley/text"
@@ -17,22 +16,24 @@ var _ = Describe("Trim parsers", func() {
 	var (
 		r              *text.Reader
 		f              *text.File
+		ctx            *parsley.Context
 		input          []byte
 		pos            parsley.Pos
 		p              parsley.Parser
 		fakep          *parsleyfakes.FakeParser
 		wsMode         text.WsMode
 		res, parserRes parsley.Node
-		err, parserErr parsley.Error
-		h              *parser.History
+		parserErr      parsley.Error
 		leftRectCtx    data.IntMap
 		cp, parserCP   data.IntSet
 	)
 
 	JustBeforeEach(func() {
-		fakep.ParseReturns(parserRes, parserErr, parserCP)
+		fakep.ParseReturns(parserRes, parserCP)
 		f = text.NewFile("testfile", input)
 		r = text.NewReader(f)
+		ctx = parsley.NewContext(r, nil)
+		ctx.OverrideError(parserErr)
 	})
 
 	BeforeEach(func() {
@@ -40,7 +41,6 @@ var _ = Describe("Trim parsers", func() {
 		p = fakep
 		wsMode = text.WsNone
 		pos = parsley.Pos(1)
-		h = parser.NewHistory()
 		leftRectCtx = data.EmptyIntMap.Inc(1)
 		parserRes = &parsleyfakes.FakeNode{}
 		parserErr = parsley.NewErrorf(parsley.Pos(1), "some error")
@@ -54,20 +54,18 @@ var _ = Describe("Trim parsers", func() {
 
 		JustBeforeEach(func() {
 			leftTrim := text.LeftTrim(p, wsMode)
-			res, err, cp = leftTrim.Parse(h, leftRectCtx, r, pos)
+			res, cp = leftTrim.Parse(ctx, leftRectCtx, pos)
 		})
 
 		It("calls the parser", func() {
 			Expect(fakep.ParseCallCount()).To(Equal(1))
-			passedHistory, passedLeftRecCtx, passedReader, _ := fakep.ParseArgsForCall(0)
-			Expect(passedHistory).To(Equal(h))
+			passedCtx, passedLeftRecCtx, _ := fakep.ParseArgsForCall(0)
+			Expect(passedCtx).To(Equal(ctx))
 			Expect(passedLeftRecCtx).To(Equal(leftRectCtx))
-			Expect(passedReader).To(Equal(r))
 		})
 
 		It("returns the result of the parser", func() {
 			Expect(res).To(BeIdenticalTo(parserRes))
-			Expect(err).To(Equal(parserErr))
 			Expect(cp).To(Equal(parserCP))
 		})
 
@@ -77,7 +75,7 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("skips no spaces", func() {
-				_, _, _, passedPos := fakep.ParseArgsForCall(0)
+				_, _, passedPos := fakep.ParseArgsForCall(0)
 				Expect(passedPos).To(Equal(pos))
 			})
 		})
@@ -88,7 +86,7 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("should trim the spaces from the left", func() {
-				_, _, _, passedPos := fakep.ParseArgsForCall(0)
+				_, _, passedPos := fakep.ParseArgsForCall(0)
 				Expect(passedPos).To(Equal(pos + 2))
 			})
 		})
@@ -99,7 +97,7 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("should trim the spaces and new lines from the left", func() {
-				_, _, _, passedPos := fakep.ParseArgsForCall(0)
+				_, _, passedPos := fakep.ParseArgsForCall(0)
 				Expect(passedPos).To(Equal(pos + 4))
 			})
 		})
@@ -109,20 +107,18 @@ var _ = Describe("Trim parsers", func() {
 		BeforeEach(func() {
 			input = []byte("abc \t\n\f")
 			parserRes = nil
-			parserErr = nil
 		})
 
 		JustBeforeEach(func() {
 			rightTrim := text.RightTrim(p, wsMode)
-			res, err, cp = rightTrim.Parse(h, leftRectCtx, r, pos)
+			res, cp = rightTrim.Parse(ctx, leftRectCtx, pos)
 		})
 
 		It("calls the parser", func() {
 			Expect(fakep.ParseCallCount()).To(Equal(1))
-			passedHistory, passedLeftRecCtx, passedReader, _ := fakep.ParseArgsForCall(0)
-			Expect(passedHistory).To(Equal(h))
+			passedCtx, passedLeftRecCtx, _ := fakep.ParseArgsForCall(0)
+			Expect(passedCtx).To(Equal(ctx))
 			Expect(passedLeftRecCtx).To(Equal(leftRectCtx))
-			Expect(passedReader).To(Equal(r))
 		})
 
 		It("returns with the curtailing parsers", func() {
@@ -177,7 +173,7 @@ var _ = Describe("Trim parsers", func() {
 				})
 
 				It("skips no spaces", func() {
-					Expect(err).To(Equal(parserErr))
+					Expect(ctx.Error()).To(Equal(parserErr))
 				})
 			})
 
@@ -187,8 +183,8 @@ var _ = Describe("Trim parsers", func() {
 				})
 
 				It("should trim the spaces from the right", func() {
-					Expect(err.Error()).To(Equal(parserErr.Error()))
-					Expect(err.Pos()).To(Equal(parsley.Pos(6)))
+					Expect(ctx.Error().Error()).To(Equal("some error"))
+					Expect(ctx.Error().Pos()).To(Equal(parsley.Pos(6)))
 				})
 			})
 
@@ -198,8 +194,8 @@ var _ = Describe("Trim parsers", func() {
 				})
 
 				It("should trim the spaces and new lines from the right", func() {
-					Expect(err.Error()).To(Equal(parserErr.Error()))
-					Expect(err.Pos()).To(Equal(parsley.Pos(8)))
+					Expect(ctx.Error().Error()).To(Equal("some error"))
+					Expect(ctx.Error().Pos()).To(Equal(parsley.Pos(8)))
 				})
 			})
 		})
@@ -212,7 +208,7 @@ var _ = Describe("Trim parsers", func() {
 
 		JustBeforeEach(func() {
 			trim := text.Trim(p)
-			res, err, cp = trim.Parse(h, leftRectCtx, r, pos)
+			res, cp = trim.Parse(ctx, leftRectCtx, pos)
 		})
 
 		Context("When there is result", func() {

@@ -14,25 +14,25 @@ import (
 
 // Parse parses the given input and returns with the root node of the AST. It expects a reader and the root parser.
 // If there are multiple possible parse trees only the first one is returned.
-func Parse(h History, r Reader, p Parser) (Node, Error) {
-	h.RegisterCall()
-	node, err, _ := p.Parse(h, data.EmptyIntMap, r, r.Pos(0))
+func Parse(parseCtx *Context, p Parser) (Node, Error) {
+	parseCtx.History().RegisterCall()
+	node, _ := p.Parse(parseCtx, data.EmptyIntMap, parseCtx.Reader().Pos(0))
 	if node == nil {
-		if err != nil {
-			return nil, WrapError(err, "failed to parse the input: {{err}}")
+		if parseCtx.Error() != nil {
+			return nil, WrapError(parseCtx.Error(), "failed to parse the input: {{err}}")
 		}
-		return nil, NewError(r.Pos(0), fmt.Errorf("failed to parse the input: was expecting %s", p.Name()))
+		return nil, NewError(parseCtx.Reader().Pos(0), fmt.Errorf("failed to parse the input: was expecting %s", p.Name()))
 	}
 	return node, nil
 }
 
 // Evaluate parses the given input and evaluates it. It expects a reader, the root parser and the evaluation context.
 // If there are multiple possible parse trees only the first one is used for evaluation.
-func Evaluate(h History, r Reader, p Parser, ctx interface{}) (interface{}, Error) {
-	node, parseErr := Parse(h, r, p)
+func Evaluate(parseCtx *Context, p Parser, evalCtx interface{}) (interface{}, Error) {
+	node, parseErr := Parse(parseCtx, p)
 	if parseErr != nil {
 		return nil, parseErr
 	}
-	value, evalErr := node.Value(ctx)
+	value, evalErr := node.Value(evalCtx)
 	return value, evalErr
 }
