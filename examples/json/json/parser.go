@@ -24,7 +24,7 @@ func NewParser() *parser.NamedFunc {
 	keyValue := combinator.Seq("OBJ_KV", "key-value pair",
 		terminal.String(false),
 		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
-		text.LeftTrim(&value, text.WsSpaces),
+		text.LeftTrim(&value, text.WsSpacesNl),
 	)
 
 	object := combinator.Seq("OBJ", "object",
