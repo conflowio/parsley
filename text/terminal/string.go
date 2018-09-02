@@ -8,6 +8,7 @@ package terminal
 
 import (
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
@@ -56,9 +57,23 @@ func String(allowBackquote bool) *parser.NamedFunc {
 }
 
 func unquoteString(b []byte) ([]byte, int) {
-	str := string(b)
+	i := 0
+	for {
+		if i >= len(b) {
+			return b, len(b)
+		}
+		if b[i] == '"' {
+			return b[0:i], i
+		} else if b[i] == '\\' || b[i] >= utf8.RuneSelf {
+			break
+		}
+		i++
+	}
+
+	str := string(b[i:])
 	var tail string
-	var res = make([]byte, 0, 64)
+	var res = make([]byte, 0, i)
+	res = append(res, b[0:i]...)
 	var err error
 	var ch rune
 	for {
