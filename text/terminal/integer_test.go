@@ -29,9 +29,10 @@ var _ = Describe("Integer", func() {
 		func(input string, startPos int, value int, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			ctx := parsley.NewContext(r, nil)
+			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).ToNot(HaveOccurred())
+			Expect(ctx.Error()).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("INT"))
 			Expect(node.Value(nil)).To(Equal(int64(value)))
@@ -67,9 +68,10 @@ var _ = Describe("Integer", func() {
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			r := text.NewReader(f)
-			res, err, curtailingParsers := p.Parse(nil, data.EmptyIntMap, r, f.Pos(startPos))
+			ctx := parsley.NewContext(r, nil)
+			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(err).ToNot(HaveOccurred())
+			Expect(ctx.Error()).ToNot(HaveOccurred())
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", "", 0),

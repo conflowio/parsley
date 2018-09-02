@@ -19,19 +19,19 @@ import (
 
 // Integer matches all integer numbers and zero with an optional -/+ sign
 func Integer() *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?(?:[1-9][0-9]*|0[xX][0-9a-fA-F]+|0[0-7]*)"); result != nil {
 			if _, isFloat := tr.ReadRune(readerPos, '.'); isFloat {
-				return nil, nil, data.EmptyIntSet
+				return nil, data.EmptyIntSet
 			}
 			intValue, err := strconv.ParseInt(string(result), 0, 64)
 			if err != nil {
 				// This should never happen
 				panic(fmt.Sprintf("Could not convert %s to integer", string(result)))
 			}
-			return ast.NewTerminalNode("INT", intValue, pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode("INT", intValue, pos, readerPos), data.EmptyIntSet
 		}
-		return nil, nil, data.EmptyIntSet
+		return nil, data.EmptyIntSet
 	}).WithName("integer value")
 }

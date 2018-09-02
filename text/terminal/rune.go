@@ -18,11 +18,11 @@ import (
 
 // Rune matches the given character
 func Rune(ch rune) *parser.NamedFunc {
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.ReadRune(pos, ch); found {
-			return ast.NewTerminalNode(string(ch), ch, pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode(string(ch), ch, pos, readerPos), data.EmptyIntSet
 		}
-		return nil, nil, data.EmptyIntSet
+		return nil, data.EmptyIntSet
 	}).WithName(fmt.Sprintf("%q", string(ch)))
 }

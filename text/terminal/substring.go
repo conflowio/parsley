@@ -22,11 +22,11 @@ func Substring(token string, str string, value interface{}) *parser.NamedFunc {
 		panic("Substring() should not be called with empty string")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchString(pos, str); found {
-			return ast.NewTerminalNode(token, value, pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode(token, value, pos, readerPos), data.EmptyIntSet
 		}
-		return nil, nil, data.EmptyIntSet
+		return nil, data.EmptyIntSet
 	}).WithName(fmt.Sprintf("%q", str))
 }

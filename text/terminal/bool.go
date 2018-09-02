@@ -22,14 +22,14 @@ func Bool(trueStr string, falseStr string) *parser.NamedFunc {
 		panic("Bool() should not be called with an empty true/false string")
 	}
 
-	return parser.Func(func(h parsley.History, leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (parsley.Node, parsley.Error, data.IntSet) {
-		tr := r.(*text.Reader)
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
-			return ast.NewTerminalNode("BOOL", true, pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode("BOOL", true, pos, readerPos), data.EmptyIntSet
 		}
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
-			return ast.NewTerminalNode("BOOL", false, pos, readerPos), nil, data.EmptyIntSet
+			return ast.NewTerminalNode("BOOL", false, pos, readerPos), data.EmptyIntSet
 		}
-		return nil, nil, data.EmptyIntSet
+		return nil, data.EmptyIntSet
 	}).WithName(fmt.Sprintf("%s or %s", trueStr, falseStr))
 }
