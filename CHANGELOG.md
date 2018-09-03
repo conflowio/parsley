@@ -1,3 +1,13 @@
+## 0.8.1
+
+IMPROVEMENTS:
+
+- Add back the SeqTryOrValue, SepByOrValue and SepByOrValue1 combinators as these are required
+
+BUGFIXES:
+
+- Many1 won't match for zero p matches
+
 ## 0.8.0
 
 IMPROVEMENTS:
