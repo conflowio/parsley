@@ -14,17 +14,25 @@ import (
 // and returns with all combinations of the results.
 // Only matches are returned where all parsers were applied successfully.
 func Seq(token string, name string, parsers ...parsley.Parser) *Recursive {
-	return newSeq(token, name, len(parsers), parsers...)
+	return newSeq(token, name, false, len(parsers), parsers...)
 }
 
-// SeqTry tries to apply all parsers after each other matching effectively the longest possible sequences of
-// tokens and returns with all combinations of the results.
+// SeqTry tries to apply all parsers after each other matching effectively the longest possible
+// sequences of tokens and returns with all combinations of the results.
 // It needs to match the first parser at least
 func SeqTry(token string, name string, parsers ...parsley.Parser) *Recursive {
-	return newSeq(token, name, 1, parsers...)
+	return newSeq(token, name, false, 1, parsers...)
 }
 
-func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recursive {
+// SeqTryOrValue tries to apply all parsers after each other matching effectively the longest possible
+// sequences of tokens and returns with all combinations of the results.
+// It needs to match the first parser at least.
+// If only the first parser matches it will return the result of the first parser directly.
+func SeqTryOrValue(token string, name string, parsers ...parsley.Parser) *Recursive {
+	return newSeq(token, name, true, 1, parsers...)
+}
+
+func newSeq(token string, name string, returnSingle bool, min int, parsers ...parsley.Parser) *Recursive {
 	namef := parsers[0].Name
 	if name != "" {
 		namef = func() string { return name }
@@ -39,5 +47,5 @@ func newSeq(token string, name string, min int, parsers ...parsley.Parser) *Recu
 	lenCheck := func(len int) bool {
 		return len >= min && len <= l
 	}
-	return NewRecursive(token, namef, false, lookup, lenCheck)
+	return NewRecursive(token, namef, returnSingle, lookup, lenCheck)
 }

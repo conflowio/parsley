@@ -62,6 +62,29 @@ func ExampleSeqTry() {
 	// Output: string ab
 }
 
+// When using the SeqTryOrValue the result will be the value of node 'a' and the interpreter is not used.
+func ExampleSeqTryOrValue() {
+	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		var res string
+		for _, node := range nodes {
+			val, _ := node.Value(ctx)
+			res += string(val.(rune))
+		}
+		return res, nil
+	})
+
+	p := combinator.SeqTryOrValue("ABC", "",
+		terminal.Rune('a'),
+		terminal.Rune('b'),
+		terminal.Rune('c'),
+	).Bind(concat)
+	r := text.NewReader(text.NewFile("example.file", []byte("a")))
+	ctx := parsley.NewContext(r)
+	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	fmt.Printf("%T %v\n", value, value)
+	// Output: int32 97
+}
+
 //
 // func TestSeqShouldPanicIfNoBuilder(t *testing.T) {
 // 	p := parser.Func(func(leftRecCtx data.IntMap, r parsley.Reader, pos parsley.Pos) (data.IntSet, []parsley.Node, parsley.Error) {
