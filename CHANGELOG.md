@@ -1,3 +1,8 @@
+## 0.8.2
+
+IMPROVEMENTS:
+- Add Single combinator: Single will change the result of p if it returns with a non terminal node with only one child. In this case directly the child will be returned.
+
 ## 0.8.1
 
 IMPROVEMENTS:
