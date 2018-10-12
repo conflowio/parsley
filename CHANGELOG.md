@@ -1,3 +1,9 @@
+## 0.8.3
+
+IMPROVEMENTS:
+- Add Go module definition
+- Update CircleCI config to use Go 1.11
+
 ## 0.8.2
 
 IMPROVEMENTS:
