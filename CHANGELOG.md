@@ -1,3 +1,9 @@
+## 0.8.4
+
+BUGFIXES:
+
+- The Single combinator will now return with the original parser's name
+
 ## 0.8.3
 
 IMPROVEMENTS:
