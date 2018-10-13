@@ -8,6 +8,9 @@ BACKWARDS INCOMPATIBILITIES:
 - The parsing context now carries the file set
 - The top level parsley.Parse and parsley.Evaluate now will return with a simple error type which already contains the error position (these are only convenience methods).
 - I removed the *OrValue combinators as you can force a single child result with the Single combinator
+- Clean up all combinators to only have parser parameters
+- Add parser.ReturnError combinator to be able to override a parser's error (if the error's position is the same as the reader's)
+-Add ReturnError() helper method to parser.Func
 
 BUGFIXES:
 
