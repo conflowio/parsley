@@ -1,3 +1,18 @@
+## 0.9.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- The parser interface was changed to return an error. The error return value was previously removed but since I realised it was a bad design decision to save ~10% in benchmarks.
+- The parser interface doesn't contain the Name() method anymore, it wasn't that useful.
+- The error field was removed from the parsing context
+- The parsing context now carries the file set
+- The top level parsley.Parse and parsley.Evaluate now will return with a simple error type which already contains the error position (these are only convenience methods).
+- I removed the *OrValue combinators as you can force a single child result with the Single combinator
+
+BUGFIXES:
+
+- The string parser won't accept new-line characters (\r, \n) in double-quoted strings anymore
+
 ## 0.8.4
 
 BUGFIXES:
