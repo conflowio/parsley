@@ -8,6 +8,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 )
@@ -18,4 +20,10 @@ type Func func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (p
 // Parse parses the input using the function
 func (f Func) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 	return f(ctx, leftRecCtx, pos)
+}
+
+// ReturnError returns with a new parser function which overrides the returned error if its position is the same as
+// the reader's position
+func (f Func) ReturnError(msg string, args ...interface{}) Func {
+	return ReturnError(Func(f), fmt.Errorf(msg, args...))
 }

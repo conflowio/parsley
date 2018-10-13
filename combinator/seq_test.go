@@ -27,7 +27,7 @@ func ExampleSeq() {
 		return res, nil
 	})
 
-	p := combinator.Seq("ABC", "",
+	p := combinator.Seq(
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),
@@ -50,7 +50,7 @@ func ExampleSeqTry() {
 		return res, nil
 	})
 
-	p := combinator.SeqTry("ABC", "",
+	p := combinator.SeqTry(
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),

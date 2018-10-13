@@ -14,5 +14,5 @@ import (
 
 // Sentence matches the given parser until the end of input
 func Sentence(p parsley.Parser) *Recursive {
-	return Seq("S", "", p, parser.End()).Bind(interpreter.Select(0))
+	return Seq(p, parser.End()).Bind(interpreter.Select(0))
 }

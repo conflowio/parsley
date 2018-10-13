@@ -7,8 +7,6 @@
 package combinator
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -16,12 +14,10 @@ import (
 )
 
 // Any tries all the given parsers independently and merges the results
-func Any(name string, parsers ...parsley.Parser) parser.Func {
+func Any(parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("no parsers were given")
 	}
-
-	notFoundErr := fmt.Errorf("was expecting %s", name)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		cp := data.EmptyIntSet
@@ -38,9 +34,6 @@ func Any(name string, parsers ...parsley.Parser) parser.Func {
 		}
 
 		if res == nil {
-			if err == nil || err.Pos() == pos {
-				err = parsley.NewError(pos, notFoundErr)
-			}
 			return nil, cp, err
 		}
 

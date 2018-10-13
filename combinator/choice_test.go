@@ -23,7 +23,7 @@ import (
 // Let's define a parser which accepts integer or float numbers.
 // The parser would return only the first match so in this case we have to put the float parser first.
 func ExampleChoice() {
-	p := combinator.Choice("number",
+	p := combinator.Choice(
 		terminal.Float(),
 		terminal.Integer(),
 	)
@@ -78,13 +78,13 @@ var _ = Describe("Choice", func() {
 		p1.ParseReturnsOnCall(0, p1Res, p1CP, p1Err)
 		p2.ParseReturnsOnCall(0, p2Res, p2CP, p2Err)
 
-		p = combinator.Choice("test", parsers...)
+		p = combinator.Choice(parsers...)
 		res, cp, parserErr = p.Parse(ctx, leftRecCtx, pos)
 	})
 
 	Context("when no parsers are given", func() {
 		It("should panic", func() {
-			Expect(func() { combinator.Choice("test") }).To(Panic())
+			Expect(func() { combinator.Choice() }).To(Panic())
 		})
 	})
 

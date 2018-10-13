@@ -7,20 +7,16 @@
 package combinator
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // Choice tries to apply the given parsers until one of them succeeds
-func Choice(name string, parsers ...parsley.Parser) parser.Func {
+func Choice(parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
-
-	notFoundErr := fmt.Errorf("was expecting %s", name)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		cp := data.EmptyIntSet
@@ -35,10 +31,6 @@ func Choice(name string, parsers ...parsley.Parser) parser.Func {
 			if node != nil {
 				return node, cp, nil
 			}
-		}
-
-		if err == nil || err.Pos() == pos {
-			err = parsley.NewError(pos, notFoundErr)
 		}
 
 		return nil, cp, err

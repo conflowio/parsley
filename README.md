@@ -97,7 +97,7 @@ sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interfac
 	return value0.(int64) + value1.(int64), nil
 })
 
-p := combinator.Seq("ADD", "addition",
+p := combinator.Seq(
 	terminal.Integer(),
 	terminal.Rune('+'),
 	terminal.Integer(),

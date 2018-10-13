@@ -7,8 +7,6 @@
 package combinator
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
@@ -24,16 +22,11 @@ type Recursive struct {
 }
 
 // NewRecursive creates a new recursive instance
-func NewRecursive(token string, name string, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
-	var notFoundErr error
-	if name != "" {
-		notFoundErr = fmt.Errorf("was expecting %s", name)
-	}
+func NewRecursive(token string, parserLookUp func(int) parsley.Parser, lenCheck func(int) bool) *Recursive {
 	return &Recursive{
 		token:        token,
 		parserLookUp: parserLookUp,
 		lenCheck:     lenCheck,
-		notFoundErr:  notFoundErr,
 	}
 }
 
@@ -53,12 +46,7 @@ func (rp *Recursive) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos par
 		curtailingParsers: data.EmptyIntSet,
 		nodes:             []parsley.Node{},
 	}
-	res, cp, err := p.Parse(ctx, leftRecCtx, pos)
-	if rp.notFoundErr != nil && err != nil && err.Pos() == pos {
-		err = parsley.NewError(pos, rp.notFoundErr)
-	}
-
-	return res, cp, err
+	return p.Parse(ctx, leftRecCtx, pos)
 }
 
 // recursive is a recursive and-type combinator

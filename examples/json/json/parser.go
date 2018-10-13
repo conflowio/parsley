@@ -12,31 +12,31 @@ import (
 func NewParser() *combinator.Recursive {
 	var value parser.Func
 
-	array := combinator.Seq("ARRAY", "array",
+	array := combinator.Seq(
 		terminal.Rune('['),
-		combinator.SepBy("array elements",
+		combinator.SepBy(
 			text.LeftTrim(&value, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		).Bind(interpreter.Array()),
 		text.LeftTrim(terminal.Rune(']'), text.WsSpacesNl),
 	).Bind(interpreter.Select(1))
 
-	keyValue := combinator.Seq("OBJ_KV", "key-value pair",
+	keyValue := combinator.Seq(
 		terminal.String(false),
 		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
 		text.LeftTrim(&value, text.WsSpacesNl),
 	)
 
-	object := combinator.Seq("OBJ", "object",
+	object := combinator.Seq(
 		terminal.Rune('{'),
-		combinator.SepBy("object fields",
+		combinator.SepBy(
 			text.LeftTrim(keyValue, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		).Bind(interpreter.Object()),
 		text.LeftTrim(terminal.Rune('}'), text.WsSpacesNl),
 	).Bind(interpreter.Select(1))
 
-	value = combinator.Choice("value",
+	value = combinator.Choice(
 		terminal.String(false),
 		terminal.Float(),
 		terminal.Integer(),
@@ -45,9 +45,9 @@ func NewParser() *combinator.Recursive {
 		terminal.Word("false", false),
 		terminal.Word("true", true),
 		terminal.Word("null", nil),
-	)
+	).ReturnError("was expecting value")
 
-	return combinator.Seq("Value", "value",
+	return combinator.Seq(
 		text.LeftTrim(value, text.WsSpacesNl),
 		terminal.Whitespaces(text.WsSpacesNl),
 	).Bind(interpreter.Select(0))

@@ -24,7 +24,7 @@ import (
 // Let's define a parser which accepts integer or float numbers.
 // The parser would return with all matches, so both 1 and 1.23.
 func ExampleAny() {
-	p := combinator.Any("number",
+	p := combinator.Any(
 		terminal.Integer(),
 		terminal.Float(),
 	)
@@ -83,13 +83,13 @@ var _ = Describe("Any", func() {
 		p1.ParseReturnsOnCall(0, p1Res, p1CP, p1Err)
 		p2.ParseReturnsOnCall(0, p2Res, p2CP, p2Err)
 
-		p = combinator.Any("test", parsers...)
+		p = combinator.Any(parsers...)
 		res, cp, parserErr = p.Parse(ctx, leftRecCtx, pos)
 	})
 
 	Context("when no parsers are given", func() {
 		It("should panic", func() {
-			Expect(func() { combinator.Any("test") }).To(Panic())
+			Expect(func() { combinator.Any() }).To(Panic())
 		})
 	})
 
