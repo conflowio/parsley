@@ -99,6 +99,16 @@ var _ = Describe("String", func() {
 			Entry("`foo", "`foo"),
 			Entry(`"foo`, `"foo`),
 		)
+
+		It("should not allow line break when using double quotes", func() {
+			f := text.NewFile("textfile", []byte("\"foo\nbar\""))
+			fs := parsley.NewFileSet(f)
+			r := text.NewReader(f)
+			ctx := parsley.NewContext(fs, r)
+			_, _, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			Expect(err).To(MatchError("was expecting '\"'"))
+			Expect(err.Pos()).To(Equal(parsley.Pos(5)))
+		})
 	})
 
 	Context("when backquotes are not allowed", func() {

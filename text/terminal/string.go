@@ -64,6 +64,9 @@ func unquoteString(b []byte) ([]byte, int) {
 		if i >= len(b) {
 			return b, len(b)
 		}
+		if b[i] == '\r' || b[i] == '\n' {
+			return b[0:i], i
+		}
 		if b[i] == '"' {
 			return b[0:i], i
 		} else if b[i] == '\\' || b[i] >= utf8.RuneSelf {
