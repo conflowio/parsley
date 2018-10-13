@@ -10,30 +10,6 @@ import (
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-var _ = Describe("Nil", func() {
-
-	var (
-		p   = parser.Nil()
-		ctx *parsley.Context
-	)
-
-	BeforeEach(func() {
-		ctx = parsley.NewContext(&parsleyfakes.FakeReader{})
-	})
-
-	It("should have no name", func() {
-		Expect(p.Name()).To(BeEmpty())
-	})
-
-	It("should return with an empty node", func() {
-		res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 1)
-		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-		Expect(res).To(Equal(ast.NilNode(1)))
-		Expect(ctx.Error()).ToNot(HaveOccurred())
-	})
-
-})
-
 var _ = Describe("End", func() {
 
 	var (
@@ -44,21 +20,17 @@ var _ = Describe("End", func() {
 
 	BeforeEach(func() {
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r)
-	})
-
-	It("should have a name", func() {
-		Expect(p.Name()).ToNot(BeEmpty())
+		ctx = parsley.NewContext(parsley.NewFileSet(), r)
 	})
 
 	Context("when at the end of the input", func() {
 		It("should return with an EOF node", func() {
 			r.IsEOFReturns(true)
 			r.PosReturns(parsley.Pos(2))
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 2)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 2)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), parsley.Pos(2))))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
@@ -66,10 +38,12 @@ var _ = Describe("End", func() {
 		It("should return with a nil result", func() {
 			r.IsEOFReturns(false)
 			r.PosReturns(parsley.Pos(2))
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, 1)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 1)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(BeNil())
-			Expect(ctx.Error()).To(BeNil())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("was expecting the end of input"))
+			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
 		})
 	})
 

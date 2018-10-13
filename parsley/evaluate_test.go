@@ -20,30 +20,38 @@ var _ = Describe("Evaluate", func() {
 		p          *parsleyfakes.FakeParser
 		ctx        *parsley.Context
 		val        interface{}
-		err        parsley.Error
-		parserRes  parsley.Node
-		node       *parsleyfakes.FakeNode
+		err        error
+		parserRes  *parsleyfakes.FakeNode
+		parserErr  parsley.Error
 		evalCtx    interface{}
 		nodeVal    interface{}
 		nodeValErr parsley.Error
 	)
 
 	BeforeEach(func() {
+		f := &parsleyfakes.FakeFile{}
+		position := &parsleyfakes.FakePosition{}
+		position.StringReturns("testpos")
+		f.PositionReturns(position)
+
+		fs := parsley.NewFileSet(f)
+
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r)
+		ctx = parsley.NewContext(fs, r)
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
-		p.NameReturns("p1")
-		node = &parsleyfakes.FakeNode{}
-		parserRes = node
+		parserRes = &parsleyfakes.FakeNode{}
 		nodeVal = "value"
-		nodeValErr = nil
 		evalCtx = "context"
+		parserErr = nil
+		nodeValErr = nil
 	})
 
 	JustBeforeEach(func() {
-		node.ValueReturns(nodeVal, nodeValErr)
-		p.ParseReturns(parserRes, data.EmptyIntSet)
+		p.ParseReturns(parserRes, data.EmptyIntSet, parserErr)
+		if parserRes != nil {
+			parserRes.ValueReturns(nodeVal, nodeValErr)
+		}
 		val, err = parsley.Evaluate(ctx, p, evalCtx)
 	})
 
@@ -58,11 +66,12 @@ var _ = Describe("Evaluate", func() {
 		Expect(passedCtx).To(BeEquivalentTo(ctx))
 		Expect(passedLeftRecCtx).To(BeEquivalentTo(data.EmptyIntMap))
 		Expect(passedPos).To(Equal(parsley.Pos(1)))
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("gets the value from the node and passes the context", func() {
-		Expect(node.ValueCallCount()).To(Equal(1))
-		Expect(node.ValueArgsForCall(0)).To(Equal(evalCtx))
+		Expect(parserRes.ValueCallCount()).To(Equal(1))
+		Expect(parserRes.ValueArgsForCall(0)).To(Equal(evalCtx))
 	})
 
 	It("should return the value of the node", func() {
@@ -73,24 +82,28 @@ var _ = Describe("Evaluate", func() {
 	Context("if the parser has an error", func() {
 		BeforeEach(func() {
 			parserRes = nil
-			ctx.SetErrorf(parsley.Pos(1), "some error")
+			err := &parsleyfakes.FakeError{}
+			err.PosReturns(parsley.Pos(1))
+			err.ErrorReturns("some error")
+			parserErr = err
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
-			Expect(err).To(MatchError("failed to parse the input: some error"))
-			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
+			Expect(err).To(MatchError("failed to parse the input: some error at testpos"))
 		})
 	})
 
 	Context("if the node evaluation has an error", func() {
 		BeforeEach(func() {
 			nodeVal = nil
-			nodeValErr = parsley.NewErrorf(parsley.Pos(1), "some error")
+			err := &parsleyfakes.FakeError{}
+			err.PosReturns(parsley.Pos(1))
+			err.ErrorReturns("some error")
+			nodeValErr = err
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
-			Expect(err).To(MatchError("some error"))
-			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
+			Expect(err).To(MatchError("some error at testpos"))
 		})
 	})
 })

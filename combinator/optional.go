@@ -15,8 +15,8 @@ import (
 
 // Optional returns the parser's matches and an empty match
 func Optional(p parsley.Parser) parser.Func {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
-		res, cp := p.Parse(ctx, leftRecCtx, pos)
-		return ast.AppendNode(res, ast.NilNode(pos)), cp
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
+		res, cp, err := p.Parse(ctx, leftRecCtx, pos)
+		return ast.AppendNode(res, ast.NilNode(pos)), cp, err
 	})
 }

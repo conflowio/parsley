@@ -7,6 +7,8 @@
 package terminal
 
 import (
+	"errors"
+
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -19,18 +21,19 @@ func Whitespaces(wsMode text.WsMode) parsley.Parser {
 	if wsMode == text.WsNone {
 		return parser.Nil()
 	}
-	var name string
+	var notFoundErr error
 	if wsMode == text.WsSpaces {
-		name = "spaces or tabs"
+		notFoundErr = errors.New("was expecting spaces or tabs")
 	} else {
-		name = "spaces, tabs or newline"
+		notFoundErr = errors.New("was expecting spaces, tabs or newline")
 	}
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos := tr.SkipWhitespaces(pos, wsMode); readerPos > pos {
-			return ast.NilNode(readerPos), data.EmptyIntSet
+			return ast.NilNode(readerPos), data.EmptyIntSet, nil
 		}
 
-		return nil, data.EmptyIntSet
-	}).WithName(name)
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }

@@ -21,18 +21,15 @@ var _ = Describe("Float", func() {
 
 	var p = terminal.Float()
 
-	It("should have a name", func() {
-		Expect(p.Name()).ToNot(BeEmpty())
-	})
-
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FLOAT"))
 			Expect(node.Value(nil)).To(Equal(value))
@@ -66,11 +63,14 @@ var _ = Describe("Float", func() {
 	DescribeTable("should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting float value"))
+			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", "", 0),
@@ -87,12 +87,13 @@ var _ = Describe("Float", func() {
 		It("should trow an error", func() {
 			input := "1.2e3456"
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).To(MatchError("invalid float value encountered"))
-			Expect(ctx.Error().Pos()).To(Equal(parsley.Pos(1)))
+			Expect(err).To(MatchError("invalid float value"))
+			Expect(err.Pos()).To(Equal(parsley.Pos(1)))
 			Expect(res).To(BeNil())
 		})
 	})

@@ -7,6 +7,7 @@
 package terminal
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/opsidian/parsley/ast"
@@ -17,17 +18,18 @@ import (
 )
 
 // Float matches a float literal
-func Float() *parser.NamedFunc {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+func Float() parser.Func {
+	notFoundErr := errors.New("was expecting float value")
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, result := tr.ReadRegexp(pos, "[-+]?[0-9]*\\.[0-9]+(?:[eE][-+]?[0-9]+)?"); result != nil {
 			val, err := strconv.ParseFloat(string(result), 64)
 			if err != nil {
-				ctx.SetErrorf(pos, "invalid float value encountered")
-				return nil, data.EmptyIntSet
+				return nil, data.EmptyIntSet, parsley.NewErrorf(pos, "invalid float value")
 			}
-			return ast.NewTerminalNode("FLOAT", val, pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode("FLOAT", val, pos, readerPos), data.EmptyIntSet, nil
 		}
-		return nil, data.EmptyIntSet
-	}).WithName("float value")
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }

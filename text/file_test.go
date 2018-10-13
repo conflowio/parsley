@@ -84,7 +84,6 @@ var _ = Describe("File", func() {
 
 	Context("ReadFile", func() {
 		var (
-			f           *text.File
 			readFileErr error
 			filename    string
 		)

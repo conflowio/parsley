@@ -28,8 +28,10 @@ func ExampleAny() {
 		terminal.Integer(),
 		terminal.Float(),
 	)
-	r := text.NewReader(text.NewFile("example.file", []byte("1.23")))
-	ctx := parsley.NewContext(r)
+	f := text.NewFile("example.file", []byte("1.23"))
+	fs := parsley.NewFileSet(f)
+	r := text.NewReader(f)
+	ctx := parsley.NewContext(fs, r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value, value)
 
@@ -39,25 +41,24 @@ func ExampleAny() {
 var _ = Describe("Any", func() {
 
 	var (
-		p                 *parser.NamedFunc
-		r                 *parsleyfakes.FakeReader
-		parsers           []parsley.Parser
-		p1, p2            *parsleyfakes.FakeParser
-		leftRecCtx        data.IntMap
-		pos               parsley.Pos
-		cp, p1CP, p2CP    data.IntSet
-		res, p1Res, p2Res parsley.Node
-		n1, n2            *parsleyfakes.FakeNode
-		ctx               *parsley.Context
+		p                       parser.Func
+		r                       *parsleyfakes.FakeReader
+		parsers                 []parsley.Parser
+		p1, p2                  *parsleyfakes.FakeParser
+		leftRecCtx              data.IntMap
+		pos                     parsley.Pos
+		cp, p1CP, p2CP          data.IntSet
+		res, p1Res, p2Res       parsley.Node
+		parserErr, p1Err, p2Err parsley.Error
+		n1, n2                  *parsleyfakes.FakeNode
+		ctx                     *parsley.Context
 	)
 
 	BeforeEach(func() {
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(r)
+		ctx = parsley.NewContext(parsley.NewFileSet(), r)
 		p1 = &parsleyfakes.FakeParser{}
-		p1.NameReturns("p1")
 		p2 = &parsleyfakes.FakeParser{}
-		p2.NameReturns("p2")
 		leftRecCtx = data.EmptyIntMap
 		parsers = []parsley.Parser{p1, p2}
 		pos = parsley.Pos(1)
@@ -71,16 +72,19 @@ var _ = Describe("Any", func() {
 		p2CP = data.EmptyIntSet
 		p1Res = nil
 		p2Res = nil
+		p1Err = nil
+		p2Err = nil
 		n1 = nil
 		n2 = nil
+
 	})
 
 	JustBeforeEach(func() {
-		p1.ParseReturnsOnCall(0, p1Res, p1CP)
-		p2.ParseReturnsOnCall(0, p2Res, p2CP)
+		p1.ParseReturnsOnCall(0, p1Res, p1CP, p1Err)
+		p2.ParseReturnsOnCall(0, p2Res, p2CP, p2Err)
 
 		p = combinator.Any("test", parsers...)
-		res, cp = p.Parse(ctx, leftRecCtx, pos)
+		res, cp, parserErr = p.Parse(ctx, leftRecCtx, pos)
 	})
 
 	Context("when no parsers are given", func() {
@@ -91,22 +95,50 @@ var _ = Describe("Any", func() {
 
 	Context("when there is only one parser", func() {
 
-		BeforeEach(func() {
-			parsers = []parsley.Parser{p1}
-			p1CP = data.NewIntSet(1)
-			p1Res = n1
+		Context("if it returns a result", func() {
+
+			BeforeEach(func() {
+				parsers = []parsley.Parser{p1}
+				p1CP = data.NewIntSet(1)
+				p1Res = n1
+				p1Err = nil
+			})
+
+			It("should return the result of that parser", func() {
+				Expect(cp).To(Equal(p1CP))
+				Expect(res).To(Equal(p1Res))
+				Expect(parserErr).ToNot(HaveOccurred())
+
+				Expect(p1.ParseCallCount()).To(Equal(1))
+
+				passedCtx, passedLeftRecCtx, passedPos := p1.ParseArgsForCall(0)
+				Expect(passedCtx).To(BeEquivalentTo(ctx))
+				Expect(passedLeftRecCtx).To(BeEquivalentTo(leftRecCtx))
+				Expect(passedPos).To(Equal(pos))
+			})
 		})
 
-		It("should return the result of that parser", func() {
-			Expect(cp).To(Equal(p1CP))
-			Expect(res).To(Equal(p1Res))
+		Context("if it returns an error", func() {
 
-			Expect(p1.ParseCallCount()).To(Equal(1))
+			BeforeEach(func() {
+				parsers = []parsley.Parser{p1}
+				p1CP = data.NewIntSet(1)
+				p1Res = nil
+				p1Err = parsley.NewErrorf(parsley.Pos(2), "some error")
+			})
 
-			passedCtx, passedLeftRecCtx, passedPos := p1.ParseArgsForCall(0)
-			Expect(passedCtx).To(BeEquivalentTo(ctx))
-			Expect(passedLeftRecCtx).To(BeEquivalentTo(leftRecCtx))
-			Expect(passedPos).To(Equal(pos))
+			It("should return the error of that parser", func() {
+				Expect(cp).To(Equal(p1CP))
+				Expect(res).To(BeNil())
+				Expect(parserErr).To(Equal(p1Err))
+
+				Expect(p1.ParseCallCount()).To(Equal(1))
+
+				passedCtx, passedLeftRecCtx, passedPos := p1.ParseArgsForCall(0)
+				Expect(passedCtx).To(BeEquivalentTo(ctx))
+				Expect(passedLeftRecCtx).To(BeEquivalentTo(leftRecCtx))
+				Expect(passedPos).To(Equal(pos))
+			})
 		})
 	})
 
@@ -138,6 +170,16 @@ var _ = Describe("Any", func() {
 			Expect(cp).To(Equal(p1CP.Union(p2CP)))
 		})
 
+		Context("when there are multiple errors", func() {
+			BeforeEach(func() {
+				p1Err = parsley.NewErrorf(parsley.Pos(1), "err1")
+				p2Err = parsley.NewErrorf(parsley.Pos(2), "err2")
+			})
+			It("should return with the error with the higher position", func() {
+				Expect(parserErr).To(MatchError("err2"))
+			})
+		})
+
 		Context("when no parsers match", func() {
 			It("should return nil", func() {
 				Expect(res).To(BeNil())
@@ -157,9 +199,11 @@ var _ = Describe("Any", func() {
 			BeforeEach(func() {
 				p1Res = n1
 				p2Res = n2
+				p1Err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			})
 			It("should return with all results", func() {
 				Expect(res).To(Equal(ast.NodeList([]parsley.Node{n1, n2})))
+				Expect(parserErr).ToNot(HaveOccurred())
 			})
 		})
 	})

@@ -17,17 +17,18 @@ var _ = Describe("Single", func() {
 	var leftRecCtx data.IntMap
 	var pos parsley.Pos
 	var res, qres parsley.Node
+	var err, qerr parsley.Error
 	var cp, qcp data.IntSet
 
 	JustBeforeEach(func() {
 		q = &parsleyfakes.FakeParser{}
-		q.ParseReturnsOnCall(0, qres, qcp)
+		q.ParseReturnsOnCall(0, qres, qcp, qerr)
 		p := combinator.Single(q)
-		res, cp = p.Parse(ctx, leftRecCtx, pos)
+		res, cp, err = p.Parse(ctx, leftRecCtx, pos)
 	})
 
 	BeforeEach(func() {
-		ctx = parsley.NewContext(&parsleyfakes.FakeReader{})
+		ctx = parsley.NewContext(parsley.NewFileSet(), &parsleyfakes.FakeReader{})
 		leftRecCtx = data.NewIntMap(map[int]int{1: 2})
 		pos = parsley.Pos(1)
 		qcp = data.NewIntSet(1, 2)
@@ -44,6 +45,7 @@ var _ = Describe("Single", func() {
 		It("should return the single node instead", func() {
 			Expect(res).To(BeEquivalentTo(childNode))
 			Expect(cp).To(BeEquivalentTo(qcp))
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
@@ -58,6 +60,7 @@ var _ = Describe("Single", func() {
 		It("should return the original result", func() {
 			Expect(res).To(BeEquivalentTo(qres))
 			Expect(cp).To(BeEquivalentTo(qcp))
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
@@ -70,18 +73,20 @@ var _ = Describe("Single", func() {
 		It("should return the original result", func() {
 			Expect(res).To(BeEquivalentTo(qres))
 			Expect(cp).To(BeEquivalentTo(qcp))
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
-	Context("when q returns nil", func() {
+	Context("when q returns an error", func() {
 
 		BeforeEach(func() {
-			qres = nil
+			qerr = parsley.NewErrorf(parsley.Pos(1), "some error")
 		})
 
 		It("should return tnil", func() {
 			Expect(res).To(BeNil())
 			Expect(cp).To(BeEquivalentTo(qcp))
+			Expect(err).To(BeEquivalentTo(qerr))
 		})
 	})
 

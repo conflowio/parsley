@@ -17,19 +17,21 @@ import (
 )
 
 // Bool matches a bool literal: true or false
-func Bool(trueStr string, falseStr string) *parser.NamedFunc {
+func Bool(trueStr string, falseStr string) parser.Func {
 	if trueStr == "" || falseStr == "" {
 		panic("Bool() should not be called with an empty true/false string")
 	}
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	notFoundErr := fmt.Errorf("was expecting %s or %s", trueStr, falseStr)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
-			return ast.NewTerminalNode("BOOL", true, pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode("BOOL", true, pos, readerPos), data.EmptyIntSet, nil
 		}
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
-			return ast.NewTerminalNode("BOOL", false, pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode("BOOL", false, pos, readerPos), data.EmptyIntSet, nil
 		}
-		return nil, data.EmptyIntSet
-	}).WithName(fmt.Sprintf("%s or %s", trueStr, falseStr))
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }

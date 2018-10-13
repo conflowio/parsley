@@ -7,6 +7,8 @@
 package combinator
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -14,20 +16,34 @@ import (
 )
 
 // Any tries all the given parsers independently and merges the results
-func Any(name string, parsers ...parsley.Parser) *parser.NamedFunc {
+func Any(name string, parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("no parsers were given")
 	}
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	notFoundErr := fmt.Errorf("was expecting %s", name)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		cp := data.EmptyIntSet
 		var res parsley.Node
+		var err parsley.Error
 		for _, p := range parsers {
 			ctx.RegisterCall()
-			res2, cp2 := p.Parse(ctx, leftRecCtx, pos)
+			res2, cp2, err2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
 			res = ast.AppendNode(res, res2)
+			if err2 != nil && (err == nil || err2.Pos() > err.Pos()) {
+				err = err2
+			}
 		}
-		return res, cp
-	}).WithName(name)
+
+		if res == nil {
+			if err == nil || err.Pos() == pos {
+				err = parsley.NewError(pos, notFoundErr)
+			}
+			return nil, cp, err
+		}
+
+		return res, cp, nil
+	})
 }

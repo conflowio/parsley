@@ -7,27 +7,40 @@
 package combinator
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // Choice tries to apply the given parsers until one of them succeeds
-func Choice(name string, parsers ...parsley.Parser) *parser.NamedFunc {
+func Choice(name string, parsers ...parsley.Parser) parser.Func {
 	if parsers == nil {
 		panic("No parsers were given")
 	}
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	notFoundErr := fmt.Errorf("was expecting %s", name)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		cp := data.EmptyIntSet
+		var err parsley.Error
 		for _, p := range parsers {
 			ctx.RegisterCall()
-			node, cp2 := p.Parse(ctx, leftRecCtx, pos)
+			node, cp2, err2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
+			if err2 != nil && (err == nil || err2.Pos() > err.Pos()) {
+				err = err2
+			}
 			if node != nil {
-				return node, cp
+				return node, cp, nil
 			}
 		}
-		return nil, cp
-	}).WithName(name)
+
+		if err == nil || err.Pos() == pos {
+			err = parsley.NewError(pos, notFoundErr)
+		}
+
+		return nil, cp, err
+	})
 }

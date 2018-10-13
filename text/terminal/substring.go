@@ -17,16 +17,18 @@ import (
 )
 
 // Substring matches the given string
-func Substring(token string, str string, value interface{}) *parser.NamedFunc {
+func Substring(token string, str string, value interface{}) parser.Func {
 	if str == "" {
 		panic("Substring() should not be called with empty string")
 	}
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	notFoundErr := fmt.Errorf("was expecting %q", str)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchString(pos, str); found {
-			return ast.NewTerminalNode(token, value, pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode(token, value, pos, readerPos), data.EmptyIntSet, nil
 		}
-		return nil, data.EmptyIntSet
-	}).WithName(fmt.Sprintf("%q", str))
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }

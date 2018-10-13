@@ -7,6 +7,7 @@
 package terminal
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/opsidian/parsley/ast"
@@ -17,34 +18,33 @@ import (
 )
 
 // Char matches a character literal enclosed in single quotes
-func Char() *parser.NamedFunc {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+func Char() parser.Func {
+	notFoundErr := errors.New("was expecting char literal")
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		readerPos, found := tr.ReadRune(pos, '\'')
 		if !found {
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 		}
 
 		readerPos, res := tr.ReadRegexp(
 			readerPos, `\\[abfnrtv']|\\x[0-9a-fA-F]{2,2}|\\u[0-9a-fA-F]{4,4}|\\U[0-9a-fA-F]{8,8}|[^']`,
 		)
 		if res == nil {
-			ctx.SetErrorf(readerPos, "was expecting one character")
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "was expecting one character")
 		}
 
 		readerPos, found = tr.ReadRune(readerPos, '\'')
 		if !found {
-			ctx.SetErrorf(readerPos, "was expecting \"'\"")
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "was expecting \"'\"")
 		}
 
 		value, _, tail, err := strconv.UnquoteChar(string(res), '\'')
 		if tail != "" || err != nil {
-			ctx.SetErrorf(readerPos, "invalid character value")
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "invalid character value")
 		}
 
-		return ast.NewTerminalNode("CHAR", value, pos, readerPos), data.EmptyIntSet
-	}).WithName("char value")
+		return ast.NewTerminalNode("CHAR", value, pos, readerPos), data.EmptyIntSet, nil
+	})
 }

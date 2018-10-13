@@ -103,8 +103,10 @@ p := combinator.Seq("ADD", "addition",
 	terminal.Integer(),
 ).Bind(sum)
 
-r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
-ctx := parsley.NewContext(r)
+f := text.NewFile("example.file", []byte("1+2"))
+fs := parsley.NewFileSet(f)
+r := text.NewReader(f)
+ctx := parsley.NewContext(fs, r)
 value, err := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 if err != nil {
 	panic(err)

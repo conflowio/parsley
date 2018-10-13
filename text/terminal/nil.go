@@ -7,6 +7,8 @@
 package terminal
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -15,17 +17,19 @@ import (
 )
 
 // Nil matches a nil literal
-func Nil(nilStr string) *parser.NamedFunc {
+func Nil(nilStr string) parser.Func {
 	if nilStr == "" {
 		panic("Nil() should not be called with an empty nil string")
 	}
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+	notFoundErr := fmt.Errorf("was expecting %s", nilStr)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, nilStr); found {
-			return ast.NewTerminalNode("NIL", nil, pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode("NIL", nil, pos, readerPos), data.EmptyIntSet, nil
 		}
 
-		return nil, data.EmptyIntSet
-	}).WithName(nilStr)
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }

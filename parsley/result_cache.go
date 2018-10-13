@@ -14,13 +14,14 @@ import (
 type Result struct {
 	LeftRecCtx        data.IntMap
 	CurtailingParsers data.IntSet
+	Error             Error
 	Node              Node
 }
 
 // ResultCache records information about parser calls
 type ResultCache map[int]map[Pos]*Result
 
-// NewHistory creates a history instance
+// NewResultCache creates a history instance
 func NewResultCache() ResultCache {
 	return make(map[int]map[Pos]*Result)
 }
