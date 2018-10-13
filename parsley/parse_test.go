@@ -14,18 +14,16 @@ import (
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-var _ = Describe("Evaluate", func() {
+var _ = Describe("Parse", func() {
 	var (
-		r          *parsleyfakes.FakeReader
-		p          *parsleyfakes.FakeParser
-		ctx        *parsley.Context
-		val        interface{}
-		err        error
-		parserRes  *parsleyfakes.FakeNode
-		parserErr  parsley.Error
-		evalCtx    interface{}
-		nodeVal    interface{}
-		nodeValErr parsley.Error
+		r         *parsleyfakes.FakeReader
+		p         *parsleyfakes.FakeParser
+		ctx       *parsley.Context
+		val       interface{}
+		err       error
+		parserRes *parsleyfakes.FakeNode
+		parserErr parsley.Error
+		res       parsley.Node
 	)
 
 	BeforeEach(func() {
@@ -41,14 +39,13 @@ var _ = Describe("Evaluate", func() {
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
 		parserRes = &parsleyfakes.FakeNode{}
-		nodeVal = "value"
-		evalCtx = "context"
+		parserRes.TokenReturns("TEST RESULT")
+		parserErr = nil
 	})
 
 	JustBeforeEach(func() {
 		p.ParseReturns(parserRes, data.EmptyIntSet, parserErr)
-		parserRes.ValueReturns(nodeVal, nodeValErr)
-		val, err = parsley.Evaluate(ctx, p, evalCtx)
+		res, err = parsley.Parse(ctx, p)
 	})
 
 	It("gets the zero position from the reader", func() {
@@ -65,14 +62,14 @@ var _ = Describe("Evaluate", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	FIt("gets the value from the node and passes the context", func() {
-		Expect(parserRes.ValueCallCount()).To(Equal(1))
-		Expect(parserRes.ValueArgsForCall(0)).To(Equal(evalCtx))
-	})
-
-	It("should return the value of the node", func() {
-		Expect(val).To(BeEquivalentTo(nodeVal))
-		Expect(err).To(BeNil())
+	It("returns the result", func() {
+		Expect(p.ParseCallCount()).To(Equal(1))
+		passedCtx, passedLeftRecCtx, passedPos := p.ParseArgsForCall(0)
+		Expect(passedCtx).To(BeEquivalentTo(ctx))
+		Expect(passedLeftRecCtx).To(BeEquivalentTo(data.EmptyIntMap))
+		Expect(passedPos).To(Equal(parsley.Pos(1)))
+		Expect(res).To(BeEquivalentTo(parserRes))
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Context("if the parser has an error", func() {
@@ -85,21 +82,8 @@ var _ = Describe("Evaluate", func() {
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
-			Expect(err.Error()).To(MatchError("some error at testpos"))
+			Expect(err).To(MatchError("failed to parse the input: some error at testpos"))
 		})
 	})
 
-	Context("if the node evaluation has an error", func() {
-		BeforeEach(func() {
-			nodeVal = nil
-			err := &parsleyfakes.FakeError{}
-			err.PosReturns(parsley.Pos(1))
-			err.ErrorReturns("some error")
-			nodeValErr = err
-		})
-		It("should return an error", func() {
-			Expect(val).To(BeNil())
-			Expect(err).To(MatchError("some error at testpos"))
-		})
-	})
 })
