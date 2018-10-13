@@ -38,7 +38,7 @@ func NewFileSet(files ...File) *FileSet {
 // AddFile adds a new file
 func (fs *FileSet) AddFile(f File) {
 	if f == nil {
-		panic(errors.New("f:File can not be nil"))
+		panic(errors.New("file can not be nil"))
 	}
 
 	f.SetOffset(fs.pos)
