@@ -35,16 +35,19 @@ var _ = Describe("Result Cache", func() {
 		BeforeEach(func() {
 			res1 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
+				Error:             parsley.NewErrorf(parsley.Pos(2), "some error"),
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res2 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
+				Error:             nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}
 			res3 = &parsley.Result{
 				CurtailingParsers: data.EmptyIntSet,
+				Error:             nil,
 				LeftRecCtx:        data.EmptyIntMap,
 				Node:              &parsleyfakes.FakeNode{},
 			}

@@ -38,7 +38,7 @@ func ExampleOptional() {
 		terminal.Rune('c'),
 	).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("ac")))
-	ctx := parsley.NewContext(r)
+	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ac

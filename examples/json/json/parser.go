@@ -9,12 +9,12 @@ import (
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() *parser.NamedFunc {
-	var value parser.NamedFunc
+func NewParser() parser.Func {
+	var value parser.Func
 
 	array := combinator.Seq("ARRAY", "array",
 		terminal.Rune('['),
-		combinator.SepBy(
+		combinator.SepBy("array elements",
 			text.LeftTrim(&value, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		).Bind(interpreter.Array()),
@@ -29,14 +29,14 @@ func NewParser() *parser.NamedFunc {
 
 	object := combinator.Seq("OBJ", "object",
 		terminal.Rune('{'),
-		combinator.SepBy(
+		combinator.SepBy("object fields",
 			text.LeftTrim(keyValue, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
 		).Bind(interpreter.Object()),
 		text.LeftTrim(terminal.Rune('}'), text.WsSpacesNl),
 	).Bind(interpreter.Select(1))
 
-	value = *combinator.Choice("value",
+	value = combinator.Choice("value",
 		terminal.String(false),
 		terminal.Float(),
 		terminal.Integer(),

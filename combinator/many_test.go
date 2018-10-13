@@ -26,9 +26,11 @@ func ExampleMany() {
 		}
 		return res, nil
 	})
-	p := combinator.Many(terminal.Rune('a')).Bind(concat)
-	r := text.NewReader(text.NewFile("example.file", []byte("aaaaa")))
-	ctx := parsley.NewContext(r)
+	p := combinator.Many("one or more a characters", terminal.Rune('a')).Bind(concat)
+	f := text.NewFile("example.file", []byte("aaaaa"))
+	fs := parsley.NewFileSet(f)
+	r := text.NewReader(f)
+	ctx := parsley.NewContext(fs, r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 
 	fmt.Printf("%T %v\n", value, value)

@@ -30,7 +30,7 @@ func ExampleSepBy() {
 		return res, nil
 	})
 
-	intList := combinator.SepBy(terminal.Integer(), terminal.Rune(',')).Bind(arr)
+	intList := combinator.SepBy("integer list", terminal.Integer(), terminal.Rune(',')).Bind(arr)
 	p := combinator.Seq("ARR", "array",
 		terminal.Rune('['),
 		intList,
@@ -38,50 +38,18 @@ func ExampleSepBy() {
 	).Bind(interpreter.Select(1))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
-	ctx := parsley.NewContext(r)
+	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 
 	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("[1,2,3]")))
-	ctx = parsley.NewContext(r)
+	ctx = parsley.NewContext(parsley.NewFileSet(), r)
 	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 
 	// Output: []int64 []
 	// []int64 [1 2 3]
-}
-
-// Let's define a simple language where you concatenate chars.
-// The language would be left recursive, but using SepBy we can avoid this.
-// The grammar is: S -> [V(+V)*], V -> any char
-// In the second call the value of the char node will be returned directly and the interpreter
-// is not used.
-func ExampleSepByOrValue() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-		var res string
-		for i := 0; i < len(nodes); i += 2 {
-			val, _ := nodes[i].Value(ctx)
-			res = res + string(val.(rune))
-		}
-		return res, nil
-	})
-
-	p := combinator.SepByOrValue(terminal.Char(), terminal.Rune('+')).Bind(concat)
-
-	r := text.NewReader(text.NewFile("example.file", []byte(`'a'+'b'`)))
-	ctx := parsley.NewContext(r)
-
-	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
-	fmt.Printf("%T %v\n", value1, value1)
-
-	r = text.NewReader(text.NewFile("example.file", []byte("'a'")))
-	ctx = parsley.NewContext(r)
-	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
-	fmt.Printf("%T %v\n", value2, value2)
-
-	// Output: string ab
-	// int32 97
 }
 
 // Let's define a simple language where you can add integer numbers.
@@ -101,20 +69,20 @@ func ExampleSepBy1() {
 		return sum, nil
 	})
 
-	p := combinator.SepBy1(terminal.Integer(), terminal.Rune('+')).Bind(interpreter)
+	p := combinator.SepBy1("integers separated by '+'", terminal.Integer(), terminal.Rune('+')).Bind(interpreter)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("")))
-	ctx := parsley.NewContext(r)
+	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("1")))
-	ctx = parsley.NewContext(r)
+	ctx = parsley.NewContext(parsley.NewFileSet(), r)
 	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value2, value2)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("1+2+3")))
-	ctx = parsley.NewContext(r)
+	ctx = parsley.NewContext(parsley.NewFileSet(), r)
 	value3, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
 	fmt.Printf("%T %v\n", value3, value3)
 	// Output: <nil> <nil>

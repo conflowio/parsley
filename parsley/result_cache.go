@@ -14,6 +14,7 @@ import (
 type Result struct {
 	LeftRecCtx        data.IntMap
 	CurtailingParsers data.IntSet
+	Error             Error
 	Node              Node
 }
 

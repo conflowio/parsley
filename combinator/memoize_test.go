@@ -34,15 +34,15 @@ func ExampleMemoize() {
 		return res, nil
 	})
 
-	var p parser.NamedFunc
-	p = *combinator.Memoize(combinator.Any("a or ab",
+	var p parser.Func
+	p = combinator.Memoize(combinator.Any("a or ab",
 		terminal.Rune('a'),
 		combinator.Seq("AB", "", &p, terminal.Rune('b')).Bind(concat),
 	))
 	f := text.NewFile("example.file", []byte("abbbbbbbb"))
 	r := text.NewReader(f)
 	s := combinator.Sentence(&p)
-	ctx := parsley.NewContext(r)
+	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value, _ := parsley.Evaluate(ctx, s, nil)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string abbbbbbbb
