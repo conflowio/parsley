@@ -21,18 +21,15 @@ var _ = Describe("Char", func() {
 
 	var p = terminal.Char()
 
-	It("should have a name", func() {
-		Expect(p.Name()).ToNot(BeEmpty())
-	})
-
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("CHAR"))
 			Expect(node.Value(nil)).To(Equal(value))
@@ -66,11 +63,14 @@ var _ = Describe("Char", func() {
 	DescribeTable("should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting char literal"))
+			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", ``, 0),
@@ -80,19 +80,20 @@ var _ = Describe("Char", func() {
 		Entry(`\u`, `\u`, 0),
 	)
 
-	DescribeTable("should error",
-		func(input string, startPos int, errPos parsley.Pos) {
+	DescribeTable("should return custom error",
+		func(input string, startPos int, expectedErr parsley.Error) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).To(HaveOccurred())
+			Expect(err).To(MatchError(expectedErr))
 			Expect(res).To(BeNil())
 		},
-		Entry("only start quote", `'`, 0, parsley.Pos(1)),
-		Entry("empty quotes", `''`, 0, parsley.Pos(2)),
-		Entry("no end quote", `'a`, 0, parsley.Pos(3)),
-		Entry("multiple characters", `'aa'`, 0, parsley.Pos(3)),
+		Entry("only start quote", `'`, 0, parsley.NewErrorf(parsley.Pos(2), "was expecting one character")),
+		Entry("empty quotes", `''`, 0, parsley.NewErrorf(parsley.Pos(2), "was expecting one character")),
+		Entry("no end quote", `'a`, 0, parsley.NewErrorf(parsley.Pos(3), "was expecting \"'\"")),
+		Entry("multiple characters", `'aa'`, 0, parsley.NewErrorf(parsley.Pos(3), "was expecting \"'\"")),
 	)
 })

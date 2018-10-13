@@ -7,6 +7,7 @@
 package terminal
 
 import (
+	"errors"
 	"strconv"
 	"unicode/utf8"
 
@@ -18,8 +19,10 @@ import (
 )
 
 // String matches a string literal enclosed in double quotes
-func String(allowBackquote bool) *parser.NamedFunc {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+func String(allowBackquote bool) parser.Func {
+	notFoundErr := errors.New("was expecting string literal")
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		quote := '"'
 		readerPos, found := tr.ReadRune(pos, quote)
@@ -31,13 +34,13 @@ func String(allowBackquote bool) *parser.NamedFunc {
 		}
 
 		if !found {
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 		}
 
 		// check for empty string
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
-			return ast.NewTerminalNode("STRING", "", pos, readerPos), data.EmptyIntSet
+			return ast.NewTerminalNode("STRING", "", pos, readerPos), data.EmptyIntSet, nil
 		}
 
 		var value []byte
@@ -49,11 +52,10 @@ func String(allowBackquote bool) *parser.NamedFunc {
 
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if !found {
-			ctx.SetErrorf(readerPos, "was expecting '%s'", string(quote))
-			return nil, data.EmptyIntSet
+			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "was expecting '%s'", string(quote))
 		}
-		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), data.EmptyIntSet
-	}).WithName("string value")
+		return ast.NewTerminalNode("STRING", string(value), pos, readerPos), data.EmptyIntSet, nil
+	})
 }
 
 func unquoteString(b []byte) ([]byte, int) {

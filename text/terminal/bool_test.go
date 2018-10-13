@@ -21,10 +21,6 @@ var _ = Describe("Bool", func() {
 
 	var p = terminal.Bool("true", "false")
 
-	It("should have a name", func() {
-		Expect(p.Name()).To(Equal("true or false"))
-	})
-
 	Context("when called with an empty true/false value", func() {
 		It("should panic", func() {
 			Expect(func() { terminal.Bool("", "false") }).To(Panic())
@@ -35,11 +31,12 @@ var _ = Describe("Bool", func() {
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("BOOL"))
 			Expect(node.Value(nil)).To(Equal(value))
@@ -57,11 +54,14 @@ var _ = Describe("Bool", func() {
 	DescribeTable("should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting true or false"))
+			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", "", 0),

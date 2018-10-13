@@ -22,14 +22,12 @@ var _ = Describe("Regexp", func() {
 	var p1 = terminal.Regexp("FOO", "foo", "fo+", 0)
 	var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1)
 
-	It("should have a name", func() {
-		Expect(p1.Name()).To(Equal("foo"))
-	})
-
 	Context("when regexp matches an empty string", func() {
 		It("should panic", func() {
-			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
-			ctx := parsley.NewContext(r)
+			f := text.NewFile("textfile", []byte("foo"))
+			fs := parsley.NewFileSet(f)
+			r := text.NewReader(f)
+			ctx := parsley.NewContext(fs, r)
 			p := terminal.Regexp("FOO", "foo", "f*", 0)
 			Expect(func() { p.Parse(ctx, data.EmptyIntMap, 0) }).To(Panic())
 		})
@@ -37,8 +35,10 @@ var _ = Describe("Regexp", func() {
 
 	Context("when capturing group is invalid", func() {
 		It("should panic", func() {
-			r := text.NewReader(text.NewFile("textfile", []byte("foo")))
-			ctx := parsley.NewContext(r)
+			f := text.NewFile("textfile", []byte("foo"))
+			fs := parsley.NewFileSet(f)
+			r := text.NewReader(f)
+			ctx := parsley.NewContext(fs, r)
 			p := terminal.Regexp("FOO", "foo", "f(o+)", 2)
 			Expect(func() { p.Parse(ctx, data.EmptyIntMap, 0) }).To(Panic())
 		})
@@ -47,11 +47,12 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("full match - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p1.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p1.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
 			Expect(node.Value(nil)).To(Equal(value))
@@ -66,11 +67,14 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("full match - should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p1.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p1.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting foo"))
+			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", ``, 0),
@@ -80,11 +84,12 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("submatch - should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p2.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p2.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
 			Expect(node.Token()).To(Equal("FOO"))
 			Expect(node.Value(nil)).To(Equal(value))
@@ -99,11 +104,14 @@ var _ = Describe("Regexp", func() {
 	DescribeTable("submatch - should not match",
 		func(input string, startPos int) {
 			f := text.NewFile("textfile", []byte(input))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, curtailingParsers := p2.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+			ctx := parsley.NewContext(fs, r)
+			res, curtailingParsers, err := p2.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting foo"))
+			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", ``, 0),

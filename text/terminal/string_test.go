@@ -25,18 +25,15 @@ var _ = Describe("String", func() {
 
 		var p = terminal.String(true)
 
-		It("should have a name", func() {
-			Expect(p.Name()).ToNot(BeEmpty())
-		})
-
 		DescribeTable("should match",
 			func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
 				f := text.NewFile("textfile", []byte(input))
+				fs := parsley.NewFileSet(f)
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r)
-				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+				ctx := parsley.NewContext(fs, r)
+				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(ctx.Error()).ToNot(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 				node := res.(*ast.TerminalNode)
 				Expect(node.Token()).To(Equal("STRING"))
 				Expect(node.Value(nil)).To(Equal(value))
@@ -71,11 +68,14 @@ var _ = Describe("String", func() {
 		DescribeTable("should not match",
 			func(input string, startPos int) {
 				f := text.NewFile("textfile", []byte(input))
+				fs := parsley.NewFileSet(f)
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r)
-				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+				ctx := parsley.NewContext(fs, r)
+				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(ctx.Error()).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Cause()).To(MatchError("was expecting string literal"))
+				Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 				Expect(res).To(BeNil())
 			},
 			Entry("empty", ``, 0),
@@ -87,12 +87,13 @@ var _ = Describe("String", func() {
 		DescribeTable("unfinished string literal",
 			func(input string) {
 				f := text.NewFile("textfile", []byte(input))
+				fs := parsley.NewFileSet(f)
 				r := text.NewReader(f)
-				ctx := parsley.NewContext(r)
-				res, curtailingParsers := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+				ctx := parsley.NewContext(fs, r)
+				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-				Expect(ctx.Error()).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
-				Expect(ctx.Error().Pos()).To(Equal(parsley.Pos(5)))
+				Expect(err).To(MatchError(fmt.Sprintf("was expecting '%s'", string(input[0]))))
+				Expect(err.Pos()).To(Equal(parsley.Pos(5)))
 				Expect(res).To(BeNil())
 			},
 			Entry("`foo", "`foo"),
@@ -104,25 +105,25 @@ var _ = Describe("String", func() {
 
 		var p = terminal.String(false)
 
-		It("should have a name", func() {
-			Expect(p.Name()).ToNot(BeEmpty())
-		})
-
 		It("should match double-quoted strings", func() {
 			f := text.NewFile("textfile", []byte(`"foo"`))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			ctx := parsley.NewContext(fs, r)
+			res, _, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).ToNot(BeNil())
 		})
 
 		It("should not match backquoted strings", func() {
 			f := text.NewFile("textfile", []byte("`foo`"))
+			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
-			ctx := parsley.NewContext(r)
-			res, _ := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
-			Expect(ctx.Error()).ToNot(HaveOccurred())
+			ctx := parsley.NewContext(fs, r)
+			res, _, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(0))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Cause()).To(MatchError("was expecting string literal"))
+			Expect(err.Pos()).To(Equal(f.Pos(0)))
 			Expect(res).To(BeNil())
 		})
 	})

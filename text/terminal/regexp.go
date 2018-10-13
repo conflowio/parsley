@@ -20,21 +20,23 @@ import (
 // The name variable is used for error messages, so it should be descriptive and make sense in the sentence "was expecting %s".
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
-func Regexp(token string, name string, regexp string, groupIndex int) *parser.NamedFunc {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet) {
+func Regexp(token string, name string, regexp string, groupIndex int) parser.Func {
+	notFoundErr := fmt.Errorf("was expecting %s", name)
+
+	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if groupIndex == 0 {
 			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
-				return ast.NewTerminalNode(token, string(match), pos, readerPos), data.EmptyIntSet
+				return ast.NewTerminalNode(token, string(match), pos, readerPos), data.EmptyIntSet, nil
 			}
 		} else {
 			if readerPos, matches := tr.ReadRegexpSubmatch(pos, regexp); matches != nil {
 				if groupIndex >= len(matches) {
 					panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
 				}
-				return ast.NewTerminalNode(token, string(matches[groupIndex]), pos, readerPos), data.EmptyIntSet
+				return ast.NewTerminalNode(token, string(matches[groupIndex]), pos, readerPos), data.EmptyIntSet, nil
 			}
 		}
-		return nil, data.EmptyIntSet
-	}).WithName(name)
+		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+	})
 }
