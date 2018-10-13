@@ -9,7 +9,7 @@ import (
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() parser.Func {
+func NewParser() *combinator.Recursive {
 	var value parser.Func
 
 	array := combinator.Seq("ARRAY", "array",
@@ -47,5 +47,8 @@ func NewParser() parser.Func {
 		terminal.Word("null", nil),
 	)
 
-	return text.Trim(&value)
+	return combinator.Seq("Value", "value",
+		text.LeftTrim(value, text.WsSpacesNl),
+		terminal.Whitespaces(text.WsSpacesNl),
+	).Bind(interpreter.Select(0))
 }
