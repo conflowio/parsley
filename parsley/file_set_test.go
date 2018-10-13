@@ -21,7 +21,7 @@ var _ = Describe("File set", func() {
 		fs = parsley.NewFileSet(files...)
 	})
 
-	Describe("NewFile()", func() {
+	Describe("NewFileSet()", func() {
 		It("returns with a non-nil file set", func() {
 			Expect(fs).ToNot(BeNil())
 		})
