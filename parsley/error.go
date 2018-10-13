@@ -12,8 +12,9 @@ import (
 )
 
 // Error is an error with a position
+//go:generate counterfeiter . Error
 type Error interface {
-	error
+	Error() string
 	Cause() error
 	Pos() Pos
 }
