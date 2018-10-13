@@ -33,7 +33,7 @@ func NewError(pos Pos, cause error) Error {
 	case Error:
 		return c
 	default:
-		return &err{
+		return err{
 			cause: cause,
 			msg:   cause.Error(),
 			pos:   pos,
@@ -44,7 +44,7 @@ func NewError(pos Pos, cause error) Error {
 // NewErrorf creates a new error with the given position and message
 func NewErrorf(pos Pos, format string, values ...interface{}) Error {
 	cause := fmt.Errorf(format, values...)
-	return &err{
+	return err{
 		cause: cause,
 		msg:   cause.Error(),
 		pos:   pos,
@@ -52,17 +52,17 @@ func NewErrorf(pos Pos, format string, values ...interface{}) Error {
 }
 
 // Error returns with the full error message including the position
-func (e *err) Error() string {
+func (e err) Error() string {
 	return e.msg
 }
 
 // Pos returns with the error's position
-func (e *err) Pos() Pos {
+func (e err) Pos() Pos {
 	return e.pos
 }
 
 // Cause returns with the original error
-func (e *err) Cause() error {
+func (e err) Cause() error {
 	return e.cause
 }
 
@@ -73,7 +73,7 @@ func WrapError(e Error, format string, values ...interface{}) Error {
 	if msg == "" {
 		return e
 	}
-	return &err{
+	return err{
 		cause: e.Cause(),
 		pos:   e.Pos(),
 		msg:   strings.Replace(msg, "{{err}}", e.Error(), -1),
