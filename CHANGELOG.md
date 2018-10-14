@@ -1,3 +1,9 @@
+## 0.10.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- Rename Substring parser to Op
+
 ## 0.9.0
 
 BACKWARDS INCOMPATIBILITIES:
@@ -10,7 +16,7 @@ BACKWARDS INCOMPATIBILITIES:
 - I removed the *OrValue combinators as you can force a single child result with the Single combinator
 - Clean up all combinators to only have parser parameters
 - Add parser.ReturnError combinator to be able to override a parser's error (if the error's position is the same as the reader's)
--Add ReturnError() helper method to parser.Func
+- Add ReturnError() helper method to parser.Func
 
 BUGFIXES:
 
