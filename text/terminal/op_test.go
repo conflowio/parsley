@@ -17,18 +17,18 @@ import (
 	"github.com/opsidian/parsley/text/terminal"
 )
 
-var _ = Describe("Substring", func() {
+var _ = Describe("Op", func() {
 
-	var p = terminal.Substring("FOO", "foo", 42)
+	var p = terminal.Op("===")
 
 	Context("when called with an empty string", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Substring("FOO", "", 42) }).To(Panic())
+			Expect(func() { terminal.Op("") }).To(Panic())
 		})
 	})
 
 	DescribeTable("should match",
-		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
+		func(input string, startPos int, nodePos parsley.Pos, endPos int) {
 			f := text.NewFile("textfile", []byte(input))
 			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
@@ -37,15 +37,14 @@ var _ = Describe("Substring", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			node := res.(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("FOO"))
-			Expect(node.Value(nil)).To(Equal(value))
+			Expect(node.Token()).To(Equal("==="))
+			Expect(node.Value(nil)).To(Equal("==="))
 			Expect(node.Pos()).To(Equal(nodePos))
 			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
-		Entry(`foo beginning`, `foo`, 0, 42, parsley.Pos(1), 3),
-		Entry(`foo middle`, `--- foo ---`, 4, 42, parsley.Pos(5), 7),
-		Entry(`foo end`, `--- foo`, 4, 42, parsley.Pos(5), 7),
-		Entry(`prefix`, `foobar`, 0, 42, parsley.Pos(1), 3),
+		Entry(`op beginning`, `===aaa`, 0, parsley.Pos(1), 3),
+		Entry(`op middle`, `aaa===aaa`, 3, parsley.Pos(4), 6),
+		Entry(`op end`, `aaa===`, 3, parsley.Pos(4), 6),
 	)
 
 	DescribeTable("should not match",
@@ -57,11 +56,11 @@ var _ = Describe("Substring", func() {
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(HaveOccurred())
-			Expect(err.Cause()).To(MatchError("was expecting \"foo\""))
+			Expect(err.Cause()).To(MatchError("was expecting \"===\""))
 			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},
 		Entry("empty", ``, 0),
-		Entry("partial", `fo`, 0),
+		Entry("partial", `==`, 0),
 	)
 })
