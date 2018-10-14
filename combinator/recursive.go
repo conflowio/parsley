@@ -18,7 +18,6 @@ type Recursive struct {
 	parserLookUp func(int) parsley.Parser
 	lenCheck     func(int) bool
 	interpreter  parsley.Interpreter
-	notFoundErr  error
 }
 
 // NewRecursive creates a new recursive instance
