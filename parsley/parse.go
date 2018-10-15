@@ -15,6 +15,11 @@ import (
 func Parse(ctx *Context, p Parser) (Node, error) {
 	node, _, err := p.Parse(ctx, data.EmptyIntMap, ctx.Reader().Pos(0))
 	if err != nil {
+
+		if ctxErr := ctx.Error(); ctxErr != nil && ctxErr.Pos() > err.Pos() {
+			err = ctxErr
+		}
+
 		return nil, ctx.FileSet().ErrorWithPosition(
 			WrapError(err, "failed to parse the input: {{err}}"),
 		)

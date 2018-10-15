@@ -7,6 +7,8 @@
 package parsley_test
 
 import (
+	"errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/data"
@@ -28,6 +30,7 @@ var _ = Describe("Parse", func() {
 
 	BeforeEach(func() {
 		f := &parsleyfakes.FakeFile{}
+		f.LenReturns(3)
 		position := &parsleyfakes.FakePosition{}
 		position.StringReturns("testpos")
 		f.PositionReturns(position)
@@ -76,13 +79,24 @@ var _ = Describe("Parse", func() {
 		BeforeEach(func() {
 			parserRes = nil
 			err := &parsleyfakes.FakeError{}
-			err.PosReturns(parsley.Pos(1))
+			err.PosReturns(parsley.Pos(2))
 			err.ErrorReturns("some error")
 			parserErr = err
+			ctx.SetError(parsley.NewError(parsley.Pos(1), errors.New("context error")))
 		})
 		It("should return an error", func() {
 			Expect(val).To(BeNil())
 			Expect(err).To(MatchError("failed to parse the input: some error at testpos"))
+		})
+
+		Context("if the context stores an error with a higher position", func() {
+			BeforeEach(func() {
+				ctx.SetError(parsley.NewError(parsley.Pos(3), errors.New("context error")))
+			})
+			It("should return an error", func() {
+				Expect(val).To(BeNil())
+				Expect(err).To(MatchError("failed to parse the input: context error at testpos"))
+			})
 		})
 	})
 

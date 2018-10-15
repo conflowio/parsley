@@ -5,6 +5,7 @@ type Context struct {
 	fileSet     *FileSet
 	reader      Reader
 	resultCache ResultCache
+	err         Error
 	callCount   int
 }
 
@@ -40,4 +41,20 @@ func (c *Context) RegisterCall() {
 // CallCount returns with the call count
 func (c *Context) CallCount() int {
 	return c.callCount
+}
+
+// SetError saves the error if it has the highest position for found errors
+func (c *Context) SetError(err Error) {
+	if err == nil {
+		return
+	}
+
+	if c.err == nil || int(c.err.Pos()) < int(err.Pos()) {
+		c.err = err
+	}
+}
+
+// Error returns with the parse error with the highest position (if any)
+func (c *Context) Error() Error {
+	return c.err
 }

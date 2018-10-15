@@ -67,6 +67,10 @@ func (rp *recursive) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos par
 		return nil, rp.curtailingParsers, rp.err
 	}
 
+	if rp.err != nil {
+		ctx.SetError(rp.err)
+	}
+
 	return rp.result, rp.curtailingParsers, nil
 }
 

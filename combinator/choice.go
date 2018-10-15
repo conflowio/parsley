@@ -29,6 +29,7 @@ func Choice(parsers ...parsley.Parser) parser.Func {
 				err = err2
 			}
 			if node != nil {
+				ctx.SetError(err)
 				return node, cp, nil
 			}
 		}

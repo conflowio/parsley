@@ -37,6 +37,8 @@ func Any(parsers ...parsley.Parser) parser.Func {
 			return nil, cp, err
 		}
 
+		ctx.SetError(err)
+
 		return res, cp, nil
 	})
 }
