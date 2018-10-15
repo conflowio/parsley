@@ -1,3 +1,9 @@
+## 0.10.1
+
+IMPROVEMENTS:
+
+- Record possible errors in Context if a combinator returns a result for better error messages
+
 ## 0.10.0
 
 BACKWARDS INCOMPATIBILITIES:
