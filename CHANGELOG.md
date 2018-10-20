@@ -1,3 +1,9 @@
+## 0.10.2
+
+IMPROVEMENTS:
+
+- Add SuppressError combinato
+
 ## 0.10.1
 
 IMPROVEMENTS:
