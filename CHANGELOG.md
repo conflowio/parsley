@@ -1,3 +1,9 @@
+## 0.11.5
+
+IMPROVEMENTS:
+
+- Add TimeDuration parser
+
 ## 0.11.4
 
 IMPROVEMENTS:
