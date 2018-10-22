@@ -45,7 +45,7 @@ func NewParser() *combinator.Recursive {
 		terminal.Word("false", false),
 		terminal.Word("true", true),
 		terminal.Word("null", nil),
-	).ReturnError("was expecting value")
+	).Name("value")
 
 	return combinator.Seq(
 		text.LeftTrim(value, text.WsSpacesNl),

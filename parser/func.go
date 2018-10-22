@@ -22,8 +22,9 @@ func (f Func) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Po
 	return f(ctx, leftRecCtx, pos)
 }
 
-// ReturnError returns with a new parser function which overrides the returned error if its position is the same as
-// the reader's position
-func (f Func) ReturnError(msg string, args ...interface{}) Func {
-	return ReturnError(Func(f), fmt.Errorf(msg, args...))
+// Name returns with a new parser function which overrides the returned error
+// if its position is the same as the reader's position
+// The error will be: "was expecting <name>"
+func (f Func) Name(name string) Func {
+	return ReturnError(Func(f), fmt.Errorf("was expecting %s", name))
 }
