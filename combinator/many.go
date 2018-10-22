@@ -11,21 +11,21 @@ import (
 )
 
 // Many applies the  parser zero or more times
-func Many(p parsley.Parser) *Recursive {
+func Many(p parsley.Parser) *Sequence {
 	return newMany(p, true)
 }
 
 // Many1 applies the parser one or more times
-func Many1(p parsley.Parser) *Recursive {
+func Many1(p parsley.Parser) *Sequence {
 	return newMany(p, false)
 }
 
-func newMany(p parsley.Parser, allowEmpty bool) *Recursive {
+func newMany(p parsley.Parser, allowEmpty bool) *Sequence {
 	lookup := func(i int) parsley.Parser {
 		return p
 	}
 	lenCheck := func(len int) bool {
 		return allowEmpty || len > 0
 	}
-	return NewRecursive("MANY", lookup, lenCheck)
+	return Seq("MANY", lookup, lenCheck)
 }

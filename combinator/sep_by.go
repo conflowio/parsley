@@ -11,16 +11,16 @@ import (
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser
-func SepBy(valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+func SepBy(valueP parsley.Parser, sepP parsley.Parser) *Sequence {
 	return newSepBy(valueP, sepP, true)
 }
 
 // SepBy1 applies the given value parser one or more times separated by the separator parser
-func SepBy1(valueP parsley.Parser, sepP parsley.Parser) *Recursive {
+func SepBy1(valueP parsley.Parser, sepP parsley.Parser) *Sequence {
 	return newSepBy(valueP, sepP, false)
 }
 
-func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recursive {
+func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Sequence {
 	lookup := func(i int) parsley.Parser {
 		if i%2 == 0 {
 			return valueP
@@ -31,5 +31,5 @@ func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Recu
 	lenCheck := func(len int) bool {
 		return (len == 0 && allowEmpty) || len%2 == 1
 	}
-	return NewRecursive("SEP_BY", lookup, lenCheck)
+	return Seq("SEP_BY", lookup, lenCheck)
 }

@@ -21,7 +21,7 @@ func ExampleParse() {
 		return value0.(int64) + value1.(int64), nil
 	})
 
-	p := combinator.Seq(
+	p := combinator.SeqOf(
 		terminal.Integer(),
 		terminal.Rune('+'),
 		terminal.Integer(),
@@ -50,7 +50,7 @@ func ExampleEvaluate() {
 		return value0.(int64) + value1.(int64), nil
 	})
 
-	p := combinator.Seq(
+	p := combinator.SeqOf(
 		terminal.Integer(),
 		terminal.Rune('+'),
 		terminal.Integer(),
@@ -89,7 +89,7 @@ var _ = Describe("Parsley", func() {
 
 		var p parser.Func
 		p = combinator.Memoize(combinator.Any(
-			combinator.Seq(
+			combinator.SeqOf(
 				&p,
 				terminal.Rune('b'),
 			).Bind(concat),
@@ -121,7 +121,7 @@ var _ = Describe("Parsley", func() {
 			&p,
 		))
 
-		p = combinator.Memoize(combinator.Seq(
+		p = combinator.Memoize(combinator.SeqOf(
 			value,
 			terminal.Rune('+'),
 			value,

@@ -27,7 +27,7 @@ func ExampleSeq() {
 		return res, nil
 	})
 
-	p := combinator.Seq(
+	p := combinator.SeqOf(
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),

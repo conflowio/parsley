@@ -13,6 +13,6 @@ import (
 )
 
 // Sentence matches the given parser until the end of input
-func Sentence(p parsley.Parser) *Recursive {
-	return Seq(p, parser.End()).Bind(interpreter.Select(0))
+func Sentence(p parsley.Parser) *Sequence {
+	return SeqOf(p, parser.End()).Bind(interpreter.Select(0))
 }
