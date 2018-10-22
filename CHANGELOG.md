@@ -1,3 +1,15 @@
+## 0.11.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- Rename parser's ReturnError method to Name
+- Rename Seq combinator to SeqOf
+- rename Recursive combinator to Seq (the name Recursive doesn't mean anything)
+
+IMPROVEMENTS:
+
+- Add Name() function to combinator.Sequence (same helper as ReturnError)
+
 ## 0.10.2
 
 IMPROVEMENTS:
