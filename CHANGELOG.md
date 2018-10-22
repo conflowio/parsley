@@ -1,3 +1,10 @@
+## 0.11.4
+
+IMPROVEMENTS:
+
+- Change Sequence.Name() to return *combinator.Sequence
+- Add Sequence.Token() method to set result token
+
 ## 0.11.3
 
 IMPROVEMENTS:
