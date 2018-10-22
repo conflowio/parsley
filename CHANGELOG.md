@@ -1,3 +1,9 @@
+## 0.11.2
+
+IMPROVEMENTS:
+
+- Add text NL parser to match new lines
+
 ## 0.11.1
 
 IMPROVEMENTS:
