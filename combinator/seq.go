@@ -11,7 +11,6 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
@@ -21,6 +20,7 @@ type Sequence struct {
 	parserLookUp func(int) parsley.Parser
 	lenCheck     func(int) bool
 	interpreter  parsley.Interpreter
+	customErr    error
 }
 
 // Seq tries to apply all parsers after each other and returns with all combinations of the results.
@@ -51,14 +51,25 @@ func (s *Sequence) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsl
 		curtailingParsers: data.EmptyIntSet,
 		nodes:             []parsley.Node{},
 	}
-	return p.Parse(ctx, leftRecCtx, pos)
+	res, cp, err := p.Parse(ctx, leftRecCtx, pos)
+	if err != nil && s.customErr != nil && err.Pos() == pos {
+		err = parsley.NewError(pos, s.customErr)
+	}
+
+	return res, cp, err
 }
 
-// Name returns with a new parser function which overrides the returned error
-// if its position is the same as the reader's position
+// Name overrides the returned error if its position is the same as the reader's position
 // The error will be: "was expecting <name>"
-func (s *Sequence) Name(name string) parser.Func {
-	return parser.ReturnError(s, fmt.Errorf("was expecting %s", name))
+func (s *Sequence) Name(name string) *Sequence {
+	s.customErr = fmt.Errorf("was expecting %s", name)
+	return s
+}
+
+// Token sets the result token
+func (s *Sequence) Token(token string) *Sequence {
+	s.token = token
+	return s
 }
 
 type sequence struct {
