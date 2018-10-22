@@ -1,3 +1,9 @@
+## 0.11.3
+
+IMPROVEMENTS:
+
+- Add new whitespace mode: text.WsSpacesForceNl to force new lines
+
 ## 0.11.2
 
 IMPROVEMENTS:
