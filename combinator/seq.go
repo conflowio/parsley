@@ -94,7 +94,7 @@ func (s *sequence) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntMap
 	if nextParser != nil {
 		ctx.RegisterCall()
 		res, cp, err = nextParser.Parse(ctx, leftRecCtx, pos)
-		if err != nil && (s.err == nil || err.Pos() > s.err.Pos()) {
+		if err != nil && (s.err == nil || err.Pos() >= s.err.Pos()) {
 			s.err = err
 		}
 	}

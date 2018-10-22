@@ -25,7 +25,7 @@ func Choice(parsers ...parsley.Parser) parser.Func {
 			ctx.RegisterCall()
 			node, cp2, err2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
-			if err2 != nil && (err == nil || err2.Pos() > err.Pos()) {
+			if err2 != nil && (err == nil || err2.Pos() >= err.Pos()) {
 				err = err2
 			}
 			if node != nil {

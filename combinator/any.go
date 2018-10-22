@@ -28,7 +28,7 @@ func Any(parsers ...parsley.Parser) parser.Func {
 			res2, cp2, err2 := p.Parse(ctx, leftRecCtx, pos)
 			cp = cp.Union(cp2)
 			res = ast.AppendNode(res, res2)
-			if err2 != nil && (err == nil || err2.Pos() > err.Pos()) {
+			if err2 != nil && (err == nil || err2.Pos() >= err.Pos()) {
 				err = err2
 			}
 		}

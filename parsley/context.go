@@ -49,7 +49,7 @@ func (c *Context) SetError(err Error) {
 		return
 	}
 
-	if c.err == nil || int(c.err.Pos()) < int(err.Pos()) {
+	if c.err == nil || err.Pos() >= c.err.Pos() {
 		c.err = err
 	}
 }
