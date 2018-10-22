@@ -1,3 +1,9 @@
+## 0.11.1
+
+IMPROVEMENTS:
+
+- Allow higher quality errors to be returned by the parsers
+
 ## 0.11.0
 
 BACKWARDS INCOMPATIBILITIES:
