@@ -166,19 +166,25 @@ func (r *Reader) IsEOF(pos parsley.Pos) bool {
 }
 
 // SkipWhitespaces skips the given whitespaces all the whitespaces
-func (r *Reader) SkipWhitespaces(pos parsley.Pos, wsMode WsMode) parsley.Pos {
+func (r *Reader) SkipWhitespaces(pos parsley.Pos, wsMode WsMode) (parsley.Pos, bool) {
 	cur := int(pos) - r.file.offset
+	ok := wsMode != WsSpacesForceNl
 	switch wsMode {
+	case WsSpacesNl:
+		fallthrough
+	case WsSpacesForceNl:
+		for cur < r.file.len && (r.file.data[cur] == ' ' || r.file.data[cur] == '\t' || r.file.data[cur] == '\n' || r.file.data[cur] == '\f') {
+			if r.file.data[cur] == '\n' || r.file.data[cur] == '\f' {
+				ok = true
+			}
+			cur++
+		}
 	case WsSpaces:
 		for cur < r.file.len && (r.file.data[cur] == ' ' || r.file.data[cur] == '\t') {
 			cur++
 		}
-	case WsSpacesNl:
-		for cur < r.file.len && (r.file.data[cur] == '\t' || r.file.data[cur] == '\n' || r.file.data[cur] == '\f' || r.file.data[cur] == ' ') {
-			cur++
-		}
 	}
-	return r.file.Pos(cur)
+	return r.file.Pos(cur), ok
 }
 
 // Pos returns with the global position for the given cursor

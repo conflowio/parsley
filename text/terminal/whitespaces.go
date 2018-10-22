@@ -21,16 +21,19 @@ func Whitespaces(wsMode text.WsMode) parsley.Parser {
 	if wsMode == text.WsNone {
 		return parser.Nil()
 	}
+
 	var notFoundErr error
-	if wsMode == text.WsSpaces {
+	if wsMode == text.WsSpacesForceNl {
+		notFoundErr = errors.New("was expecting a new line")
+	} else if wsMode == text.WsSpaces {
 		notFoundErr = errors.New("was expecting spaces or tabs")
 	} else {
-		notFoundErr = errors.New("was expecting spaces, tabs or newline")
+		notFoundErr = errors.New("was expecting spaces, tabs or a newline character")
 	}
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
-		if readerPos := tr.SkipWhitespaces(pos, wsMode); readerPos > pos {
+		if readerPos, ok := tr.SkipWhitespaces(pos, wsMode); readerPos > pos && ok {
 			return ast.NilNode(readerPos), data.EmptyIntSet, nil
 		}
 

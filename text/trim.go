@@ -1,6 +1,8 @@
 package text
 
 import (
+	"errors"
+
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -9,19 +11,36 @@ import (
 
 // LeftTrim skips the whitespaces before it tries to match the given parser
 func LeftTrim(p parsley.Parser, wsMode WsMode) parser.Func {
+	notFoundErr := errors.New("was expecting a new line")
+
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
-		pos = ctx.Reader().(*Reader).SkipWhitespaces(pos, wsMode)
+		if wsMode == WsNone {
+			return p.Parse(ctx, leftRecCtx, pos)
+		}
+
+		pos, ok := ctx.Reader().(*Reader).SkipWhitespaces(pos, wsMode)
+		if !ok {
+			return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
+		}
 		return p.Parse(ctx, leftRecCtx, pos)
 	})
 }
 
 // RightTrim reads and skips the whitespaces after any parser matches and updates the reader position
 func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
+	if wsMode == WsSpacesForceNl {
+		panic("WsSpacesForceNl whitespace mode is not supported in RightTrim")
+	}
+
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
+		if wsMode == WsNone {
+			return p.Parse(ctx, leftRecCtx, pos)
+		}
+
 		tr := ctx.Reader().(*Reader)
 		res, cp, err := p.Parse(ctx, leftRecCtx, pos)
 		if err != nil {
-			errPos := tr.SkipWhitespaces(err.Pos(), wsMode)
+			errPos, _ := tr.SkipWhitespaces(err.Pos(), wsMode)
 			if errPos > err.Pos() {
 				err = parsley.NewError(errPos, err.Cause())
 			}
@@ -29,7 +48,10 @@ func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 		}
 
 		if res != nil {
-			res = ast.SetReaderPos(res, func(pos parsley.Pos) parsley.Pos { return tr.SkipWhitespaces(pos, wsMode) })
+			res = ast.SetReaderPos(res, func(pos parsley.Pos) parsley.Pos {
+				pos, _ = tr.SkipWhitespaces(pos, wsMode)
+				return pos
+			})
 		}
 
 		return res, cp, nil

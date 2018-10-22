@@ -17,4 +17,5 @@ const (
 	WsNone WsMode = iota
 	WsSpaces
 	WsSpacesNl
+	WsSpacesForceNl
 )

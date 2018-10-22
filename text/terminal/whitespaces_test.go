@@ -29,9 +29,9 @@ var _ = Describe("Whitespaces", func() {
 			r := text.NewReader(f)
 			ctx := parsley.NewContext(fs, r)
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 0)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.NilNode(0)))
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("should not match whitespaces", func() {
@@ -40,9 +40,9 @@ var _ = Describe("Whitespaces", func() {
 			r := text.NewReader(f)
 			ctx := parsley.NewContext(fs, r)
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 0)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(res).To(Equal(ast.NilNode(0)))
-			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
@@ -57,8 +57,8 @@ var _ = Describe("Whitespaces", func() {
 				r := text.NewReader(f)
 				ctx := parsley.NewContext(fs, r)
 				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				node := res.(ast.NilNode)
 				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
@@ -78,10 +78,10 @@ var _ = Describe("Whitespaces", func() {
 				r := text.NewReader(f)
 				ctx := parsley.NewContext(fs, r)
 				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).To(HaveOccurred())
 				Expect(err.Cause()).To(MatchError("was expecting spaces or tabs"))
 				Expect(err.Pos()).To(Equal(f.Pos(startPos)))
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(res).To(BeNil())
 			},
 			Entry("empty", "", 0),
@@ -101,8 +101,8 @@ var _ = Describe("Whitespaces", func() {
 				r := text.NewReader(f)
 				ctx := parsley.NewContext(fs, r)
 				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				node := res.(ast.NilNode)
 				Expect(node.Token()).To(Equal("NIL"))
 				Expect(node.Value(nil)).To(BeNil())
@@ -121,14 +121,57 @@ var _ = Describe("Whitespaces", func() {
 				r := text.NewReader(f)
 				ctx := parsley.NewContext(fs, r)
 				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
-				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).To(HaveOccurred())
-				Expect(err.Cause()).To(MatchError("was expecting spaces, tabs or newline"))
+				Expect(err.Cause()).To(MatchError("was expecting spaces, tabs or a newline character"))
 				Expect(err.Pos()).To(Equal(f.Pos(startPos)))
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(res).To(BeNil())
 			},
 			Entry("empty", "", 0),
 			Entry("not whitespace", `a`, 0),
+		)
+	})
+
+	Context("when forcing new lines", func() {
+
+		var p = terminal.Whitespaces(text.WsSpacesForceNl)
+
+		DescribeTable("should match",
+			func(input string, startPos int, nodePos parsley.Pos, endPos int) {
+				f := text.NewFile("textfile", []byte(input))
+				fs := parsley.NewFileSet(f)
+				r := text.NewReader(f)
+				ctx := parsley.NewContext(fs, r)
+				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+				node := res.(ast.NilNode)
+				Expect(node.Token()).To(Equal("NIL"))
+				Expect(node.Value(nil)).To(BeNil())
+				Expect(node.Pos()).To(Equal(f.Pos(endPos)))
+				Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
+			},
+			Entry("ws beginning", " \t\n\f---", 0, parsley.Pos(1), 4),
+			Entry("ws middle", "--- \t\n\f---", 3, parsley.Pos(4), 7),
+			Entry("ws end", "--- \t\n\f", 3, parsley.Pos(4), 7),
+		)
+
+		DescribeTable("should not match",
+			func(input string, startPos int) {
+				f := text.NewFile("textfile", []byte(input))
+				fs := parsley.NewFileSet(f)
+				r := text.NewReader(f)
+				ctx := parsley.NewContext(fs, r)
+				res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Cause()).To(MatchError("was expecting a new line"))
+				Expect(err.Pos()).To(Equal(f.Pos(startPos)))
+				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
+				Expect(res).To(BeNil())
+			},
+			Entry("empty", "", 0),
+			Entry("not whitespace", `a`, 0),
+			Entry("spaces and tabs only", " \t", 0),
 		)
 	})
 

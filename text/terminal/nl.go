@@ -28,7 +28,7 @@ func NL() parsley.Parser {
 
 		nlCount := 0
 		for {
-			pos = tr.SkipWhitespaces(pos, text.WsSpaces)
+			pos, _ = tr.SkipWhitespaces(pos, text.WsSpaces)
 			readerPos, found := tr.ReadRune(pos, '\n')
 			if !found {
 				break

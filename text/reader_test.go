@@ -463,30 +463,48 @@ var _ = Describe("Reader", func() {
 
 	Describe("SkipWhitespaces()", func() {
 		BeforeEach(func() {
-			data = []byte("abc \t\n\fdef")
+			data = []byte("abc \t\n\fdef  ")
 		})
 
 		It("should not match any whitespaces if none", func() {
-			pos := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
+			pos, ok := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
 			Expect(pos).To(Equal(f.Pos(0)))
+			Expect(ok).To(BeTrue())
 		})
 
 		It("should match all types of whitespaces", func() {
-			pos := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
+			pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
 			Expect(pos).To(Equal(f.Pos(7)))
+			Expect(ok).To(BeTrue())
 		})
 
 		Context("when not including new lines", func() {
 			It("should only match spaces and tabs", func() {
-				pos := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
+				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
 				Expect(pos).To(Equal(f.Pos(5)))
+				Expect(ok).To(BeTrue())
 			})
 		})
 
 		Context("when not skipping any whitespaces", func() {
 			It("should not match any whitespaces", func() {
-				pos := r.SkipWhitespaces(f.Pos(3), text.WsNone)
+				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsNone)
 				Expect(pos).To(Equal(f.Pos(3)))
+				Expect(ok).To(BeTrue())
+			})
+		})
+
+		Context("when forcing a new line", func() {
+			It("should match new lines", func() {
+				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpacesForceNl)
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(ok).To(BeTrue())
+			})
+
+			It("should not match spaces and tabs only", func() {
+				pos, ok := r.SkipWhitespaces(f.Pos(10), text.WsSpacesForceNl)
+				Expect(pos).To(Equal(f.Pos(12)))
+				Expect(ok).To(BeFalse())
 			})
 		})
 	})

@@ -49,7 +49,7 @@ var _ = Describe("Trim parsers", func() {
 
 	var _ = Describe("LeftTrim", func() {
 		BeforeEach(func() {
-			input = []byte(" \t\n\fabc")
+			input = []byte(" \t\n\fabc \t")
 		})
 
 		JustBeforeEach(func() {
@@ -99,6 +99,28 @@ var _ = Describe("Trim parsers", func() {
 			It("should trim the spaces and new lines from the left", func() {
 				_, _, passedPos := fakep.ParseArgsForCall(0)
 				Expect(passedPos).To(Equal(pos + 4))
+			})
+		})
+
+		Context("when whitespace mode is forcing a new line", func() {
+			BeforeEach(func() {
+				wsMode = text.WsSpacesForceNl
+			})
+
+			It("should trim the spaces and new lines from the left", func() {
+				_, _, passedPos := fakep.ParseArgsForCall(0)
+				Expect(passedPos).To(Equal(pos + 4))
+			})
+		})
+
+		Context("when whitespace mode is forcing a new line but no new line", func() {
+			BeforeEach(func() {
+				wsMode = text.WsSpacesForceNl
+				pos = parsley.Pos(8)
+			})
+
+			It("should return an error", func() {
+				Expect(err).To(MatchError(parsley.NewErrorf(parsley.Pos(10), "was expecting a new line")))
 			})
 		})
 	})
