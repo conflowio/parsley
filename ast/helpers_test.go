@@ -70,7 +70,8 @@ var _ = Describe("WalkNode", func() {
 			return false
 		}
 
-		ast.WalkNode(nl, f)
+		res := ast.WalkNode(nl, f)
+		Expect(res).To(BeFalse())
 
 		Expect(called).To(Equal([]parsley.Node{n1, n2}))
 	})
@@ -85,7 +86,8 @@ var _ = Describe("WalkNode", func() {
 			return false
 		}
 
-		ast.WalkNode(node, f)
+		res := ast.WalkNode(node, f)
+		Expect(res).To(BeFalse())
 
 		Expect(called).To(Equal([]parsley.Node{node}))
 	})

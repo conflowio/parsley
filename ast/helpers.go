@@ -28,17 +28,18 @@ func AppendNode(n1, n2 parsley.Node) parsley.Node {
 }
 
 // Walkable is a generic interface to allow to apply a function on the node
+// The Walk function should return true if the walk should be interrupted
 type Walkable interface {
-	Walk(f func(i int, n parsley.Node) bool)
+	Walk(f func(i int, n parsley.Node) bool) bool
 }
 
 // WalkNode applies the given function to the node
-func WalkNode(node parsley.Node, f func(i int, n parsley.Node) bool) {
+func WalkNode(node parsley.Node, f func(i int, n parsley.Node) bool) bool {
 	switch n := node.(type) {
 	case Walkable:
-		n.Walk(f)
+		return n.Walk(f)
 	default:
-		f(0, node)
+		return f(0, node)
 	}
 }
 

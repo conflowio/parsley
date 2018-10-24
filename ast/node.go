@@ -171,6 +171,17 @@ func (n *NonTerminalNode) String() string {
 	return fmt.Sprintf("%s{%s, %d..%d}", n.token, n.children, n.pos, n.readerPos)
 }
 
+// Walk runs the given function on all child nodes
+func (n *NonTerminalNode) Walk(f func(i int, n parsley.Node) bool) bool {
+	for i, node := range n.children {
+		if f(i, node) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // NodeList contains a list of nodes, should be used when a parser returns with multiple results
 type NodeList []parsley.Node
 
@@ -220,10 +231,12 @@ func (nl *NodeList) Append(node parsley.Node) {
 }
 
 // Walk runs the given function on all nodes
-func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) {
+func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) bool {
 	for i, node := range nl {
 		if f(i, node) {
-			break
+			return true
 		}
 	}
+
+	return false
 }

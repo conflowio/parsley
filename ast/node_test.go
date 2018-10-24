@@ -201,6 +201,36 @@ var _ = Describe("NonTerminalNode", func() {
 					Expect(node.String()).To(Equal("TEST{[STRING{foo, 1..2}], 1..2}"))
 				})
 			})
+
+			Describe("Walk", func() {
+				It("should call the function with all children", func() {
+					called := []parsley.Node{}
+					f := func(i int, n parsley.Node) bool {
+						Expect(i).To(Equal(len(called)))
+						called = append(called, n)
+						return false
+					}
+
+					res := node.Walk(f)
+					Expect(res).To(BeFalse())
+
+					Expect(called).To(Equal([]parsley.Node{child1, child2}))
+				})
+
+				It("should stop if the function returns with true", func() {
+					called := []parsley.Node{}
+					f := func(i int, n parsley.Node) bool {
+						Expect(i).To(Equal(len(called)))
+						called = append(called, n)
+						return i == 0
+					}
+
+					res := node.Walk(f)
+					Expect(res).To(BeTrue())
+
+					Expect(called).To(Equal([]parsley.Node{child1}))
+				})
+			})
 		})
 
 	})
@@ -393,7 +423,8 @@ var _ = Describe("NodeList", func() {
 				return false
 			}
 
-			nl.Walk(f)
+			res := nl.Walk(f)
+			Expect(res).To(BeFalse())
 
 			Expect(called).To(Equal([]parsley.Node{n1, n2}))
 		})
@@ -407,7 +438,8 @@ var _ = Describe("NodeList", func() {
 				return i > 0
 			}
 
-			nl.Walk(f)
+			res := nl.Walk(f)
+			Expect(res).To(BeTrue())
 
 			Expect(called).To(Equal([]parsley.Node{n1, n2}))
 		})
