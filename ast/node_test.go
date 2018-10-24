@@ -205,8 +205,7 @@ var _ = Describe("NonTerminalNode", func() {
 			Describe("Walk", func() {
 				It("should call the function with all children", func() {
 					called := []parsley.Node{}
-					f := func(i int, n parsley.Node) bool {
-						Expect(i).To(Equal(len(called)))
+					f := func(n parsley.Node) bool {
 						called = append(called, n)
 						return false
 					}
@@ -219,10 +218,9 @@ var _ = Describe("NonTerminalNode", func() {
 
 				It("should stop if the function returns with true", func() {
 					called := []parsley.Node{}
-					f := func(i int, n parsley.Node) bool {
-						Expect(i).To(Equal(len(called)))
+					f := func(n parsley.Node) bool {
 						called = append(called, n)
-						return i == 0
+						return true
 					}
 
 					res := node.Walk(f)
@@ -417,8 +415,7 @@ var _ = Describe("NodeList", func() {
 		It("should call the function with all children", func() {
 			nl = ast.NodeList([]parsley.Node{n1, n2})
 			called := []parsley.Node{}
-			f := func(i int, n parsley.Node) bool {
-				Expect(i).To(Equal(len(called)))
+			f := func(n parsley.Node) bool {
 				called = append(called, n)
 				return false
 			}
@@ -432,16 +429,15 @@ var _ = Describe("NodeList", func() {
 		It("should stop if the function returns with true", func() {
 			nl = ast.NodeList([]parsley.Node{n1, n2, n3})
 			called := []parsley.Node{}
-			f := func(i int, n parsley.Node) bool {
-				Expect(i).To(Equal(len(called)))
+			f := func(n parsley.Node) bool {
 				called = append(called, n)
-				return i > 0
+				return true
 			}
 
 			res := nl.Walk(f)
 			Expect(res).To(BeTrue())
 
-			Expect(called).To(Equal([]parsley.Node{n1, n2}))
+			Expect(called).To(Equal([]parsley.Node{n1}))
 		})
 	})
 })

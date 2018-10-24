@@ -172,9 +172,9 @@ func (n *NonTerminalNode) String() string {
 }
 
 // Walk runs the given function on all child nodes
-func (n *NonTerminalNode) Walk(f func(i int, n parsley.Node) bool) bool {
-	for i, node := range n.children {
-		if f(i, node) {
+func (n *NonTerminalNode) Walk(f func(n parsley.Node) bool) bool {
+	for _, n := range n.children {
+		if WalkNode(n, f) {
 			return true
 		}
 	}
@@ -231,9 +231,9 @@ func (nl *NodeList) Append(node parsley.Node) {
 }
 
 // Walk runs the given function on all nodes
-func (nl NodeList) Walk(f func(i int, n parsley.Node) bool) bool {
-	for i, node := range nl {
-		if f(i, node) {
+func (nl NodeList) Walk(f func(n parsley.Node) bool) bool {
+	for _, n := range nl {
+		if WalkNode(n, f) {
 			return true
 		}
 	}

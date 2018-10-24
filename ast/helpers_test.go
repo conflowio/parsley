@@ -64,8 +64,7 @@ var _ = Describe("WalkNode", func() {
 
 		nl := ast.NodeList([]parsley.Node{n1, n2})
 		called := []parsley.Node{}
-		f := func(i int, n parsley.Node) bool {
-			Expect(i).To(Equal(len(called)))
+		f := func(n parsley.Node) bool {
 			called = append(called, n)
 			return false
 		}
@@ -80,8 +79,7 @@ var _ = Describe("WalkNode", func() {
 		node := &parsleyfakes.FakeNode{}
 		node.TokenReturns("TEST")
 		called := []parsley.Node{}
-		f := func(i int, n parsley.Node) bool {
-			Expect(i).To(Equal(len(called)))
+		f := func(n parsley.Node) bool {
 			called = append(called, n)
 			return false
 		}
