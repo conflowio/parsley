@@ -1,3 +1,9 @@
+## 0.11.7
+
+IMPROVEMENTS:
+
+- Make the whole AST walkable, add Walk function to ast.NonTerminalNode
+
 ## 0.11.6
 
 IMPROVEMENTS:
