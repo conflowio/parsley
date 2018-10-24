@@ -7,6 +7,7 @@ type Context struct {
 	resultCache ResultCache
 	err         Error
 	callCount   int
+	keywords    map[string]struct{}
 }
 
 // NewContext creates a new parsing context
@@ -15,6 +16,7 @@ func NewContext(fileSet *FileSet, reader Reader) *Context {
 		fileSet:     fileSet,
 		reader:      reader,
 		resultCache: NewResultCache(),
+		keywords:    make(map[string]struct{}, 64),
 	}
 }
 
@@ -57,4 +59,17 @@ func (c *Context) SetError(err Error) {
 // Error returns with the parse error with the highest position (if any)
 func (c *Context) Error() Error {
 	return c.err
+}
+
+// RegisterKeywords registers one or more keywords
+func (c *Context) RegisterKeywords(keywords ...string) {
+	for _, keyword := range keywords {
+		c.keywords[keyword] = struct{}{}
+	}
+}
+
+// IsKeyword checks if the given string is a keyword
+func (c *Context) IsKeyword(word string) bool {
+	_, ok := c.keywords[word]
+	return ok
 }
