@@ -1,3 +1,9 @@
+## 0.11.6
+
+IMPROVEMENTS:
+
+- Add keyword handling to parse context
+
 ## 0.11.5
 
 IMPROVEMENTS:
