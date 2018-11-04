@@ -15,7 +15,8 @@ import (
 
 // Select returns with an interpreter function which returns the value of the selected node
 func Select(i int) ast.InterpreterFunc {
-	return func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	return func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		nodes := node.Children()
 		if i < 0 || i >= len(nodes) {
 			panic(fmt.Sprintf("node index is out of bounds: %d", i))
 		}
@@ -25,7 +26,7 @@ func Select(i int) ast.InterpreterFunc {
 
 // Nil returns with an interpreter function which always returns with a nil result
 func Nil() ast.InterpreterFunc {
-	return func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	return func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		return nil, nil
 	}
 }
@@ -33,7 +34,8 @@ func Nil() ast.InterpreterFunc {
 // Array can be used to create an array from a list of nodes, where values and separators are following
 // each-other
 func Array() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	return ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		nodes := node.Children()
 		res := make([]interface{}, (len(nodes)+1)/2)
 		for i := 0; i < len(nodes); i += 2 {
 			value, err := nodes[i].Value(ctx)
@@ -49,10 +51,11 @@ func Array() ast.InterpreterFunc {
 // Object can be used to create an object from a list of nodes, where key-value nodes and separater nodes
 // follow each-other, and a key-value node consists of a key node, a separator node and a value node
 func Object() ast.InterpreterFunc {
-	return ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	return ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		nodes := node.Children()
 		res := make(map[string]interface{}, (len(nodes)+1)/2)
 		for i := 0; i < len(nodes); i += 2 {
-			keyValue := nodes[i].(*ast.NonTerminalNode)
+			keyValue := nodes[i].(parsley.NonTerminalNode)
 			key, err := keyValue.Children()[0].Value(ctx)
 			if err != nil {
 				return nil, err

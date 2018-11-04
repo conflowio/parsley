@@ -46,7 +46,7 @@ func NL() parsley.Parser {
 			if nlCount > 1 {
 				val = "\n\n"
 			}
-			return ast.NewTerminalNode("NL", val, resPos, resReaderPos), data.EmptyIntSet, nil
+			return ast.NewTerminalNode("NL", val, StringType, resPos, resReaderPos), data.EmptyIntSet, nil
 		}
 
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)

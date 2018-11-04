@@ -42,9 +42,8 @@ func NewParser() *combinator.Sequence {
 		terminal.Integer(),
 		array,
 		object,
-		terminal.Word("false", false),
-		terminal.Word("true", true),
-		terminal.Word("null", nil),
+		terminal.Bool("true", "false"),
+		terminal.Nil("null"),
 	).Name("value")
 
 	return combinator.SeqOf(

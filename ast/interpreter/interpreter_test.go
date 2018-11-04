@@ -17,6 +17,7 @@ import (
 
 var _ = Describe("Interpreter", func() {
 	var (
+		node         *parsleyfakes.FakeNonTerminalNode
 		node1, node2 *parsleyfakes.FakeNode
 		ctx          interface{}
 	)
@@ -26,6 +27,8 @@ var _ = Describe("Interpreter", func() {
 		node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
 		node2 = &parsleyfakes.FakeNode{}
 		node2.ValueReturns(2, parsley.NewErrorf(parsley.Pos(2), "err2"))
+		node = &parsleyfakes.FakeNonTerminalNode{}
+		node.ChildrenReturns([]parsley.Node{node1, node2})
 		ctx = "context"
 	})
 
@@ -33,7 +36,7 @@ var _ = Describe("Interpreter", func() {
 		It("should return the value of the selected node", func() {
 			f := interpreter.Select(1)
 
-			val, err := f.Eval(ctx, []parsley.Node{node1, node2})
+			val, err := f.Eval(ctx, node)
 			Expect(val).To(Equal(2))
 			Expect(err).To(MatchError("err2"))
 
@@ -46,14 +49,14 @@ var _ = Describe("Interpreter", func() {
 		Context("when the node index is out of bounds (+)", func() {
 			It("should panic", func() {
 				f := interpreter.Select(2)
-				Expect(func() { f.Eval(ctx, []parsley.Node{node1, node2}) }).To(Panic())
+				Expect(func() { f.Eval(ctx, node) }).To(Panic())
 			})
 		})
 
 		Context("when the node index is out of bounds (-)", func() {
 			It("should panic", func() {
 				f := interpreter.Select(-1)
-				Expect(func() { f.Eval(ctx, []parsley.Node{node1, node2}) }).To(Panic())
+				Expect(func() { f.Eval(ctx, node) }).To(Panic())
 			})
 		})
 	})
@@ -64,7 +67,9 @@ var _ = Describe("Interpreter", func() {
 			f := interpreter.Nil()
 			node1 := &parsleyfakes.FakeNode{}
 			node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
-			val, err := f.Eval(ctx, []parsley.Node{node1})
+			node := &parsleyfakes.FakeNonTerminalNode{}
+			node.ChildrenReturns([]parsley.Node{node1})
+			val, err := f.Eval(ctx, node)
 			Expect(val).To(BeNil())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(node1.ValueCallCount()).To(Equal(0))
@@ -73,8 +78,8 @@ var _ = Describe("Interpreter", func() {
 
 	Describe("Array", func() {
 		var (
+			node                   *parsleyfakes.FakeNonTerminalNode
 			child1, child2, child3 *parsleyfakes.FakeNode
-			nodes                  []parsley.Node
 			value                  interface{}
 			evalErr                parsley.Error
 		)
@@ -86,11 +91,12 @@ var _ = Describe("Interpreter", func() {
 			child2.ValueReturns(",", nil)
 			child3 = &parsleyfakes.FakeNode{}
 			child3.ValueReturns("v3", nil)
-			nodes = []parsley.Node{child1, child2, child3}
+			node = &parsleyfakes.FakeNonTerminalNode{}
+			node.ChildrenReturns([]parsley.Node{child1, child2, child3})
 		})
 
 		JustBeforeEach(func() {
-			value, evalErr = interpreter.Array().Eval(ctx, nodes)
+			value, evalErr = interpreter.Array().Eval(ctx, node)
 		})
 
 		It("should return with an array", func() {
@@ -100,7 +106,7 @@ var _ = Describe("Interpreter", func() {
 
 		Context("when there are no nodes", func() {
 			BeforeEach(func() {
-				nodes = []parsley.Node{}
+				node.ChildrenReturns([]parsley.Node{})
 			})
 			It("should return with an empty array", func() {
 				Expect(value).To(Equal([]interface{}{}))
@@ -110,7 +116,7 @@ var _ = Describe("Interpreter", func() {
 
 		Context("when there are even nodes (trailing separator)", func() {
 			BeforeEach(func() {
-				nodes = []parsley.Node{child1, child2}
+				node.ChildrenReturns([]parsley.Node{child1, child2})
 			})
 			It("should return with an array", func() {
 				Expect(value).To(Equal([]interface{}{"v1"}))
@@ -134,7 +140,7 @@ var _ = Describe("Interpreter", func() {
 		var (
 			node1, node3 *ast.NonTerminalNode
 			node2        *parsleyfakes.FakeNode
-			nodes        []parsley.Node
+			node         *parsleyfakes.FakeNonTerminalNode
 			value        interface{}
 			evalErr      parsley.Error
 		)
@@ -158,11 +164,12 @@ var _ = Describe("Interpreter", func() {
 			c6.ValueReturns("value2", nil)
 			node3 = ast.NewNonTerminalNode("KEY_VALUE", []parsley.Node{c4, c5, c6}, nil)
 
-			nodes = []parsley.Node{node1, node2, node3}
+			node = &parsleyfakes.FakeNonTerminalNode{}
+			node.ChildrenReturns([]parsley.Node{node1, node2, node3})
 		})
 
 		JustBeforeEach(func() {
-			value, evalErr = interpreter.Object().Eval(ctx, nodes)
+			value, evalErr = interpreter.Object().Eval(ctx, node)
 		})
 
 		It("should return with an object", func() {
@@ -172,7 +179,7 @@ var _ = Describe("Interpreter", func() {
 
 		Context("when there are no nodes", func() {
 			BeforeEach(func() {
-				nodes = []parsley.Node{}
+				node.ChildrenReturns([]parsley.Node{})
 			})
 			It("should return with an empty map", func() {
 				Expect(value).To(Equal(map[string]interface{}{}))
@@ -182,7 +189,7 @@ var _ = Describe("Interpreter", func() {
 
 		Context("when there are even nodes (trailing separator)", func() {
 			BeforeEach(func() {
-				nodes = []parsley.Node{node1, node2}
+				node.ChildrenReturns([]parsley.Node{node1, node2})
 			})
 			It("should return with a map", func() {
 				Expect(value).To(Equal(map[string]interface{}{"key1": "value1"}))
@@ -193,7 +200,7 @@ var _ = Describe("Interpreter", func() {
 		Context("when a key node evaluation has an error", func() {
 			var err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			BeforeEach(func() {
-				nodes[0].(*ast.NonTerminalNode).Children()[0].(*parsleyfakes.FakeNode).ValueReturns(0, err)
+				node1.Children()[0].(*parsleyfakes.FakeNode).ValueReturns(0, err)
 			})
 			It("returns with the error", func() {
 				Expect(value).To(BeNil())
@@ -204,7 +211,7 @@ var _ = Describe("Interpreter", func() {
 		Context("when a value node evaluation has an error", func() {
 			var err = parsley.NewErrorf(parsley.Pos(1), "some error")
 			BeforeEach(func() {
-				nodes[0].(*ast.NonTerminalNode).Children()[2].(*parsleyfakes.FakeNode).ValueReturns(0, err)
+				node1.Children()[2].(*parsleyfakes.FakeNode).ValueReturns(0, err)
 			})
 			It("returns with the error", func() {
 				Expect(value).To(BeNil())

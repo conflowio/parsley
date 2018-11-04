@@ -14,12 +14,15 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
+// EOF is the end-of-file token
+const EOF = "EOF"
+
 // EndNode represents an eof node
 type EndNode parsley.Pos
 
 // Token returns with EOF
 func (e EndNode) Token() string {
-	return "EOF"
+	return EOF
 }
 
 // Type returns with an empty type

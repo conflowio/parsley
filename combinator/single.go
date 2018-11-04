@@ -1,7 +1,6 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -16,7 +15,7 @@ func Single(p parsley.Parser) parser.Func {
 			return nil, cp, err
 		}
 
-		if node, ok := res.(*ast.NonTerminalNode); ok {
+		if node, ok := res.(parsley.NonTerminalNode); ok {
 			if len(node.Children()) == 1 {
 				return node.Children()[0], cp, nil
 			}

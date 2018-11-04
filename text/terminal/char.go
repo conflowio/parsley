@@ -8,14 +8,68 @@ package terminal
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
+
+// CharType contains the char type's name
+var CharType = "rune"
+
+// CharNode is a leaf node in the AST
+type CharNode struct {
+	value     rune
+	pos       parsley.Pos
+	readerPos parsley.Pos
+}
+
+// NewCharNode creates a new CharNode instance
+func NewCharNode(value rune, pos parsley.Pos, readerPos parsley.Pos) *CharNode {
+	return &CharNode{
+		value:     value,
+		pos:       pos,
+		readerPos: readerPos,
+	}
+}
+
+// Token returns with the node token
+func (c *CharNode) Token() string {
+	return "CHAR"
+}
+
+// Type returns
+func (c *CharNode) Type() string {
+	return CharType
+}
+
+// Value returns with the value of the node
+func (c *CharNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return c.value, nil
+}
+
+// Pos returns the position
+func (c *CharNode) Pos() parsley.Pos {
+	return c.pos
+}
+
+// ReaderPos returns the position of the first character immediately after this node
+func (c *CharNode) ReaderPos() parsley.Pos {
+	return c.readerPos
+}
+
+// SetReaderPos changes the reader position
+func (c *CharNode) SetReaderPos(fun func(parsley.Pos) parsley.Pos) {
+	c.readerPos = fun(c.readerPos)
+}
+
+// String returns with a string representation of the node
+func (c *CharNode) String() string {
+	return fmt.Sprintf("%s{%v, %d..%d}", c.Token(), c.value, c.pos, c.readerPos)
+}
 
 // Char matches a character literal enclosed in single quotes
 func Char() parser.Func {
@@ -45,6 +99,6 @@ func Char() parser.Func {
 			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "invalid character value")
 		}
 
-		return ast.NewTerminalNode("CHAR", value, pos, readerPos), data.EmptyIntSet, nil
+		return NewCharNode(value, pos, readerPos), data.EmptyIntSet, nil
 	})
 }

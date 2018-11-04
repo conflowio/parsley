@@ -8,6 +8,7 @@ package terminal
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
@@ -17,17 +18,18 @@ import (
 )
 
 // Word matches the given word
-func Word(word string, value interface{}) parser.Func {
+func Word(word string, value interface{}, valueType string) parser.Func {
 	if word == "" {
 		panic("Word() should not be called with empty word")
 	}
 
 	notFoundErr := fmt.Errorf("was expecting %q", word)
+	token := strings.ToUpper(word)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, word); found {
-			return ast.NewTerminalNode("WORD", value, pos, readerPos), data.EmptyIntSet, nil
+			return ast.NewTerminalNode(token, value, valueType, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

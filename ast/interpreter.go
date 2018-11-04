@@ -9,9 +9,9 @@ package ast
 import "github.com/opsidian/parsley/parsley"
 
 // InterpreterFunc defines a helper to implement the Interpreter interface with functions
-type InterpreterFunc func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error)
+type InterpreterFunc func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error)
 
 // Eval evaluates the given nodes and returns with a single result.
-func (f InterpreterFunc) Eval(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-	return f(ctx, nodes)
+func (f InterpreterFunc) Eval(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	return f(ctx, node)
 }

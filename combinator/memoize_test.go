@@ -21,9 +21,9 @@ import (
 // and also cache previous parser matches with Memoize.
 // Grammar: S -> A, A -> a | Ab
 func ExampleMemoize() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
-		for _, node := range nodes {
+		for _, node := range node.Children() {
 			val, _ := node.Value(ctx)
 			if runeVal, ok := val.(rune); ok {
 				res += string(runeVal)

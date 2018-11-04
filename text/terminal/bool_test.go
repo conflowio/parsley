@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
@@ -37,11 +36,11 @@ var _ = Describe("Bool", func() {
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res.(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("BOOL"))
-			Expect(node.Value(nil)).To(Equal(value))
-			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
+			Expect(res.Token()).To(Equal("BOOL"))
+			Expect(res.Type()).To(Equal("bool"))
+			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.Pos()).To(Equal(nodePos))
+			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry("true beginning", "true ---", 0, true, parsley.Pos(1), 4),
 		Entry("false beginning", "false ---", 0, false, parsley.Pos(1), 5),

@@ -91,9 +91,9 @@ We'll need the following components:
 - an interpreter function which will calculate the result
 
 ```
-sum := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
-	value0, _ := nodes[0].Value(ctx)
-	value1, _ := nodes[2].Value(ctx)
+sum := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	value0, _ := nodes.Children()[0].Value(ctx)
+	value1, _ := nodes.Children()[2].Value(ctx)
 	return value0.(int64) + value1.(int64), nil
 })
 

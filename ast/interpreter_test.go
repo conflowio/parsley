@@ -11,30 +11,31 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/parsley"
+	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
 var _ = Describe("Interpreter", func() {
 
 	It("Eval should call the function", func() {
 		var (
-			passedCtx   interface{}
-			passedNodes []parsley.Node
-			fResult     = "some result"
-			fErr        = parsley.NewErrorf(parsley.Pos(1), "some error")
-			ctx         = "some context"
-			nodes       = []parsley.Node{nil}
+			passedCtx  interface{}
+			passedNode parsley.NonTerminalNode
+			fResult    = "some result"
+			fErr       = parsley.NewErrorf(parsley.Pos(1), "some error")
+			ctx        = "some context"
+			node       = &parsleyfakes.FakeNonTerminalNode{}
 		)
-		f := func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+		f := func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 			passedCtx = ctx
-			passedNodes = nodes
+			passedNode = node
 			return fResult, fErr
 		}
 
-		result, err := ast.InterpreterFunc(f).Eval(ctx, nodes)
+		result, err := ast.InterpreterFunc(f).Eval(ctx, node)
 		Expect(result).To(Equal(fResult))
 		Expect(err).To(Equal(fErr))
 
 		Expect(passedCtx).To(Equal(ctx))
-		Expect(passedNodes).To(Equal(nodes))
+		Expect(passedNode).To(Equal(node))
 	})
 })

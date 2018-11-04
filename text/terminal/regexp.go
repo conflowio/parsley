@@ -27,14 +27,14 @@ func Regexp(token string, name string, regexp string, groupIndex int) parser.Fun
 		tr := ctx.Reader().(*text.Reader)
 		if groupIndex == 0 {
 			if readerPos, match := tr.ReadRegexp(pos, regexp); match != nil {
-				return ast.NewTerminalNode(token, string(match), pos, readerPos), data.EmptyIntSet, nil
+				return ast.NewTerminalNode(token, string(match), StringType, pos, readerPos), data.EmptyIntSet, nil
 			}
 		} else {
 			if readerPos, matches := tr.ReadRegexpSubmatch(pos, regexp); matches != nil {
 				if groupIndex >= len(matches) {
 					panic(fmt.Sprintf("Capturing group %d is invalid for %s", groupIndex, regexp))
 				}
-				return ast.NewTerminalNode(token, string(matches[groupIndex]), pos, readerPos), data.EmptyIntSet, nil
+				return ast.NewTerminalNode(token, string(matches[groupIndex]), StringType, pos, readerPos), data.EmptyIntSet, nil
 			}
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)

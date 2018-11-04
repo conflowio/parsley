@@ -8,14 +8,68 @@ package terminal
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
+
+// TimeDurationType contains the time duration type's name
+var TimeDurationType = "time.Duration"
+
+// TimeDurationNode is a leaf node in the AST
+type TimeDurationNode struct {
+	value     time.Duration
+	pos       parsley.Pos
+	readerPos parsley.Pos
+}
+
+// NewTimeDurationNode creates a new TimeDurationNode instance
+func NewTimeDurationNode(value time.Duration, pos parsley.Pos, readerPos parsley.Pos) *TimeDurationNode {
+	return &TimeDurationNode{
+		value:     value,
+		pos:       pos,
+		readerPos: readerPos,
+	}
+}
+
+// Token returns with the node token
+func (t *TimeDurationNode) Token() string {
+	return "TIME_DURATION"
+}
+
+// Type returns
+func (t *TimeDurationNode) Type() string {
+	return TimeDurationType
+}
+
+// Value returns with the value of the node
+func (t *TimeDurationNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return t.value, nil
+}
+
+// Pos returns the position
+func (t *TimeDurationNode) Pos() parsley.Pos {
+	return t.pos
+}
+
+// ReaderPos returns the position of the first character immediately after this node
+func (t *TimeDurationNode) ReaderPos() parsley.Pos {
+	return t.readerPos
+}
+
+// SetReaderPos changes the reader position
+func (t *TimeDurationNode) SetReaderPos(fun func(parsley.Pos) parsley.Pos) {
+	t.readerPos = fun(t.readerPos)
+}
+
+// String returns with a string representation of the node
+func (t *TimeDurationNode) String() string {
+	return fmt.Sprintf("%s{%v, %d..%d}", t.Token(), t.value, t.pos, t.readerPos)
+}
 
 // TimeDuration parses a duration string. A duration string is a possibly signed sequence of decimal numbers,
 // each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
@@ -30,7 +84,7 @@ func TimeDuration() parser.Func {
 			if err != nil {
 				return nil, data.EmptyIntSet, parsley.NewError(pos, err)
 			}
-			return ast.NewTerminalNode("TIME_DURATION", duration, pos, readerPos), data.EmptyIntSet, nil
+			return NewTimeDurationNode(duration, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

@@ -21,7 +21,8 @@ import (
 // The language would be left recursive, but using SepBy we can avoid this.
 // The grammar is: S -> [I(,I)*], I -> any integer
 func ExampleSepBy() {
-	arr := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	arr := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		nodes := node.Children()
 		var res []int64
 		for i := 0; i < len(nodes); i += 2 {
 			val, _ := nodes[i].Value(ctx)
@@ -57,7 +58,8 @@ func ExampleSepBy() {
 // The grammar is: S -> I(+I)*, I -> any integer
 // The "<empty>" result will never be returned as the SepBy1 doesn't match zero p occurrences.
 func ExampleSepBy1() {
-	interpreter := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	interpreter := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		nodes := node.Children()
 		if len(nodes) == 0 {
 			return "<empty>", nil
 		}

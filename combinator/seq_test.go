@@ -18,9 +18,9 @@ import (
 
 // Let's define a parser which accepts "a", "b", "c" characters in order.
 func ExampleSeq() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
-		for _, node := range nodes {
+		for _, node := range node.Children() {
 			val, _ := node.Value(ctx)
 			res += string(val.(rune))
 		}
@@ -41,9 +41,9 @@ func ExampleSeq() {
 
 // Let's define a parser which accepts any prefix of the "abc" string.
 func ExampleSeqTry() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
-		for _, node := range nodes {
+		for _, node := range node.Children() {
 			val, _ := node.Value(ctx)
 			res += string(val.(rune))
 		}

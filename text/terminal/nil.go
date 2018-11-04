@@ -9,12 +9,60 @@ package terminal
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
+
+// NilNode is a leaf node in the AST
+type NilNode struct {
+	pos       parsley.Pos
+	readerPos parsley.Pos
+}
+
+// NewNilNode creates a new NilNode instance
+func NewNilNode(pos parsley.Pos, readerPos parsley.Pos) *NilNode {
+	return &NilNode{
+		pos:       pos,
+		readerPos: readerPos,
+	}
+}
+
+// Token returns with the node token
+func (n *NilNode) Token() string {
+	return "NIL"
+}
+
+// Type returns
+func (n *NilNode) Type() string {
+	return ""
+}
+
+// Value returns with the value of the node
+func (n *NilNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return nil, nil
+}
+
+// Pos returns the position
+func (n *NilNode) Pos() parsley.Pos {
+	return n.pos
+}
+
+// ReaderPos returns the position of the first character immediately after this node
+func (n *NilNode) ReaderPos() parsley.Pos {
+	return n.readerPos
+}
+
+// SetReaderPos changes the reader position
+func (n *NilNode) SetReaderPos(fun func(parsley.Pos) parsley.Pos) {
+	n.readerPos = fun(n.readerPos)
+}
+
+// String returns with a string representation of the node
+func (n *NilNode) String() string {
+	return fmt.Sprintf("%s{%d..%d}", n.Token(), n.pos, n.readerPos)
+}
 
 // Nil matches a nil literal
 func Nil(nilStr string) parser.Func {
@@ -27,7 +75,7 @@ func Nil(nilStr string) parser.Func {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, nilStr); found {
-			return ast.NewTerminalNode("NIL", nil, pos, readerPos), data.EmptyIntSet, nil
+			return NewNilNode(pos, readerPos), data.EmptyIntSet, nil
 		}
 
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)

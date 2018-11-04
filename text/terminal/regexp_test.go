@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
@@ -53,11 +52,10 @@ var _ = Describe("Regexp", func() {
 			res, curtailingParsers, err := p1.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res.(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("FOO"))
-			Expect(node.Value(nil)).To(Equal(value))
-			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
+			Expect(res.Token()).To(Equal("FOO"))
+			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.Pos()).To(Equal(nodePos))
+			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry(`foo beginning`, `foo ---`, 0, "foo", parsley.Pos(1), 3),
 		Entry(`foo middle`, `--- foo ---`, 4, "foo", parsley.Pos(5), 7),
@@ -90,11 +88,10 @@ var _ = Describe("Regexp", func() {
 			res, curtailingParsers, err := p2.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res.(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("FOO"))
-			Expect(node.Value(nil)).To(Equal(value))
-			Expect(node.Pos()).To(Equal(nodePos))
-			Expect(node.ReaderPos()).To(Equal(f.Pos(endPos)))
+			Expect(res.Token()).To(Equal("FOO"))
+			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.Pos()).To(Equal(nodePos))
+			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
 		Entry(`foo beginning`, `foo ---`, 0, "oo", parsley.Pos(1), 3),
 		Entry(`foo middle`, `--- foo ---`, 4, "oo", parsley.Pos(5), 7),

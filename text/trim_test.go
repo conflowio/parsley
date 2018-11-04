@@ -149,7 +149,7 @@ var _ = Describe("Trim parsers", func() {
 
 		Context("When there is result", func() {
 			BeforeEach(func() {
-				p = terminal.Word("abc", "abc")
+				p = terminal.Word("abc", "abc", "string")
 			})
 
 			Context("when whitespace mode is no whitespaces", func() {
@@ -235,11 +235,11 @@ var _ = Describe("Trim parsers", func() {
 
 		Context("When there is result", func() {
 			BeforeEach(func() {
-				p = terminal.Word("abc", "abc")
+				p = terminal.Word("abc", "abc", "string")
 			})
 
 			It("should trim the spaces and new lines from the right", func() {
-				Expect(res).To(Equal(ast.NewTerminalNode("WORD", "abc", parsley.Pos(5), parsley.Pos(12))))
+				Expect(res).To(Equal(ast.NewTerminalNode("ABC", "abc", "string", parsley.Pos(5), parsley.Pos(12))))
 			})
 		})
 	})

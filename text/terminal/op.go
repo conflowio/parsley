@@ -9,12 +9,62 @@ package terminal
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 )
+
+// OpNode is a leaf node in the AST
+type OpNode struct {
+	value     string
+	pos       parsley.Pos
+	readerPos parsley.Pos
+}
+
+// NewOpNode creates a new OpNode instance
+func NewOpNode(value string, pos parsley.Pos, readerPos parsley.Pos) *OpNode {
+	return &OpNode{
+		value:     value,
+		pos:       pos,
+		readerPos: readerPos,
+	}
+}
+
+// Token returns with the node token
+func (o *OpNode) Token() string {
+	return o.value
+}
+
+// Type returns
+func (o *OpNode) Type() string {
+	return StringType
+}
+
+// Value returns with the value of the node
+func (o *OpNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+	return o.value, nil
+}
+
+// Pos returns the position
+func (o *OpNode) Pos() parsley.Pos {
+	return o.pos
+}
+
+// ReaderPos returns the position of the first character immediately after this node
+func (o *OpNode) ReaderPos() parsley.Pos {
+	return o.readerPos
+}
+
+// SetReaderPos changes the reader position
+func (o *OpNode) SetReaderPos(fun func(parsley.Pos) parsley.Pos) {
+	o.readerPos = fun(o.readerPos)
+}
+
+// String returns with a string representation of the node
+func (o *OpNode) String() string {
+	return fmt.Sprintf("%s{%d..%d}", o.Token(), o.pos, o.readerPos)
+}
 
 // Op matches the given operator
 func Op(op string) parser.Func {
@@ -27,7 +77,7 @@ func Op(op string) parser.Func {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchString(pos, op); found {
-			return ast.NewTerminalNode(op, op, pos, readerPos), data.EmptyIntSet, nil
+			return NewOpNode(op, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

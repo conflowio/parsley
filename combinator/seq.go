@@ -11,6 +11,7 @@ import (
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
+	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
@@ -135,7 +136,7 @@ func (s *sequence) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntMap
 				nodesCopy := make([]parsley.Node, depth)
 				copy(nodesCopy[0:depth], s.nodes[0:depth])
 				s.result = ast.AppendNode(s.result, ast.NewNonTerminalNode(s.token, nodesCopy, s.interpreter))
-				if s.nodes[depth-1] != nil && s.nodes[depth-1].Token() == ast.EOF {
+				if s.nodes[depth-1] != nil && s.nodes[depth-1].Token() == parser.EOF {
 					return true
 				}
 			} else { // It's an empty result

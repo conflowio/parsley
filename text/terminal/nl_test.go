@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
@@ -30,11 +29,10 @@ var _ = Describe("NL", func() {
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, parsley.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
-			node := res.(*ast.TerminalNode)
-			Expect(node.Token()).To(Equal("NL"))
-			Expect(node.Value(nil)).To(Equal(value))
-			Expect(node.Pos()).To(Equal(parsley.Pos(nodePos)))
-			Expect(node.ReaderPos()).To(Equal(parsley.Pos(endPos)))
+			Expect(res.Token()).To(Equal("NL"))
+			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.Pos()).To(Equal(parsley.Pos(nodePos)))
+			Expect(res.ReaderPos()).To(Equal(parsley.Pos(endPos)))
 		},
 		Entry(`single nl`, "\n", 1, "\n", 1, 2),
 		Entry(`single nl, ws before`, " \t\n", 1, "\n", 3, 4),
