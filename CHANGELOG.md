@@ -1,3 +1,9 @@
+## 0.12.1
+
+IMPROVEMENTS:
+
+- The text types should be constants (e.g. terminal.StringType)
+
 ## 0.12.0
 
 IMPROVEMENTS:
