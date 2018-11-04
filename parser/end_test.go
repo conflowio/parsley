@@ -3,7 +3,6 @@ package parser_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
@@ -29,7 +28,7 @@ var _ = Describe("End", func() {
 			r.PosReturns(parsley.Pos(2))
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 2)
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-			Expect(res).To(Equal(ast.NewTerminalNode("EOF", nil, parsley.Pos(2), parsley.Pos(2))))
+			Expect(res).To(Equal(parser.EndNode(parsley.Pos(2))))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

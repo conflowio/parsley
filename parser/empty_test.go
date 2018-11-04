@@ -10,10 +10,10 @@ import (
 	"github.com/opsidian/parsley/parsley/parsleyfakes"
 )
 
-var _ = Describe("Nil", func() {
+var _ = Describe("Empty", func() {
 
 	var (
-		p   = parser.Nil()
+		p   = parser.Empty()
 		ctx *parsley.Context
 	)
 
@@ -24,7 +24,7 @@ var _ = Describe("Nil", func() {
 	It("should return with an empty node", func() {
 		res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, 1)
 		Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
-		Expect(res).To(Equal(ast.NilNode(1)))
+		Expect(res).To(Equal(ast.EmptyNode(1)))
 		Expect(err).ToNot(HaveOccurred())
 	})
 

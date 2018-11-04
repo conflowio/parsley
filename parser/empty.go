@@ -12,9 +12,9 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
-// Nil always matches and returns with an nil node result
-func Nil() Func {
+// Empty always matches and returns with an empty node result
+func Empty() Func {
 	return Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
-		return ast.NilNode(pos), data.EmptyIntSet, nil
+		return ast.EmptyNode(pos), data.EmptyIntSet, nil
 	})
 }
