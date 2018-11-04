@@ -1,3 +1,19 @@
+## 0.12.0
+
+IMPROVEMENTS:
+
+- Add parsley.NonTerminalNode interface for nonterminal nodes
+- Add parsley.StaticChecker and parsley.StaticCheckable interface for doing static analysis
+- Add type to the AST nodes
+
+BACKWARDS INCOMPATIBILITIES:
+
+- The parsley.Interpreter's Eval now expects a parsley.NonTerminalNode instead of a list of nodes
+- The ast.NodeList's node methods will run always on the first node only
+- The ast.NilNode was renamed to ast.EmptyNode to avoid confusion
+- The ast.NewTerminalNode now expects a new valueType parameter
+- Most of the text/terminal parsers now will return a custom node type (string node, int node, etc.)
+
 ## 0.11.7
 
 IMPROVEMENTS:
