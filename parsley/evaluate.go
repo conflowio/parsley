@@ -14,6 +14,13 @@ func Evaluate(ctx *Context, p Parser, evalCtx interface{}) (interface{}, error) 
 		return nil, parseErr
 	}
 
+	switch n := node.(type) {
+	case StaticCheckable:
+		if err := n.StaticCheck(evalCtx); err != nil {
+			return nil, ctx.FileSet().ErrorWithPosition(err)
+		}
+	}
+
 	value, evalErr := node.Value(evalCtx)
 	if evalErr != nil {
 		return nil, ctx.FileSet().ErrorWithPosition(evalErr)

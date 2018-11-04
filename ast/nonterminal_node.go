@@ -71,6 +71,15 @@ func (n *NonTerminalNode) StaticCheck(ctx interface{}) parsley.Error {
 		panic("missing interpreter for node")
 	}
 
+	for _, child := range n.children {
+		switch n := child.(type) {
+		case parsley.StaticCheckable:
+			if err := n.StaticCheck(ctx); err != nil {
+				return err
+			}
+		}
+	}
+
 	if staticChecker, ok := n.interpreter.(parsley.StaticChecker); ok {
 		valueType, err := staticChecker.StaticCheck(ctx, n)
 		if err != nil {

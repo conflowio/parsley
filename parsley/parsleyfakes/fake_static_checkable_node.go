@@ -7,7 +7,7 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
-type FakeNonTerminalNode struct {
+type FakeStaticCheckableNode struct {
 	TokenStub        func() string
 	tokenMutex       sync.RWMutex
 	tokenArgsForCall []struct{}
@@ -57,20 +57,22 @@ type FakeNonTerminalNode struct {
 	readerPosReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
-	ChildrenStub        func() []parsley.Node
-	childrenMutex       sync.RWMutex
-	childrenArgsForCall []struct{}
-	childrenReturns     struct {
-		result1 []parsley.Node
+	StaticCheckStub        func(ctx interface{}) parsley.Error
+	staticCheckMutex       sync.RWMutex
+	staticCheckArgsForCall []struct {
+		ctx interface{}
 	}
-	childrenReturnsOnCall map[int]struct {
-		result1 []parsley.Node
+	staticCheckReturns struct {
+		result1 parsley.Error
+	}
+	staticCheckReturnsOnCall map[int]struct {
+		result1 parsley.Error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNonTerminalNode) Token() string {
+func (fake *FakeStaticCheckableNode) Token() string {
 	fake.tokenMutex.Lock()
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
 	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct{}{})
@@ -85,20 +87,20 @@ func (fake *FakeNonTerminalNode) Token() string {
 	return fake.tokenReturns.result1
 }
 
-func (fake *FakeNonTerminalNode) TokenCallCount() int {
+func (fake *FakeStaticCheckableNode) TokenCallCount() int {
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
 	return len(fake.tokenArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) TokenReturns(result1 string) {
+func (fake *FakeStaticCheckableNode) TokenReturns(result1 string) {
 	fake.TokenStub = nil
 	fake.tokenReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) TokenReturnsOnCall(i int, result1 string) {
+func (fake *FakeStaticCheckableNode) TokenReturnsOnCall(i int, result1 string) {
 	fake.TokenStub = nil
 	if fake.tokenReturnsOnCall == nil {
 		fake.tokenReturnsOnCall = make(map[int]struct {
@@ -110,7 +112,7 @@ func (fake *FakeNonTerminalNode) TokenReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) Type() string {
+func (fake *FakeStaticCheckableNode) Type() string {
 	fake.typeMutex.Lock()
 	ret, specificReturn := fake.typeReturnsOnCall[len(fake.typeArgsForCall)]
 	fake.typeArgsForCall = append(fake.typeArgsForCall, struct{}{})
@@ -125,20 +127,20 @@ func (fake *FakeNonTerminalNode) Type() string {
 	return fake.typeReturns.result1
 }
 
-func (fake *FakeNonTerminalNode) TypeCallCount() int {
+func (fake *FakeStaticCheckableNode) TypeCallCount() int {
 	fake.typeMutex.RLock()
 	defer fake.typeMutex.RUnlock()
 	return len(fake.typeArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) TypeReturns(result1 string) {
+func (fake *FakeStaticCheckableNode) TypeReturns(result1 string) {
 	fake.TypeStub = nil
 	fake.typeReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) TypeReturnsOnCall(i int, result1 string) {
+func (fake *FakeStaticCheckableNode) TypeReturnsOnCall(i int, result1 string) {
 	fake.TypeStub = nil
 	if fake.typeReturnsOnCall == nil {
 		fake.typeReturnsOnCall = make(map[int]struct {
@@ -150,7 +152,7 @@ func (fake *FakeNonTerminalNode) TypeReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (fake *FakeStaticCheckableNode) Value(ctx interface{}) (interface{}, parsley.Error) {
 	fake.valueMutex.Lock()
 	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
 	fake.valueArgsForCall = append(fake.valueArgsForCall, struct {
@@ -167,19 +169,19 @@ func (fake *FakeNonTerminalNode) Value(ctx interface{}) (interface{}, parsley.Er
 	return fake.valueReturns.result1, fake.valueReturns.result2
 }
 
-func (fake *FakeNonTerminalNode) ValueCallCount() int {
+func (fake *FakeStaticCheckableNode) ValueCallCount() int {
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
 	return len(fake.valueArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) ValueArgsForCall(i int) interface{} {
+func (fake *FakeStaticCheckableNode) ValueArgsForCall(i int) interface{} {
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
 	return fake.valueArgsForCall[i].ctx
 }
 
-func (fake *FakeNonTerminalNode) ValueReturns(result1 interface{}, result2 parsley.Error) {
+func (fake *FakeStaticCheckableNode) ValueReturns(result1 interface{}, result2 parsley.Error) {
 	fake.ValueStub = nil
 	fake.valueReturns = struct {
 		result1 interface{}
@@ -187,7 +189,7 @@ func (fake *FakeNonTerminalNode) ValueReturns(result1 interface{}, result2 parsl
 	}{result1, result2}
 }
 
-func (fake *FakeNonTerminalNode) ValueReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
+func (fake *FakeStaticCheckableNode) ValueReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
 	fake.ValueStub = nil
 	if fake.valueReturnsOnCall == nil {
 		fake.valueReturnsOnCall = make(map[int]struct {
@@ -201,7 +203,7 @@ func (fake *FakeNonTerminalNode) ValueReturnsOnCall(i int, result1 interface{}, 
 	}{result1, result2}
 }
 
-func (fake *FakeNonTerminalNode) Pos() parsley.Pos {
+func (fake *FakeStaticCheckableNode) Pos() parsley.Pos {
 	fake.posMutex.Lock()
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
 	fake.posArgsForCall = append(fake.posArgsForCall, struct{}{})
@@ -216,20 +218,20 @@ func (fake *FakeNonTerminalNode) Pos() parsley.Pos {
 	return fake.posReturns.result1
 }
 
-func (fake *FakeNonTerminalNode) PosCallCount() int {
+func (fake *FakeStaticCheckableNode) PosCallCount() int {
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
 	return len(fake.posArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) PosReturns(result1 parsley.Pos) {
+func (fake *FakeStaticCheckableNode) PosReturns(result1 parsley.Pos) {
 	fake.PosStub = nil
 	fake.posReturns = struct {
 		result1 parsley.Pos
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
+func (fake *FakeStaticCheckableNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	fake.PosStub = nil
 	if fake.posReturnsOnCall == nil {
 		fake.posReturnsOnCall = make(map[int]struct {
@@ -241,7 +243,7 @@ func (fake *FakeNonTerminalNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) ReaderPos() parsley.Pos {
+func (fake *FakeStaticCheckableNode) ReaderPos() parsley.Pos {
 	fake.readerPosMutex.Lock()
 	ret, specificReturn := fake.readerPosReturnsOnCall[len(fake.readerPosArgsForCall)]
 	fake.readerPosArgsForCall = append(fake.readerPosArgsForCall, struct{}{})
@@ -256,20 +258,20 @@ func (fake *FakeNonTerminalNode) ReaderPos() parsley.Pos {
 	return fake.readerPosReturns.result1
 }
 
-func (fake *FakeNonTerminalNode) ReaderPosCallCount() int {
+func (fake *FakeStaticCheckableNode) ReaderPosCallCount() int {
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
 	return len(fake.readerPosArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) ReaderPosReturns(result1 parsley.Pos) {
+func (fake *FakeStaticCheckableNode) ReaderPosReturns(result1 parsley.Pos) {
 	fake.ReaderPosStub = nil
 	fake.readerPosReturns = struct {
 		result1 parsley.Pos
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
+func (fake *FakeStaticCheckableNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
 	fake.ReaderPosStub = nil
 	if fake.readerPosReturnsOnCall == nil {
 		fake.readerPosReturnsOnCall = make(map[int]struct {
@@ -281,47 +283,55 @@ func (fake *FakeNonTerminalNode) ReaderPosReturnsOnCall(i int, result1 parsley.P
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) Children() []parsley.Node {
-	fake.childrenMutex.Lock()
-	ret, specificReturn := fake.childrenReturnsOnCall[len(fake.childrenArgsForCall)]
-	fake.childrenArgsForCall = append(fake.childrenArgsForCall, struct{}{})
-	fake.recordInvocation("Children", []interface{}{})
-	fake.childrenMutex.Unlock()
-	if fake.ChildrenStub != nil {
-		return fake.ChildrenStub()
+func (fake *FakeStaticCheckableNode) StaticCheck(ctx interface{}) parsley.Error {
+	fake.staticCheckMutex.Lock()
+	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
+	fake.staticCheckArgsForCall = append(fake.staticCheckArgsForCall, struct {
+		ctx interface{}
+	}{ctx})
+	fake.recordInvocation("StaticCheck", []interface{}{ctx})
+	fake.staticCheckMutex.Unlock()
+	if fake.StaticCheckStub != nil {
+		return fake.StaticCheckStub(ctx)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.childrenReturns.result1
+	return fake.staticCheckReturns.result1
 }
 
-func (fake *FakeNonTerminalNode) ChildrenCallCount() int {
-	fake.childrenMutex.RLock()
-	defer fake.childrenMutex.RUnlock()
-	return len(fake.childrenArgsForCall)
+func (fake *FakeStaticCheckableNode) StaticCheckCallCount() int {
+	fake.staticCheckMutex.RLock()
+	defer fake.staticCheckMutex.RUnlock()
+	return len(fake.staticCheckArgsForCall)
 }
 
-func (fake *FakeNonTerminalNode) ChildrenReturns(result1 []parsley.Node) {
-	fake.ChildrenStub = nil
-	fake.childrenReturns = struct {
-		result1 []parsley.Node
+func (fake *FakeStaticCheckableNode) StaticCheckArgsForCall(i int) interface{} {
+	fake.staticCheckMutex.RLock()
+	defer fake.staticCheckMutex.RUnlock()
+	return fake.staticCheckArgsForCall[i].ctx
+}
+
+func (fake *FakeStaticCheckableNode) StaticCheckReturns(result1 parsley.Error) {
+	fake.StaticCheckStub = nil
+	fake.staticCheckReturns = struct {
+		result1 parsley.Error
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) ChildrenReturnsOnCall(i int, result1 []parsley.Node) {
-	fake.ChildrenStub = nil
-	if fake.childrenReturnsOnCall == nil {
-		fake.childrenReturnsOnCall = make(map[int]struct {
-			result1 []parsley.Node
+func (fake *FakeStaticCheckableNode) StaticCheckReturnsOnCall(i int, result1 parsley.Error) {
+	fake.StaticCheckStub = nil
+	if fake.staticCheckReturnsOnCall == nil {
+		fake.staticCheckReturnsOnCall = make(map[int]struct {
+			result1 parsley.Error
 		})
 	}
-	fake.childrenReturnsOnCall[i] = struct {
-		result1 []parsley.Node
+	fake.staticCheckReturnsOnCall[i] = struct {
+		result1 parsley.Error
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) Invocations() map[string][][]interface{} {
+func (fake *FakeStaticCheckableNode) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.tokenMutex.RLock()
@@ -334,8 +344,8 @@ func (fake *FakeNonTerminalNode) Invocations() map[string][][]interface{} {
 	defer fake.posMutex.RUnlock()
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
-	fake.childrenMutex.RLock()
-	defer fake.childrenMutex.RUnlock()
+	fake.staticCheckMutex.RLock()
+	defer fake.staticCheckMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -343,7 +353,7 @@ func (fake *FakeNonTerminalNode) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeNonTerminalNode) recordInvocation(key string, args []interface{}) {
+func (fake *FakeStaticCheckableNode) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -355,4 +365,4 @@ func (fake *FakeNonTerminalNode) recordInvocation(key string, args []interface{}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parsley.NonTerminalNode = new(FakeNonTerminalNode)
+var _ parsley.StaticCheckableNode = new(FakeStaticCheckableNode)

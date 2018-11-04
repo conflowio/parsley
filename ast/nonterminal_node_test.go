@@ -21,7 +21,7 @@ var _ = Describe("NonTerminalNode", func() {
 		node            *ast.NonTerminalNode
 		token           string = "TEST"
 		children        []parsley.Node
-		child1, child2  *parsleyfakes.FakeNode
+		child1, child2  *parsleyfakes.FakeStaticCheckableNode
 		pos             parsley.Pos = parsley.Pos(1)
 		readerPos       parsley.Pos = parsley.Pos(2)
 		interpreter     parsley.Interpreter
@@ -34,9 +34,9 @@ var _ = Describe("NonTerminalNode", func() {
 		fakeInterpreter = &parsleyfakes.FakeInterpreter{}
 		fakeInterpreter.EvalReturns(value, evalErr)
 		interpreter = fakeInterpreter
-		child1 = &parsleyfakes.FakeNode{}
+		child1 = &parsleyfakes.FakeStaticCheckableNode{}
 		child1.PosReturns(pos)
-		child2 = &parsleyfakes.FakeNode{}
+		child2 = &parsleyfakes.FakeStaticCheckableNode{}
 		child2.ReaderPosReturns(readerPos)
 		children = []parsley.Node{child1, child2}
 	})
@@ -165,6 +165,21 @@ var _ = Describe("NonTerminalNode", func() {
 
 						Expect(node.Type()).To(Equal("testtype"))
 					})
+
+					It("should check the children", func() {
+						ctx := "some context"
+						err := node.StaticCheck(ctx)
+						Expect(err).ToNot(HaveOccurred())
+
+						Expect(child1.StaticCheckCallCount()).To(Equal(1))
+						Expect(child2.StaticCheckCallCount()).To(Equal(1))
+
+						passedCtx1 := child1.StaticCheckArgsForCall(0)
+						Expect(passedCtx1).To(Equal(ctx))
+
+						passedCtx2 := child2.StaticCheckArgsForCall(0)
+						Expect(passedCtx2).To(Equal(ctx))
+					})
 				})
 
 				Context("when there is an error", func() {
@@ -175,6 +190,22 @@ var _ = Describe("NonTerminalNode", func() {
 						staticCheckInterpreter = &parsleyfakes.FakeStaticCheckerInterpreter{}
 						staticCheckInterpreter.StaticCheckReturns("", checkErr)
 						interpreter = staticCheckInterpreter
+					})
+
+					It("should return the error", func() {
+						ctx := "some context"
+						err := node.StaticCheck(ctx)
+						Expect(err).To(MatchError(checkErr))
+						Expect(node.Type()).To(BeEmpty())
+					})
+				})
+
+				Context("when a child has an error", func() {
+					var checkErr parsley.Error
+
+					BeforeEach(func() {
+						checkErr = parsley.NewError(parsley.Pos(1), errors.New("check error"))
+						child1.StaticCheckReturns(checkErr)
 					})
 
 					It("should return the error", func() {

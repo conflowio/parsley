@@ -15,5 +15,4 @@ type Node interface {
 type NonTerminalNode interface {
 	Node
 	Children() []Node
-	StaticCheck(ctx interface{}) Error
 }
