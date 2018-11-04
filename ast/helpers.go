@@ -33,11 +33,25 @@ type Walkable interface {
 	Walk(f func(n parsley.Node) bool) bool
 }
 
+// WalkableNode defines a node which also implements the Walkable interface
+//go:generate counterfeiter . WalkableNode
+type WalkableNode interface {
+	parsley.Node
+	Walk(f func(n parsley.Node) bool) bool
+}
+
 // WalkNode applies the given function to the node
 func WalkNode(node parsley.Node, f func(n parsley.Node) bool) bool {
 	switch n := node.(type) {
 	case Walkable:
 		return n.Walk(f)
+	case parsley.NonTerminalNode:
+		for _, child := range n.Children() {
+			if WalkNode(child, f) {
+				return true
+			}
+		}
+		return false
 	default:
 		return f(node)
 	}
@@ -48,19 +62,22 @@ type ReaderPosSetter interface {
 	SetReaderPos(f func(parsley.Pos) parsley.Pos)
 }
 
+// ReaderPosSetterNode defines a node which also implements the ReaderPosSetter interface
+//go:generate counterfeiter . ReaderPosSetterNode
+type ReaderPosSetterNode interface {
+	parsley.Node
+	ReaderPosSetter
+}
+
 // SetReaderPos sets the reader position on a node
 func SetReaderPos(node parsley.Node, f func(parsley.Pos) parsley.Pos) parsley.Node {
 	switch n := node.(type) {
 	case ReaderPosSetter:
 		n.SetReaderPos(f)
-	case NilNode:
-		return NilNode(f(parsley.Pos(n)))
-	case NodeList:
-		for i, item := range n {
-			n[i] = SetReaderPos(item, f)
-		}
+	case EmptyNode:
+		return EmptyNode(f(parsley.Pos(n)))
 	default:
-		panic("invalid node type for SetReaderPos(), you may need to implement the ast.ReaderPosSetter interface")
+		panic("invalid node type for SetReaderPos(), you need to implement the ast.ReaderPosSetter interface")
 	}
 	return node
 }

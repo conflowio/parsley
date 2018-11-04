@@ -72,7 +72,53 @@ var _ = Describe("WalkNode", func() {
 		res := ast.WalkNode(nl, f)
 		Expect(res).To(BeFalse())
 
-		Expect(called).To(Equal([]parsley.Node{n1, n2}))
+		Expect(called).To(Equal([]parsley.Node{n1}))
+	})
+
+	Context("when the node is a nonterminal node", func() {
+		var n1, n2 *parsleyfakes.FakeNode
+		var n *parsleyfakes.FakeNonTerminalNode
+
+		BeforeEach(func() {
+			n1 = &parsleyfakes.FakeNode{}
+			n1.TokenReturns("N1")
+			n2 = &parsleyfakes.FakeNode{}
+			n2.TokenReturns("N2")
+
+			n = &parsleyfakes.FakeNonTerminalNode{}
+		})
+
+		It("calls the Walk function on the children", func() {
+
+			n.ChildrenReturns([]parsley.Node{n1, n2})
+
+			called := []parsley.Node{}
+			f := func(n parsley.Node) bool {
+				called = append(called, n)
+				return false
+			}
+
+			res := ast.WalkNode(n, f)
+			Expect(res).To(BeFalse())
+
+			Expect(called).To(Equal([]parsley.Node{n1, n2}))
+		})
+
+		It("stops if the function returns true", func() {
+
+			n.ChildrenReturns([]parsley.Node{n1, n2})
+
+			called := []parsley.Node{}
+			f := func(n parsley.Node) bool {
+				called = append(called, n)
+				return true
+			}
+
+			res := ast.WalkNode(n, f)
+			Expect(res).To(BeTrue())
+
+			Expect(called).To(Equal([]parsley.Node{n1}))
+		})
 	})
 
 	It("calls the function for a non-walkable node", func() {
@@ -93,7 +139,7 @@ var _ = Describe("WalkNode", func() {
 
 var _ = Describe("SetReaderPos", func() {
 	It("calls the SetReaderPos function if node implements the SetReaderPos interface", func() {
-		node := ast.NewTerminalNode("TEST", "x", parsley.Pos(1), parsley.Pos(2))
+		node := ast.NewTerminalNode("TEST", "x", "string", parsley.Pos(1), parsley.Pos(2))
 		f := func(pos parsley.Pos) parsley.Pos {
 			return parsley.Pos(pos + 1)
 		}
@@ -105,7 +151,7 @@ var _ = Describe("SetReaderPos", func() {
 	})
 
 	It("returns a new NilPos with the new position", func() {
-		node := ast.NilNode(parsley.Pos(1))
+		node := ast.EmptyNode(parsley.Pos(1))
 		f := func(pos parsley.Pos) parsley.Pos {
 			return parsley.Pos(pos + 1)
 		}
@@ -116,8 +162,8 @@ var _ = Describe("SetReaderPos", func() {
 	})
 
 	It("sets the reader position for all nodes in a node list", func() {
-		n1 := ast.NewTerminalNode("TEST", "x", parsley.Pos(1), parsley.Pos(2))
-		n2 := ast.NilNode(parsley.Pos(3))
+		n1 := ast.NewTerminalNode("TEST", "x", "string", parsley.Pos(1), parsley.Pos(2))
+		n2 := ast.EmptyNode(parsley.Pos(3))
 
 		nl := ast.NodeList([]parsley.Node{n1, n2})
 
