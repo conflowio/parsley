@@ -1,3 +1,9 @@
+## 0.12.2
+
+BUGFIXES:
+
+- Do not panic in StaticCheck if there is no interpreter
+
 ## 0.12.1
 
 IMPROVEMENTS:
