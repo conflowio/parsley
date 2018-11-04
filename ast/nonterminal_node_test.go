@@ -93,8 +93,8 @@ var _ = Describe("NonTerminalNode", func() {
 					Expect(func() { node.Value("ctx") }).To(Panic())
 				})
 
-				It("StaticCheck() should panic", func() {
-					Expect(func() { node.StaticCheck("ctx") }).To(Panic())
+				It("StaticCheck() should return no error", func() {
+					Expect(node.StaticCheck("ctx")).ToNot(HaveOccurred())
 				})
 			})
 
