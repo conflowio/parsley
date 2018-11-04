@@ -14,6 +14,12 @@ BACKWARDS INCOMPATIBILITIES:
 - The ast.NewTerminalNode now expects a new valueType parameter
 - Most of the text/terminal parsers now will return a custom node type (string node, int node, etc.)
 
+## 0.11.8
+
+IMPROVEMENTS:
+
+- Remove the index from the walk function, make it properly recursive
+
 ## 0.11.7
 
 IMPROVEMENTS:
