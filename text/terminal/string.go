@@ -19,7 +19,7 @@ import (
 )
 
 // StringType contains the string type's name
-var StringType = "string"
+const StringType = "string"
 
 // StringNode is a leaf node in the AST
 type StringNode struct {

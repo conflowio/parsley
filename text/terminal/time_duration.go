@@ -18,7 +18,7 @@ import (
 )
 
 // TimeDurationType contains the time duration type's name
-var TimeDurationType = "time.Duration"
+const TimeDurationType = "time.Duration"
 
 // TimeDurationNode is a leaf node in the AST
 type TimeDurationNode struct {

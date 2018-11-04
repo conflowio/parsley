@@ -16,7 +16,7 @@ import (
 )
 
 // BoolType contains the boolean type's name
-var BoolType = "bool"
+const BoolType = "bool"
 
 // BoolNode is a leaf node in the AST
 type BoolNode struct {

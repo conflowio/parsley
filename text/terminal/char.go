@@ -18,7 +18,7 @@ import (
 )
 
 // CharType contains the char type's name
-var CharType = "rune"
+const CharType = "rune"
 
 // CharNode is a leaf node in the AST
 type CharNode struct {

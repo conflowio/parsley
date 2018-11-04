@@ -18,7 +18,7 @@ import (
 )
 
 // FloatType contains the float type's name
-var FloatType = "float64"
+const FloatType = "float64"
 
 // FloatNode is a leaf node in the AST
 type FloatNode struct {

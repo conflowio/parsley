@@ -18,7 +18,7 @@ import (
 )
 
 // IntegerType contains the integer type's name
-var IntegerType = "int64"
+const IntegerType = "int64"
 
 // IntegerNode is a leaf node in the AST
 type IntegerNode struct {
