@@ -8,12 +8,13 @@ package parsley
 
 // Context is the parsing context passed to all parsers
 type Context struct {
-	fileSet     *FileSet
-	reader      Reader
-	resultCache ResultCache
-	err         Error
-	callCount   int
-	keywords    map[string]struct{}
+	fileSet             *FileSet
+	reader              Reader
+	resultCache         ResultCache
+	err                 Error
+	callCount           int
+	keywords            map[string]struct{}
+	nodeFactoryRegistry NodeFactoryRegistry
 }
 
 // NewContext creates a new parsing context
@@ -24,6 +25,11 @@ func NewContext(fileSet *FileSet, reader Reader) *Context {
 		resultCache: NewResultCache(),
 		keywords:    make(map[string]struct{}, 64),
 	}
+}
+
+// SetNodeFactoryRegistry sets the node factory registry
+func (c *Context) SetNodeFactoryRegistry(nodeFactoryRegistry NodeFactoryRegistry) {
+	c.nodeFactoryRegistry = nodeFactoryRegistry
 }
 
 // FileSet returns with the file set
@@ -78,4 +84,13 @@ func (c *Context) RegisterKeywords(keywords ...string) {
 func (c *Context) IsKeyword(word string) bool {
 	_, ok := c.keywords[word]
 	return ok
+}
+
+// GetNodeFactory returns with the named factory if it exists
+func (c *Context) GetNodeFactory(factoryName string) (NodeFactory, bool) {
+	if c.nodeFactoryRegistry == nil {
+		return nil, false
+	}
+
+	return c.nodeFactoryRegistry.GetNodeFactory(factoryName)
 }
