@@ -29,11 +29,6 @@ type NodeFactory interface {
 	CreateNode(Node) (Node, Error)
 }
 
-// NodeFactoryAware defines an interface to get a node factory
-type NodeFactoryAware interface {
-	GetNodeFactory(factoryName string) (NodeFactory, bool)
-}
-
 // NodeFactoryFunc is a function which implements the NodeFactory interface
 type NodeFactoryFunc func(Node) (Node, Error)
 
@@ -45,4 +40,9 @@ func (f NodeFactoryFunc) CreateNode(node Node) (Node, Error) {
 // NodeFactoryRegistry is a registry for named node factories
 type NodeFactoryRegistry interface {
 	GetNodeFactory(factoryName string) (NodeFactory, bool)
+}
+
+// NodeFactoryRegistryAware defines an interface to get a node factory registry
+type NodeFactoryRegistryAware interface {
+	GetNodeFactoryRegistry() NodeFactoryRegistry
 }
