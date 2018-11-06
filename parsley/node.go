@@ -29,6 +29,11 @@ type NodeFactory interface {
 	CreateNode(Node) (Node, Error)
 }
 
+// NodeFactoryAware defines an interface to get a node factory
+type NodeFactoryAware interface {
+	GetNodeFactory(factoryName string) (NodeFactory, bool)
+}
+
 // NodeFactoryFunc is a function which implements the NodeFactory interface
 type NodeFactoryFunc func(Node) (Node, Error)
 
