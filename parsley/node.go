@@ -39,6 +39,7 @@ func (f NodeFactoryFunc) CreateNode(node Node) (Node, Error) {
 
 // NodeFactoryRegistry is a registry for named node factories
 type NodeFactoryRegistry interface {
+	NodeFactoryExists(factoryName string) bool
 	GetNodeFactory(factoryName string) (NodeFactory, bool)
 }
 
