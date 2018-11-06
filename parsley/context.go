@@ -86,6 +86,14 @@ func (c *Context) IsKeyword(word string) bool {
 	return ok
 }
 
+// NodeFactoryExists returns true if the named factory exists
+func (c *Context) NodeFactoryExists(factoryName string) bool {
+	if c.nodeFactoryRegistry == nil {
+		return false
+	}
+	return c.nodeFactoryRegistry.NodeFactoryExists(factoryName)
+}
+
 // GetNodeFactory returns with the named factory if it exists
 func (c *Context) GetNodeFactory(factoryName string) (NodeFactory, bool) {
 	if c.nodeFactoryRegistry == nil {
