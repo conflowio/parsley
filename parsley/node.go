@@ -23,27 +23,16 @@ type NonTerminalNode interface {
 	Children() []Node
 }
 
-// NodeFactory defines an interface about creating an AST node
-//go:generate counterfeiter . NodeFactory
-type NodeFactory interface {
-	CreateNode(Node) (Node, Error)
+// NodeTransformer defines an interface to transform an AST node to an other
+//go:generate counterfeiter . NodeTransformer
+type NodeTransformer interface {
+	TransformNode(Node) (Node, Error)
 }
 
-// NodeFactoryFunc is a function which implements the NodeFactory interface
-type NodeFactoryFunc func(Node) (Node, Error)
+// NodeTransformFunc is a function which implements the NodeTransformer interface
+type NodeTransformFunc func(Node) (Node, Error)
 
-// CreateNode creates an AST node
-func (f NodeFactoryFunc) CreateNode(node Node) (Node, Error) {
+// TransformNode transforms an AST node to an other
+func (f NodeTransformFunc) TransformNode(node Node) (Node, Error) {
 	return f(node)
-}
-
-// NodeFactoryRegistry is a registry for named node factories
-type NodeFactoryRegistry interface {
-	NodeFactoryExists(factoryName string) bool
-	GetNodeFactory(factoryName string) (NodeFactory, bool)
-}
-
-// NodeFactoryRegistryAware defines an interface to get a node factory registry
-type NodeFactoryRegistryAware interface {
-	GetNodeFactoryRegistry() NodeFactoryRegistry
 }
