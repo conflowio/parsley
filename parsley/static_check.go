@@ -26,12 +26,7 @@ type StaticCheckableNode interface {
 
 // StaticCheck parses the given input and runs static analysis on it. It expects a reader, the root parser and the evaluation context.
 // If there are multiple possible parse trees only the first one is used for the analysis.
-func StaticCheck(ctx *Context, p Parser, evalCtx interface{}) error {
-	node, parseErr := Parse(ctx, p)
-	if parseErr != nil {
-		return parseErr
-	}
-
+func StaticCheck(ctx *Context, node Node, evalCtx interface{}) error {
 	switch n := node.(type) {
 	case StaticCheckable:
 		if err := n.StaticCheck(evalCtx); err != nil {
