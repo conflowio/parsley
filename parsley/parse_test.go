@@ -75,6 +75,31 @@ var _ = Describe("Parse", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
+	Context("if there is a transformer", func() {
+		transformer := &parsleyfakes.FakeNodeTransformer{}
+		transformedNode := &parsleyfakes.FakeNode{}
+		transformedNode.TokenReturns("TRANSFORMED")
+
+		BeforeEach(func() {
+			ctx.SetNodeTransformer(transformer)
+		})
+
+		Context("if there is no error", func() {
+			BeforeEach(func() {
+				transformer.TransformNodeReturns(transformedNode, nil)
+			})
+
+			It("should return the transformed result", func() {
+				Expect(transformer.TransformNodeCallCount()).To(Equal(1))
+				passedNode := transformer.TransformNodeArgsForCall(0)
+				Expect(passedNode).To(Equal(parserRes))
+
+				Expect(res).To(Equal(transformedNode))
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
+
 	Context("if the parser has an error", func() {
 		BeforeEach(func() {
 			parserRes = nil

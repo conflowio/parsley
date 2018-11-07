@@ -14,6 +14,7 @@ type Context struct {
 	err         Error
 	callCount   int
 	keywords    map[string]struct{}
+	transformer NodeTransformer
 }
 
 // NewContext creates a new parsing context
@@ -78,4 +79,14 @@ func (c *Context) RegisterKeywords(keywords ...string) {
 func (c *Context) IsKeyword(word string) bool {
 	_, ok := c.keywords[word]
 	return ok
+}
+
+// NodeTransformer returns with the node transformer, if there is any
+func (c *Context) NodeTransformer() NodeTransformer {
+	return c.transformer
+}
+
+// SetNodeTransformer sets a node transformer
+func (c *Context) SetNodeTransformer(transformer NodeTransformer) {
+	c.transformer = transformer
 }
