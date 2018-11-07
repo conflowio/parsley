@@ -1,3 +1,10 @@
+## 0.12.3
+
+IMPROVEMENTS:
+
+- Add NodeTransformer to context to allow AST transformations
+- The StaticChecker helper should not parse the input (minor backward incompatibility)
+
 ## 0.12.2
 
 BUGFIXES:
