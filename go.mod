@@ -2,7 +2,6 @@ module github.com/opsidian/parsley
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/onsi/ginkgo v1.6.0
 	github.com/onsi/gomega v1.4.2
