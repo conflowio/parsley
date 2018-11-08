@@ -46,7 +46,7 @@ func (nl NodeList) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 
 // Walk runs the given function on the first node
 func (nl NodeList) Walk(f func(n parsley.Node) bool) bool {
-	return WalkNode(nl[0], f)
+	return parsley.Walk(nl[0], f)
 }
 
 // Append appends a new node to the list

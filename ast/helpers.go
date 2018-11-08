@@ -27,36 +27,6 @@ func AppendNode(n1, n2 parsley.Node) parsley.Node {
 	}
 }
 
-// Walkable is a generic interface to allow to apply a function on the node
-// The Walk function should return true if the walk should be interrupted
-type Walkable interface {
-	Walk(f func(n parsley.Node) bool) bool
-}
-
-// WalkableNode defines a node which also implements the Walkable interface
-//go:generate counterfeiter . WalkableNode
-type WalkableNode interface {
-	parsley.Node
-	Walk(f func(n parsley.Node) bool) bool
-}
-
-// WalkNode applies the given function to the node
-func WalkNode(node parsley.Node, f func(n parsley.Node) bool) bool {
-	switch n := node.(type) {
-	case Walkable:
-		return n.Walk(f)
-	case parsley.NonTerminalNode:
-		for _, child := range n.Children() {
-			if WalkNode(child, f) {
-				return true
-			}
-		}
-		return false
-	default:
-		return f(node)
-	}
-}
-
 // ReaderPosSetter allows to change the reader position on a node
 type ReaderPosSetter interface {
 	SetReaderPos(f func(parsley.Pos) parsley.Pos)
