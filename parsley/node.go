@@ -22,22 +22,3 @@ type NonTerminalNode interface {
 	Node
 	Children() []Node
 }
-
-// NodeTransformer defines an interface to transform an AST node to an other
-//go:generate counterfeiter . NodeTransformer
-type NodeTransformer interface {
-	TransformNode(Node) (Node, Error)
-}
-
-// NodeTransformFunc is a function which implements the NodeTransformer interface
-type NodeTransformFunc func(Node) (Node, Error)
-
-// TransformNode transforms an AST node to an other
-func (f NodeTransformFunc) TransformNode(node Node) (Node, Error) {
-	return f(node)
-}
-
-// NodeTransformerRegistry contains named node registries
-type NodeTransformerRegistry interface {
-	NodeTransformer(name string) (NodeTransformer, bool)
-}

@@ -18,3 +18,10 @@ type StaticCheckerInterpreter interface {
 	Interpreter
 	StaticChecker
 }
+
+// NodeTransformerInterpreter defines an interpreter which is also a node transformer
+//go:generate counterfeiter . NodeTransformerInterpreter
+type NodeTransformerInterpreter interface {
+	Interpreter
+	NodeTransformer
+}
