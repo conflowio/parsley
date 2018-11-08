@@ -1,3 +1,19 @@
+## 0.13.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- The parsley.Evaluate function doesn't expect an evaluation context anymore, which was renamed to user context to make it more clear and can be set on parsley.Context
+- Move ast.WalkNode to parsley.Walk
+- The transform functions don't expect a NodeTransformer object anymore (the node transformation must be set on the interpreter)
+
+IMPROVEMENTS:
+
+ - The evaluation context is called user context now and can be set on parsley.Context
+ - Proper recursive static checking (depth-first)
+ - Proper recursive node transformation support (breadth-first)
+ - The static checking and transformation are disabled by default and can be enabled on parsley.Context
+ - Add NodeTransformerRegistry interface
+
 ## 0.12.3
 
 IMPROVEMENTS:
