@@ -41,12 +41,12 @@ func ExampleSepBy() {
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 
-	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("[1,2,3]")))
 	ctx = parsley.NewContext(parsley.NewFileSet(), r)
-	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value2, value2)
 
 	// Output: []int64 []
@@ -75,17 +75,17 @@ func ExampleSepBy1() {
 
 	r := text.NewReader(text.NewFile("example.file", []byte("")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
-	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value1, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value1, value1)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("1")))
 	ctx = parsley.NewContext(parsley.NewFileSet(), r)
-	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value2, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value2, value2)
 
 	r = text.NewReader(text.NewFile("example.file", []byte("1+2+3")))
 	ctx = parsley.NewContext(parsley.NewFileSet(), r)
-	value3, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value3, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value3, value3)
 	// Output: <nil> <nil>
 	// int64 1

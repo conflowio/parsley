@@ -22,6 +22,7 @@ var _ = Describe("NonTerminalNode", func() {
 		token           string = "TEST"
 		children        []parsley.Node
 		child1, child2  *parsleyfakes.FakeStaticCheckableNode
+		child3, child4  *parsleyfakes.FakeTransformableNode
 		pos             parsley.Pos = parsley.Pos(1)
 		readerPos       parsley.Pos = parsley.Pos(2)
 		interpreter     parsley.Interpreter
@@ -37,8 +38,10 @@ var _ = Describe("NonTerminalNode", func() {
 		child1 = &parsleyfakes.FakeStaticCheckableNode{}
 		child1.PosReturns(pos)
 		child2 = &parsleyfakes.FakeStaticCheckableNode{}
-		child2.ReaderPosReturns(readerPos)
-		children = []parsley.Node{child1, child2}
+		child3 = &parsleyfakes.FakeTransformableNode{}
+		child4 = &parsleyfakes.FakeTransformableNode{}
+		child4.ReaderPosReturns(readerPos)
+		children = []parsley.Node{child1, child2, child3, child4}
 	})
 
 	Context("when NewNonTerminalNode is called with no children", func() {
@@ -65,7 +68,7 @@ var _ = Describe("NonTerminalNode", func() {
 
 		It("should get the reader positon from the last node", func() {
 			Expect(child1.ReaderPosCallCount()).To(Equal(0))
-			Expect(child2.ReaderPosCallCount()).To(Equal(1))
+			Expect(child4.ReaderPosCallCount()).To(Equal(1))
 		})
 
 		Describe("Methods", func() {
@@ -165,21 +168,6 @@ var _ = Describe("NonTerminalNode", func() {
 
 						Expect(node.Type()).To(Equal("testtype"))
 					})
-
-					It("should check the children", func() {
-						ctx := "some context"
-						err := node.StaticCheck(ctx)
-						Expect(err).ToNot(HaveOccurred())
-
-						Expect(child1.StaticCheckCallCount()).To(Equal(1))
-						Expect(child2.StaticCheckCallCount()).To(Equal(1))
-
-						passedCtx1 := child1.StaticCheckArgsForCall(0)
-						Expect(passedCtx1).To(Equal(ctx))
-
-						passedCtx2 := child2.StaticCheckArgsForCall(0)
-						Expect(passedCtx2).To(Equal(ctx))
-					})
 				})
 
 				Context("when there is an error", func() {
@@ -200,28 +188,108 @@ var _ = Describe("NonTerminalNode", func() {
 					})
 				})
 
-				Context("when a child has an error", func() {
-					var checkErr parsley.Error
-
-					BeforeEach(func() {
-						checkErr = parsley.NewError(parsley.Pos(1), errors.New("check error"))
-						child1.StaticCheckReturns(checkErr)
-					})
-
-					It("should return the error", func() {
-						ctx := "some context"
-						err := node.StaticCheck(ctx)
-						Expect(err).To(MatchError(checkErr))
-						Expect(node.Type()).To(BeEmpty())
-					})
-				})
-
 				Context("when the interpreter is not a static checker", func() {
 					It("should return no error", func() {
 						ctx := "some context"
 						err := node.StaticCheck(ctx)
 						Expect(err).ToNot(HaveOccurred())
 						Expect(node.Type()).To(BeEmpty())
+					})
+				})
+			})
+
+			Describe("Transform()", func() {
+				var transformerInterpreter *parsleyfakes.FakeNodeTransformerInterpreter
+
+				Context("when there is no error", func() {
+					transformedNode := &parsleyfakes.FakeNode{}
+					transformedNode.TokenReturns("TRANSFORMED")
+
+					BeforeEach(func() {
+						transformerInterpreter = &parsleyfakes.FakeNodeTransformerInterpreter{}
+						transformerInterpreter.TransformNodeReturns(transformedNode, nil)
+						interpreter = transformerInterpreter
+					})
+
+					It("should return with the transformed node", func() {
+						ctx := "some context"
+						res, err := node.Transform(ctx)
+						Expect(err).ToNot(HaveOccurred())
+						Expect(res).To(Equal(transformedNode))
+
+						Expect(transformerInterpreter.TransformNodeCallCount()).To(Equal(1))
+						passedCtx, passedNode := transformerInterpreter.TransformNodeArgsForCall(0)
+						Expect(passedCtx).To(Equal(ctx))
+						Expect(passedNode).To(Equal(node))
+					})
+				})
+
+				Context("when there is an error", func() {
+					var transformErr parsley.Error
+
+					BeforeEach(func() {
+						transformErr = parsley.NewError(parsley.Pos(1), errors.New("transform error"))
+						transformerInterpreter = &parsleyfakes.FakeNodeTransformerInterpreter{}
+						transformerInterpreter.TransformNodeReturns(nil, transformErr)
+						interpreter = transformerInterpreter
+					})
+
+					It("should return the error", func() {
+						ctx := "some context"
+						res, err := node.Transform(ctx)
+						Expect(err).To(MatchError(transformErr))
+						Expect(res).To(BeNil())
+					})
+				})
+
+				Context("when the interpreter is not a static checker", func() {
+					transformed3 := &parsleyfakes.FakeNode{}
+					transformed3.TokenReturns("TR3")
+					transformed4 := &parsleyfakes.FakeNode{}
+					transformed4.TokenReturns("TR4")
+
+					BeforeEach(func() {
+						child3.TransformReturns(transformed3, nil)
+						child4.TransformReturns(transformed4, nil)
+					})
+
+					It("should return no error", func() {
+						ctx := "some context"
+						res, err := node.Transform(ctx)
+
+						Expect(err).ToNot(HaveOccurred())
+						Expect(res).To(Equal(node))
+					})
+
+					It("should call transform on the children", func() {
+						ctx := "some context"
+						node.Transform(ctx)
+
+						Expect(child3.TransformCallCount()).To(Equal(1))
+						Expect(child4.TransformCallCount()).To(Equal(1))
+
+						passedCtx3 := child3.TransformArgsForCall(0)
+						Expect(passedCtx3).To(Equal(ctx))
+						passedCtx4 := child4.TransformArgsForCall(0)
+						Expect(passedCtx4).To(Equal(ctx))
+
+						Expect(node.Children()).To(Equal([]parsley.Node{
+							child1, child2, transformed3, transformed4,
+						}))
+					})
+
+					Context("if a child has a transform error", func() {
+						transformErr := parsley.NewErrorf(parsley.Pos(1), "transform error")
+
+						BeforeEach(func() {
+							child4.TransformReturns(nil, transformErr)
+						})
+
+						It("returns the error", func() {
+							res, err := node.Transform("some context")
+							Expect(err).To(MatchError(transformErr))
+							Expect(res).To(BeNil())
+						})
 					})
 				})
 			})

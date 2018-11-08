@@ -57,7 +57,7 @@ func ExampleSeqTry() {
 	).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("ab")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
-	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ab
 }

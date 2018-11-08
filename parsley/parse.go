@@ -27,13 +27,35 @@ func Parse(ctx *Context, p Parser) (Node, error) {
 		)
 	}
 
-	if ctx.NodeTransformer() != nil {
-		if node, err = ctx.NodeTransformer().TransformNode(node); err != nil {
-			return nil, ctx.FileSet().ErrorWithPosition(
-				WrapError(err, "failed to process the input: {{err}}"),
-			)
+	if ctx.TransformationEnabled() {
+		node, err = Transform(ctx.UserContext(), node)
+		if err != nil {
+			return nil, ctx.FileSet().ErrorWithPosition(err)
+		}
+	}
+
+	if ctx.StaticCheckEnabled() {
+		if err = staticCheck(ctx.UserContext(), node); err != nil {
+			return nil, ctx.FileSet().ErrorWithPosition(err)
 		}
 	}
 
 	return node, nil
+}
+
+func staticCheck(userCtx interface{}, node Node) Error {
+	var staticCheckErr Error
+
+	Walk(node, func(n Node) bool {
+		if staticCheckableNode, ok := n.(StaticCheckable); ok {
+			if err := staticCheckableNode.StaticCheck(userCtx); err != nil {
+				staticCheckErr = err
+				return true
+			}
+		}
+
+		return false
+	})
+
+	return staticCheckErr
 }

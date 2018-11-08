@@ -23,7 +23,7 @@ var _ = Describe("Evaluate", func() {
 		err        error
 		parserRes  *parsleyfakes.FakeNode
 		parserErr  parsley.Error
-		evalCtx    interface{}
+		userCtx    interface{}
 		nodeVal    interface{}
 		nodeValErr parsley.Error
 	)
@@ -37,14 +37,16 @@ var _ = Describe("Evaluate", func() {
 		fs := parsley.NewFileSet(f)
 
 		r = &parsleyfakes.FakeReader{}
-		ctx = parsley.NewContext(fs, r)
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
 		parserRes = &parsleyfakes.FakeNode{}
 		nodeVal = "value"
-		evalCtx = "context"
+		userCtx = "context"
 		parserErr = nil
 		nodeValErr = nil
+
+		ctx = parsley.NewContext(fs, r)
+		ctx.SetUserContext(userCtx)
 	})
 
 	JustBeforeEach(func() {
@@ -52,7 +54,7 @@ var _ = Describe("Evaluate", func() {
 		if parserRes != nil {
 			parserRes.ValueReturns(nodeVal, nodeValErr)
 		}
-		val, err = parsley.Evaluate(ctx, p, evalCtx)
+		val, err = parsley.Evaluate(ctx, p)
 	})
 
 	It("gets the zero position from the reader", func() {
@@ -71,7 +73,7 @@ var _ = Describe("Evaluate", func() {
 
 	It("gets the value from the node and passes the context", func() {
 		Expect(parserRes.ValueCallCount()).To(Equal(1))
-		Expect(parserRes.ValueArgsForCall(0)).To(Equal(evalCtx))
+		Expect(parserRes.ValueArgsForCall(0)).To(Equal(userCtx))
 	})
 
 	It("should return the value of the node", func() {

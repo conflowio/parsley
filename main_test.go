@@ -60,7 +60,7 @@ func ExampleEvaluate() {
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
-	value, err := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value, err := parsley.Evaluate(ctx, combinator.Sentence(p))
 	if err != nil {
 		panic(err)
 	}
@@ -101,7 +101,7 @@ var _ = Describe("Parsley", func() {
 		f := text.NewFile("testfile", []byte(input))
 		r := text.NewReader(f)
 		ctx := parsley.NewContext(parsley.NewFileSet(), r)
-		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p), nil)
+		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p))
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(input))
@@ -133,7 +133,7 @@ var _ = Describe("Parsley", func() {
 		f := text.NewFile("testfile", []byte(input))
 		r := text.NewReader(f)
 		ctx := parsley.NewContext(parsley.NewFileSet(), r)
-		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p), nil)
+		result, err := parsley.Evaluate(ctx, combinator.Sentence(&p))
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(int64(55)))

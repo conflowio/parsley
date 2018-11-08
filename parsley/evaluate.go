@@ -8,17 +8,13 @@ package parsley
 
 // Evaluate parses the given input and evaluates it. It expects a reader, the root parser and the evaluation context.
 // If there are multiple possible parse trees only the first one is used for evaluation.
-func Evaluate(ctx *Context, p Parser, evalCtx interface{}) (interface{}, error) {
+func Evaluate(ctx *Context, p Parser) (interface{}, error) {
 	node, parseErr := Parse(ctx, p)
 	if parseErr != nil {
 		return nil, parseErr
 	}
 
-	if checkErr := StaticCheck(ctx, node, evalCtx); checkErr != nil {
-		return nil, checkErr
-	}
-
-	value, evalErr := node.Value(evalCtx)
+	value, evalErr := node.Value(ctx.UserContext())
 	if evalErr != nil {
 		return nil, ctx.FileSet().ErrorWithPosition(evalErr)
 	}

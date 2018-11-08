@@ -21,9 +21,10 @@ var _ = Describe("Parse", func() {
 		r         *parsleyfakes.FakeReader
 		p         *parsleyfakes.FakeParser
 		ctx       *parsley.Context
+		userCtx   interface{}
 		val       interface{}
 		err       error
-		parserRes *parsleyfakes.FakeNode
+		parserRes parsley.Node
 		parserErr parsley.Error
 		res       parsley.Node
 	)
@@ -38,11 +39,14 @@ var _ = Describe("Parse", func() {
 		fs := parsley.NewFileSet(f)
 
 		r = &parsleyfakes.FakeReader{}
+		userCtx = "user context"
 		ctx = parsley.NewContext(fs, r)
+		ctx.SetUserContext(userCtx)
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
-		parserRes = &parsleyfakes.FakeNode{}
-		parserRes.TokenReturns("TEST RESULT")
+		resultNode := &parsleyfakes.FakeNode{}
+		resultNode.TokenReturns("TEST RESULT")
+		parserRes = resultNode
 		parserErr = nil
 	})
 
@@ -75,27 +79,132 @@ var _ = Describe("Parse", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	Context("if there is a transformer", func() {
-		transformer := &parsleyfakes.FakeNodeTransformer{}
-		transformedNode := &parsleyfakes.FakeNode{}
-		transformedNode.TokenReturns("TRANSFORMED")
-
+	Context("if transformation is enabled", func() {
 		BeforeEach(func() {
-			ctx.SetNodeTransformer(transformer)
+			ctx.EnableTransformation()
 		})
 
-		Context("if there is no error", func() {
+		Context("if result is transformable", func() {
+			var resultNode *parsleyfakes.FakeTransformableNode
+
 			BeforeEach(func() {
-				transformer.TransformNodeReturns(transformedNode, nil)
+				resultNode = &parsleyfakes.FakeTransformableNode{}
+				parserRes = resultNode
 			})
 
-			It("should return the transformed result", func() {
-				Expect(transformer.TransformNodeCallCount()).To(Equal(1))
-				passedNode := transformer.TransformNodeArgsForCall(0)
-				Expect(passedNode).To(Equal(parserRes))
+			It("calls the Transform function", func() {
+				Expect(resultNode.TransformCallCount()).To(Equal(1))
+				passedUserCtx := resultNode.TransformArgsForCall(0)
+				Expect(passedUserCtx).To(Equal(userCtx))
+			})
 
-				Expect(res).To(Equal(transformedNode))
+			Context("if transform has no error", func() {
+				transformedNode := &parsleyfakes.FakeNode{}
+				transformedNode.TokenReturns("TRANSFORMED")
+
+				BeforeEach(func() {
+					resultNode.TransformReturns(transformedNode, nil)
+				})
+				It("returns the transformed node", func() {
+					Expect(res).To(Equal(transformedNode))
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			Context("if transform has an error", func() {
+				transformErr := parsley.NewError(parsley.Pos(1), errors.New("transform error"))
+
+				BeforeEach(func() {
+					resultNode.TransformReturns(nil, transformErr)
+				})
+				It("returns the transformed node", func() {
+					Expect(res).To(BeNil())
+					Expect(err).To(MatchError("transform error at testpos"))
+				})
+			})
+
+		})
+
+		Context("if result is not transformable", func() {
+			It("should return the original result", func() {
+				Expect(res).To(Equal(parserRes))
 				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
+
+	Context("if transformation is disabled", func() {
+		Context("if result can be transformed", func() {
+			var resultNode *parsleyfakes.FakeTransformableNode
+
+			BeforeEach(func() {
+				resultNode = &parsleyfakes.FakeTransformableNode{}
+				parserRes = resultNode
+			})
+			It("won't call the transform method", func() {
+				Expect(resultNode.TransformCallCount()).To(BeZero())
+			})
+		})
+	})
+
+	Context("if static checking is enabled", func() {
+		BeforeEach(func() {
+			ctx.EnableStaticCheck()
+		})
+
+		Context("if result can be checked", func() {
+			var resultNode *parsleyfakes.FakeStaticCheckableNode
+
+			BeforeEach(func() {
+				resultNode = &parsleyfakes.FakeStaticCheckableNode{}
+				parserRes = resultNode
+			})
+
+			It("calls the StaticCheck function", func() {
+				Expect(resultNode.StaticCheckCallCount()).To(Equal(1))
+				passedUserCtx := resultNode.StaticCheckArgsForCall(0)
+				Expect(passedUserCtx).To(Equal(userCtx))
+			})
+
+			Context("if static check has no error", func() {
+				BeforeEach(func() {
+					resultNode.StaticCheckReturns(nil)
+				})
+				It("returns no error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			Context("if static check has an error", func() {
+				staticCheckErr := parsley.NewError(parsley.Pos(1), errors.New("static check error"))
+
+				BeforeEach(func() {
+					resultNode.StaticCheckReturns(staticCheckErr)
+				})
+				It("returns the transformed node", func() {
+					Expect(err).To(MatchError("static check error at testpos"))
+				})
+			})
+
+		})
+
+		Context("if result is not static checkable", func() {
+			It("should return no error", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
+
+	Context("if static checking is disabled", func() {
+		Context("if result can be checked", func() {
+			var resultNode *parsleyfakes.FakeStaticCheckableNode
+
+			BeforeEach(func() {
+				resultNode = &parsleyfakes.FakeStaticCheckableNode{}
+				parserRes = resultNode
+			})
+			It("won't call the static check method", func() {
+				Expect(resultNode.StaticCheckCallCount()).To(BeZero())
 			})
 		})
 	})

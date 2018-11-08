@@ -72,27 +72,36 @@ func (n *NonTerminalNode) Value(userCtx interface{}) (interface{}, parsley.Error
 	return n.interpreter.Eval(userCtx, n)
 }
 
+// Transform runs the given transformer on all children and returns the original node
+func (n *NonTerminalNode) Transform(userCtx interface{}) (parsley.Node, parsley.Error) {
+	if n.interpreter != nil {
+		switch i := n.interpreter.(type) {
+		case parsley.NodeTransformer:
+			return i.TransformNode(userCtx, n)
+		}
+	}
+
+	var err parsley.Error
+	for i, child := range n.children {
+		if n.children[i], err = parsley.Transform(userCtx, child); err != nil {
+			return nil, err
+		}
+	}
+
+	return n, nil
+}
+
 // StaticCheck runs a static analysis if the interpreter has static analysis capabilities
-func (n *NonTerminalNode) StaticCheck(ctx interface{}) parsley.Error {
-	for _, child := range n.children {
-		switch n := child.(type) {
-		case parsley.StaticCheckable:
-			if err := n.StaticCheck(ctx); err != nil {
+func (n *NonTerminalNode) StaticCheck(userCtx interface{}) parsley.Error {
+	if n.interpreter != nil {
+		switch i := n.interpreter.(type) {
+		case parsley.StaticChecker:
+			valueType, err := i.StaticCheck(userCtx, n)
+			if err != nil {
 				return err
 			}
+			n.valueType = valueType
 		}
-	}
-
-	if n.interpreter == nil {
-		return nil
-	}
-
-	if staticChecker, ok := n.interpreter.(parsley.StaticChecker); ok {
-		valueType, err := staticChecker.StaticCheck(ctx, n)
-		if err != nil {
-			return err
-		}
-		n.valueType = valueType
 	}
 
 	return nil

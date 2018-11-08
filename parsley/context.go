@@ -8,13 +8,15 @@ package parsley
 
 // Context is the parsing context passed to all parsers
 type Context struct {
-	fileSet     *FileSet
-	reader      Reader
-	resultCache ResultCache
-	err         Error
-	callCount   int
-	keywords    map[string]struct{}
-	transformer NodeTransformer
+	fileSet               *FileSet
+	reader                Reader
+	resultCache           ResultCache
+	err                   Error
+	callCount             int
+	keywords              map[string]struct{}
+	transformationEnabled bool
+	staticCheckEnabled    bool
+	userCtx               interface{}
 }
 
 // NewContext creates a new parsing context
@@ -81,12 +83,32 @@ func (c *Context) IsKeyword(word string) bool {
 	return ok
 }
 
-// NodeTransformer returns with the node transformer, if there is any
-func (c *Context) NodeTransformer() NodeTransformer {
-	return c.transformer
+// EnableTransformation will turn on node transformation
+func (c *Context) EnableTransformation() {
+	c.transformationEnabled = true
 }
 
-// SetNodeTransformer sets a node transformer
-func (c *Context) SetNodeTransformer(transformer NodeTransformer) {
-	c.transformer = transformer
+// TransformationEnabled will return true if transformation is enabled
+func (c *Context) TransformationEnabled() bool {
+	return c.transformationEnabled
+}
+
+// EnableStaticCheck will turn on static checking
+func (c *Context) EnableStaticCheck() {
+	c.staticCheckEnabled = true
+}
+
+// StaticCheckEnabled will return true if static checking is enabled
+func (c *Context) StaticCheckEnabled() bool {
+	return c.staticCheckEnabled
+}
+
+// UserContext returns with the user context
+func (c *Context) UserContext() interface{} {
+	return c.userCtx
+}
+
+// SetUserContext sets the user context
+func (c *Context) SetUserContext(userCtx interface{}) {
+	c.userCtx = userCtx
 }

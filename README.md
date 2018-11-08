@@ -107,7 +107,7 @@ f := text.NewFile("example.file", []byte("1+2"))
 fs := parsley.NewFileSet(f)
 r := text.NewReader(f)
 ctx := parsley.NewContext(fs, r)
-value, err := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+value, err := parsley.Evaluate(ctx, combinator.Sentence(p))
 if err != nil {
 	panic(err)
 }

@@ -43,7 +43,7 @@ func ExampleMemoize() {
 	r := text.NewReader(f)
 	s := combinator.Sentence(&p)
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
-	value, _ := parsley.Evaluate(ctx, s, nil)
+	value, _ := parsley.Evaluate(ctx, s)
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string abbbbbbbb
 }

@@ -38,7 +38,7 @@ func main() {
 	ctx := parsley.NewContext(fs, reader)
 	s := combinator.Sentence(json.NewParser())
 
-	res, evalErr := parsley.Evaluate(ctx, s, nil)
+	res, evalErr := parsley.Evaluate(ctx, s)
 	if evalErr != nil {
 		panic(evalErr)
 	}

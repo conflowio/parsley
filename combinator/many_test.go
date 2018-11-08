@@ -31,7 +31,7 @@ func ExampleMany() {
 	fs := parsley.NewFileSet(f)
 	r := text.NewReader(f)
 	ctx := parsley.NewContext(fs, r)
-	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string aaaaa
