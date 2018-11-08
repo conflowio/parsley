@@ -36,3 +36,8 @@ type NodeTransformFunc func(Node) (Node, Error)
 func (f NodeTransformFunc) TransformNode(node Node) (Node, Error) {
 	return f(node)
 }
+
+// NodeTransformerRegistry contains named node registries
+type NodeTransformerRegistry interface {
+	NodeTransformer(name string) (NodeTransformer, bool)
+}
