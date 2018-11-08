@@ -31,7 +31,7 @@ func (e EndNode) Type() string {
 }
 
 // Value returns with nil
-func (e EndNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (e EndNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return nil, nil
 }
 

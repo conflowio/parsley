@@ -48,7 +48,7 @@ func (s *StringNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (s *StringNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (s *StringNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return s.value, nil
 }
 

@@ -8,10 +8,11 @@ import (
 )
 
 type FakeNodeTransformer struct {
-	TransformNodeStub        func(parsley.Node) (parsley.Node, parsley.Error)
+	TransformNodeStub        func(userCtx interface{}, node parsley.Node) (parsley.Node, parsley.Error)
 	transformNodeMutex       sync.RWMutex
 	transformNodeArgsForCall []struct {
-		arg1 parsley.Node
+		userCtx interface{}
+		node    parsley.Node
 	}
 	transformNodeReturns struct {
 		result1 parsley.Node
@@ -25,16 +26,17 @@ type FakeNodeTransformer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNodeTransformer) TransformNode(arg1 parsley.Node) (parsley.Node, parsley.Error) {
+func (fake *FakeNodeTransformer) TransformNode(userCtx interface{}, node parsley.Node) (parsley.Node, parsley.Error) {
 	fake.transformNodeMutex.Lock()
 	ret, specificReturn := fake.transformNodeReturnsOnCall[len(fake.transformNodeArgsForCall)]
 	fake.transformNodeArgsForCall = append(fake.transformNodeArgsForCall, struct {
-		arg1 parsley.Node
-	}{arg1})
-	fake.recordInvocation("TransformNode", []interface{}{arg1})
+		userCtx interface{}
+		node    parsley.Node
+	}{userCtx, node})
+	fake.recordInvocation("TransformNode", []interface{}{userCtx, node})
 	fake.transformNodeMutex.Unlock()
 	if fake.TransformNodeStub != nil {
-		return fake.TransformNodeStub(arg1)
+		return fake.TransformNodeStub(userCtx, node)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -48,10 +50,10 @@ func (fake *FakeNodeTransformer) TransformNodeCallCount() int {
 	return len(fake.transformNodeArgsForCall)
 }
 
-func (fake *FakeNodeTransformer) TransformNodeArgsForCall(i int) parsley.Node {
+func (fake *FakeNodeTransformer) TransformNodeArgsForCall(i int) (interface{}, parsley.Node) {
 	fake.transformNodeMutex.RLock()
 	defer fake.transformNodeMutex.RUnlock()
-	return fake.transformNodeArgsForCall[i].arg1
+	return fake.transformNodeArgsForCall[i].userCtx, fake.transformNodeArgsForCall[i].node
 }
 
 func (fake *FakeNodeTransformer) TransformNodeReturns(result1 parsley.Node, result2 parsley.Error) {

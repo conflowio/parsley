@@ -8,11 +8,11 @@ import (
 )
 
 type FakeStaticCheckerInterpreter struct {
-	EvalStub        func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error)
+	EvalStub        func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error)
 	evalMutex       sync.RWMutex
 	evalArgsForCall []struct {
-		ctx  interface{}
-		node parsley.NonTerminalNode
+		userCtx interface{}
+		node    parsley.NonTerminalNode
 	}
 	evalReturns struct {
 		result1 interface{}
@@ -22,11 +22,11 @@ type FakeStaticCheckerInterpreter struct {
 		result1 interface{}
 		result2 parsley.Error
 	}
-	StaticCheckStub        func(ctx interface{}, node parsley.NonTerminalNode) (string, parsley.Error)
+	StaticCheckStub        func(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error)
 	staticCheckMutex       sync.RWMutex
 	staticCheckArgsForCall []struct {
-		ctx  interface{}
-		node parsley.NonTerminalNode
+		userCtx interface{}
+		node    parsley.NonTerminalNode
 	}
 	staticCheckReturns struct {
 		result1 string
@@ -40,17 +40,17 @@ type FakeStaticCheckerInterpreter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeStaticCheckerInterpreter) Eval(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+func (fake *FakeStaticCheckerInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 	fake.evalMutex.Lock()
 	ret, specificReturn := fake.evalReturnsOnCall[len(fake.evalArgsForCall)]
 	fake.evalArgsForCall = append(fake.evalArgsForCall, struct {
-		ctx  interface{}
-		node parsley.NonTerminalNode
-	}{ctx, node})
-	fake.recordInvocation("Eval", []interface{}{ctx, node})
+		userCtx interface{}
+		node    parsley.NonTerminalNode
+	}{userCtx, node})
+	fake.recordInvocation("Eval", []interface{}{userCtx, node})
 	fake.evalMutex.Unlock()
 	if fake.EvalStub != nil {
-		return fake.EvalStub(ctx, node)
+		return fake.EvalStub(userCtx, node)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -67,7 +67,7 @@ func (fake *FakeStaticCheckerInterpreter) EvalCallCount() int {
 func (fake *FakeStaticCheckerInterpreter) EvalArgsForCall(i int) (interface{}, parsley.NonTerminalNode) {
 	fake.evalMutex.RLock()
 	defer fake.evalMutex.RUnlock()
-	return fake.evalArgsForCall[i].ctx, fake.evalArgsForCall[i].node
+	return fake.evalArgsForCall[i].userCtx, fake.evalArgsForCall[i].node
 }
 
 func (fake *FakeStaticCheckerInterpreter) EvalReturns(result1 interface{}, result2 parsley.Error) {
@@ -92,17 +92,17 @@ func (fake *FakeStaticCheckerInterpreter) EvalReturnsOnCall(i int, result1 inter
 	}{result1, result2}
 }
 
-func (fake *FakeStaticCheckerInterpreter) StaticCheck(ctx interface{}, node parsley.NonTerminalNode) (string, parsley.Error) {
+func (fake *FakeStaticCheckerInterpreter) StaticCheck(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error) {
 	fake.staticCheckMutex.Lock()
 	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
 	fake.staticCheckArgsForCall = append(fake.staticCheckArgsForCall, struct {
-		ctx  interface{}
-		node parsley.NonTerminalNode
-	}{ctx, node})
-	fake.recordInvocation("StaticCheck", []interface{}{ctx, node})
+		userCtx interface{}
+		node    parsley.NonTerminalNode
+	}{userCtx, node})
+	fake.recordInvocation("StaticCheck", []interface{}{userCtx, node})
 	fake.staticCheckMutex.Unlock()
 	if fake.StaticCheckStub != nil {
-		return fake.StaticCheckStub(ctx, node)
+		return fake.StaticCheckStub(userCtx, node)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -119,7 +119,7 @@ func (fake *FakeStaticCheckerInterpreter) StaticCheckCallCount() int {
 func (fake *FakeStaticCheckerInterpreter) StaticCheckArgsForCall(i int) (interface{}, parsley.NonTerminalNode) {
 	fake.staticCheckMutex.RLock()
 	defer fake.staticCheckMutex.RUnlock()
-	return fake.staticCheckArgsForCall[i].ctx, fake.staticCheckArgsForCall[i].node
+	return fake.staticCheckArgsForCall[i].userCtx, fake.staticCheckArgsForCall[i].node
 }
 
 func (fake *FakeStaticCheckerInterpreter) StaticCheckReturns(result1 string, result2 parsley.Error) {

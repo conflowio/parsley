@@ -49,7 +49,7 @@ func (t *TerminalNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (t *TerminalNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (t *TerminalNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return t.value, nil
 }
 

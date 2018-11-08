@@ -47,7 +47,7 @@ func (t *TimeDurationNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (t *TimeDurationNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (t *TimeDurationNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return t.value, nil
 }
 

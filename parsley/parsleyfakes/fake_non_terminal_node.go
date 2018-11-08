@@ -26,10 +26,10 @@ type FakeNonTerminalNode struct {
 	typeReturnsOnCall map[int]struct {
 		result1 string
 	}
-	ValueStub        func(ctx interface{}) (interface{}, parsley.Error)
+	ValueStub        func(userCtx interface{}) (interface{}, parsley.Error)
 	valueMutex       sync.RWMutex
 	valueArgsForCall []struct {
-		ctx interface{}
+		userCtx interface{}
 	}
 	valueReturns struct {
 		result1 interface{}
@@ -150,16 +150,16 @@ func (fake *FakeNonTerminalNode) TypeReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeNonTerminalNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (fake *FakeNonTerminalNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	fake.valueMutex.Lock()
 	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
 	fake.valueArgsForCall = append(fake.valueArgsForCall, struct {
-		ctx interface{}
-	}{ctx})
-	fake.recordInvocation("Value", []interface{}{ctx})
+		userCtx interface{}
+	}{userCtx})
+	fake.recordInvocation("Value", []interface{}{userCtx})
 	fake.valueMutex.Unlock()
 	if fake.ValueStub != nil {
-		return fake.ValueStub(ctx)
+		return fake.ValueStub(userCtx)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -176,7 +176,7 @@ func (fake *FakeNonTerminalNode) ValueCallCount() int {
 func (fake *FakeNonTerminalNode) ValueArgsForCall(i int) interface{} {
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
-	return fake.valueArgsForCall[i].ctx
+	return fake.valueArgsForCall[i].userCtx
 }
 
 func (fake *FakeNonTerminalNode) ValueReturns(result1 interface{}, result2 parsley.Error) {

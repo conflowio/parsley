@@ -26,10 +26,10 @@ type FakeStaticCheckableNode struct {
 	typeReturnsOnCall map[int]struct {
 		result1 string
 	}
-	ValueStub        func(ctx interface{}) (interface{}, parsley.Error)
+	ValueStub        func(userCtx interface{}) (interface{}, parsley.Error)
 	valueMutex       sync.RWMutex
 	valueArgsForCall []struct {
-		ctx interface{}
+		userCtx interface{}
 	}
 	valueReturns struct {
 		result1 interface{}
@@ -57,10 +57,10 @@ type FakeStaticCheckableNode struct {
 	readerPosReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
-	StaticCheckStub        func(ctx interface{}) parsley.Error
+	StaticCheckStub        func(userCtx interface{}) parsley.Error
 	staticCheckMutex       sync.RWMutex
 	staticCheckArgsForCall []struct {
-		ctx interface{}
+		userCtx interface{}
 	}
 	staticCheckReturns struct {
 		result1 parsley.Error
@@ -152,16 +152,16 @@ func (fake *FakeStaticCheckableNode) TypeReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeStaticCheckableNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (fake *FakeStaticCheckableNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	fake.valueMutex.Lock()
 	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
 	fake.valueArgsForCall = append(fake.valueArgsForCall, struct {
-		ctx interface{}
-	}{ctx})
-	fake.recordInvocation("Value", []interface{}{ctx})
+		userCtx interface{}
+	}{userCtx})
+	fake.recordInvocation("Value", []interface{}{userCtx})
 	fake.valueMutex.Unlock()
 	if fake.ValueStub != nil {
-		return fake.ValueStub(ctx)
+		return fake.ValueStub(userCtx)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -178,7 +178,7 @@ func (fake *FakeStaticCheckableNode) ValueCallCount() int {
 func (fake *FakeStaticCheckableNode) ValueArgsForCall(i int) interface{} {
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
-	return fake.valueArgsForCall[i].ctx
+	return fake.valueArgsForCall[i].userCtx
 }
 
 func (fake *FakeStaticCheckableNode) ValueReturns(result1 interface{}, result2 parsley.Error) {
@@ -283,16 +283,16 @@ func (fake *FakeStaticCheckableNode) ReaderPosReturnsOnCall(i int, result1 parsl
 	}{result1}
 }
 
-func (fake *FakeStaticCheckableNode) StaticCheck(ctx interface{}) parsley.Error {
+func (fake *FakeStaticCheckableNode) StaticCheck(userCtx interface{}) parsley.Error {
 	fake.staticCheckMutex.Lock()
 	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
 	fake.staticCheckArgsForCall = append(fake.staticCheckArgsForCall, struct {
-		ctx interface{}
-	}{ctx})
-	fake.recordInvocation("StaticCheck", []interface{}{ctx})
+		userCtx interface{}
+	}{userCtx})
+	fake.recordInvocation("StaticCheck", []interface{}{userCtx})
 	fake.staticCheckMutex.Unlock()
 	if fake.StaticCheckStub != nil {
-		return fake.StaticCheckStub(ctx)
+		return fake.StaticCheckStub(userCtx)
 	}
 	if specificReturn {
 		return ret.result1
@@ -309,7 +309,7 @@ func (fake *FakeStaticCheckableNode) StaticCheckCallCount() int {
 func (fake *FakeStaticCheckableNode) StaticCheckArgsForCall(i int) interface{} {
 	fake.staticCheckMutex.RLock()
 	defer fake.staticCheckMutex.RUnlock()
-	return fake.staticCheckArgsForCall[i].ctx
+	return fake.staticCheckArgsForCall[i].userCtx
 }
 
 func (fake *FakeStaticCheckableNode) StaticCheckReturns(result1 parsley.Error) {

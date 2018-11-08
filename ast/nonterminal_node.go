@@ -64,11 +64,12 @@ func (n *NonTerminalNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (n *NonTerminalNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (n *NonTerminalNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	if n.interpreter == nil {
 		panic("missing interpreter for node")
 	}
-	return n.interpreter.Eval(ctx, n)
+
+	return n.interpreter.Eval(userCtx, n)
 }
 
 // StaticCheck runs a static analysis if the interpreter has static analysis capabilities

@@ -47,7 +47,7 @@ func (i *IntegerNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (i *IntegerNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (i *IntegerNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return i.value, nil
 }
 

@@ -25,8 +25,8 @@ var _ = Describe("Interpreter", func() {
 			ctx        = "some context"
 			node       = &parsleyfakes.FakeNonTerminalNode{}
 		)
-		f := func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
-			passedCtx = ctx
+		f := func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+			passedCtx = userCtx
 			passedNode = node
 			return fResult, fErr
 		}

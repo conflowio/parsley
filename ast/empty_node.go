@@ -26,7 +26,7 @@ func (e EmptyNode) Type() string {
 }
 
 // Value returns with nil
-func (e EmptyNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (e EmptyNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return nil, nil
 }
 

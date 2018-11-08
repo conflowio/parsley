@@ -21,7 +21,7 @@ An AST is built during parsing for evaluating the parsed data. An AST node has t
 ```
 type Node interface {
 	Token() string
-	Value(ctx interface{}) (interface{}, Error)
+	Value(userCtx interface{}) (interface{}, Error)
 	Pos() Pos
 	ReaderPos() Pos
 }
@@ -40,7 +40,7 @@ An interpreter gets the child nodes of a non-terminal node and returns with a si
 
 ```
 type Interpreter interface {
-	Eval(ctx interface{}, nodes []Node) (interface{}, Error)
+	Eval(userCtx interface{}, nodes []Node) (interface{}, Error)
 }
 ```
 
@@ -91,9 +91,9 @@ We'll need the following components:
 - an interpreter function which will calculate the result
 
 ```
-sum := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
-	value0, _ := nodes.Children()[0].Value(ctx)
-	value1, _ := nodes.Children()[2].Value(ctx)
+sum := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	value0, _ := nodes.Children()[0].Value(userCtx)
+	value1, _ := nodes.Children()[2].Value(userCtx)
 	return value0.(int64) + value1.(int64), nil
 })
 

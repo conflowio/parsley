@@ -18,10 +18,10 @@ import (
 
 // Let's define a parser which accepts any number of "a" characters
 func ExampleMany() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(ctx)
+			val, _ := node.Value(userCtx)
 			res += string(val.(rune))
 		}
 		return res, nil

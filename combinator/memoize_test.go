@@ -21,10 +21,10 @@ import (
 // and also cache previous parser matches with Memoize.
 // Grammar: S -> A, A -> a | Ab
 func ExampleMemoize() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(ctx)
+			val, _ := node.Value(userCtx)
 			if runeVal, ok := val.(rune); ok {
 				res += string(runeVal)
 			} else {

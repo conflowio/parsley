@@ -47,7 +47,7 @@ func (f *FloatNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (f *FloatNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (f *FloatNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return f.value, nil
 }
 

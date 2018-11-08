@@ -11,7 +11,7 @@ package parsley
 type Node interface {
 	Token() string
 	Type() string
-	Value(ctx interface{}) (interface{}, Error)
+	Value(userCtx interface{}) (interface{}, Error)
 	Pos() Pos
 	ReaderPos() Pos
 }

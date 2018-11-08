@@ -23,8 +23,8 @@ func (nl NodeList) Type() string {
 }
 
 // Value returns with the value of the first node
-func (nl NodeList) Value(ctx interface{}) (interface{}, parsley.Error) {
-	return nl[0].Value(ctx)
+func (nl NodeList) Value(userCtx interface{}) (interface{}, parsley.Error) {
+	return nl[0].Value(userCtx)
 }
 
 // Pos returns the value of the first node

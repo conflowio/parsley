@@ -45,7 +45,7 @@ func (b *BoolNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (b *BoolNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (b *BoolNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return b.value, nil
 }
 

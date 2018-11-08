@@ -42,7 +42,7 @@ func (o *OpNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (o *OpNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (o *OpNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return o.value, nil
 }
 

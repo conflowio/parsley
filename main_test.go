@@ -15,10 +15,10 @@ import (
 
 // Let's define a simple parser which is able to parse adding two integers.
 func ExampleParse() {
-	sum := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	sum := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		nodes := node.Children()
-		value0, _ := nodes[0].Value(ctx)
-		value1, _ := nodes[2].Value(ctx)
+		value0, _ := nodes[0].Value(userCtx)
+		value1, _ := nodes[2].Value(userCtx)
 		return value0.(int64) + value1.(int64), nil
 	})
 
@@ -45,10 +45,10 @@ func ExampleParse() {
 
 // Let's define a simple parser which is able to parse adding two integers.
 func ExampleEvaluate() {
-	sum := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	sum := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		nodes := node.Children()
-		value0, _ := nodes[0].Value(ctx)
-		value1, _ := nodes[2].Value(ctx)
+		value0, _ := nodes[0].Value(userCtx)
+		value1, _ := nodes[2].Value(userCtx)
 		return value0.(int64) + value1.(int64), nil
 	})
 
@@ -73,10 +73,10 @@ var _ = Describe("Parsley", func() {
 	It("should handle direct left recursion", func() {
 		input := "abbbbbbbbbbbbbbbbbbb"
 
-		concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 			s := ""
 			for _, node := range node.Children() {
-				val, err := node.Value(ctx)
+				val, err := node.Value(userCtx)
 				if err != nil {
 					return nil, err
 				}
@@ -111,10 +111,10 @@ var _ = Describe("Parsley", func() {
 	It("should handle highly ambiguous left-recursive grammar", func() {
 		input := "1+2+3+4+5+6+7+8+9+10"
 
-		add := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		add := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 			nodes := node.Children()
-			value0, _ := nodes[0].Value(ctx)
-			value1, _ := nodes[2].Value(ctx)
+			value0, _ := nodes[0].Value(userCtx)
+			value1, _ := nodes[2].Value(userCtx)
 			return value0.(int64) + value1.(int64), nil
 		})
 

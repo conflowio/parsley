@@ -18,10 +18,10 @@ import (
 
 // Let's define a parser which accepts "a", "b", "c" characters in order.
 func ExampleSeq() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(ctx)
+			val, _ := node.Value(userCtx)
 			res += string(val.(rune))
 		}
 		return res, nil
@@ -34,17 +34,17 @@ func ExampleSeq() {
 	).Bind(concat)
 	r := text.NewReader(text.NewFile("example.file", []byte("abc")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
-	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p), nil)
+	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string abc
 }
 
 // Let's define a parser which accepts any prefix of the "abc" string.
 func ExampleSeqTry() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(ctx)
+			val, _ := node.Value(userCtx)
 			res += string(val.(rune))
 		}
 		return res, nil

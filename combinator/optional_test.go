@@ -19,11 +19,11 @@ import (
 // Let's define a parser which accepts "a", an optional "b" and a "c" character.
 // The optional parser will result in a nil node so in the interpreter we have to handle that.
 func ExampleOptional() {
-	concat := ast.InterpreterFunc(func(ctx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
 			if node != nil {
-				val, _ := node.Value(ctx)
+				val, _ := node.Value(userCtx)
 				if val != nil {
 					res += string(val.(rune))
 				}

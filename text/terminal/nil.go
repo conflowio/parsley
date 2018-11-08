@@ -40,7 +40,7 @@ func (n *NilNode) Type() string {
 }
 
 // Value returns with the value of the node
-func (n *NilNode) Value(ctx interface{}) (interface{}, parsley.Error) {
+func (n *NilNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
 	return nil, nil
 }
 
