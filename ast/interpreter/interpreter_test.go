@@ -7,6 +7,8 @@
 package interpreter_test
 
 import (
+	"errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/opsidian/parsley/ast"
@@ -17,19 +19,27 @@ import (
 
 var _ = Describe("Interpreter", func() {
 	var (
-		node         *parsleyfakes.FakeNonTerminalNode
-		node1, node2 *parsleyfakes.FakeNode
-		ctx          interface{}
+		node           *parsleyfakes.FakeNonTerminalNode
+		node1          *parsleyfakes.FakeNode
+		node2          *parsleyfakes.FakeStaticCheckableNode
+		ctx            interface{}
+		staticCheckErr parsley.Error
 	)
 
 	BeforeEach(func() {
+		ctx = "context"
 		node1 = &parsleyfakes.FakeNode{}
 		node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
-		node2 = &parsleyfakes.FakeNode{}
+		node2 = &parsleyfakes.FakeStaticCheckableNode{}
 		node2.ValueReturns(2, parsley.NewErrorf(parsley.Pos(2), "err2"))
+		node2.TypeReturns("testtype")
 		node = &parsleyfakes.FakeNonTerminalNode{}
 		node.ChildrenReturns([]parsley.Node{node1, node2})
-		ctx = "context"
+		staticCheckErr = nil
+	})
+
+	JustBeforeEach(func() {
+		node2.StaticCheckReturns(staticCheckErr)
 	})
 
 	Describe("Select", func() {
@@ -57,6 +67,52 @@ var _ = Describe("Interpreter", func() {
 			It("should panic", func() {
 				f := interpreter.Select(-1)
 				Expect(func() { f.Eval(ctx, node) }).To(Panic())
+			})
+		})
+
+		Context("static checking", func() {
+			Context("when the node is not static checkable", func() {
+				It("should return with empty type and no error", func() {
+					f := interpreter.Select(0)
+					nodeType, err := f.(parsley.StaticChecker).StaticCheck(ctx, node)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(nodeType).To(BeEmpty())
+				})
+			})
+
+			Context("when the node is static checkable", func() {
+				It("should return with empty type and no error", func() {
+					f := interpreter.Select(1)
+					nodeType, err := f.(parsley.StaticChecker).StaticCheck(ctx, node)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(nodeType).To(Equal("testtype"))
+				})
+			})
+
+			Context("when the node static check has an error", func() {
+				BeforeEach(func() {
+					staticCheckErr = parsley.NewError(parsley.Pos(1), errors.New("check error"))
+				})
+				It("should return with empty type and no error", func() {
+					f := interpreter.Select(1)
+					nodeType, err := f.(parsley.StaticChecker).StaticCheck(ctx, node)
+					Expect(err).To(MatchError(staticCheckErr))
+					Expect(nodeType).To(BeEmpty())
+				})
+			})
+
+			Context("when the node index is out of bounds (+)", func() {
+				It("should panic", func() {
+					f := interpreter.Select(2)
+					Expect(func() { f.(parsley.StaticChecker).StaticCheck(ctx, node) }).To(Panic())
+				})
+			})
+
+			Context("when the node index is out of bounds (-)", func() {
+				It("should panic", func() {
+					f := interpreter.Select(-1)
+					Expect(func() { f.(parsley.StaticChecker).StaticCheck(ctx, node) }).To(Panic())
+				})
 			})
 		})
 	})

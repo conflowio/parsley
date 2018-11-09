@@ -13,15 +13,36 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
-// Select returns with an interpreter function which returns the value of the selected node
-func Select(i int) ast.InterpreterFunc {
-	return func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
-		nodes := node.Children()
-		if i < 0 || i >= len(nodes) {
-			panic(fmt.Sprintf("node index is out of bounds: %d", i))
-		}
-		return nodes[i].Value(userCtx)
+// Select returns with an interpreter which returns the value of the selected node
+func Select(i int) parsley.Interpreter {
+	return selectInterpreter{i: i}
+}
+
+type selectInterpreter struct {
+	i int
+}
+
+// StaticCheck runs the static checking on the indexed node
+func (s selectInterpreter) StaticCheck(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error) {
+	nodes := node.Children()
+	if s.i < 0 || s.i >= len(nodes) {
+		panic(fmt.Sprintf("node index is out of bounds: %d", s.i))
 	}
+	if staticCheckableNode, ok := nodes[s.i].(parsley.StaticCheckable); ok {
+		if err := staticCheckableNode.StaticCheck(userCtx); err != nil {
+			return "", err
+		}
+		return nodes[s.i].Type(), nil
+	}
+	return "", nil
+}
+
+func (s selectInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+	nodes := node.Children()
+	if s.i < 0 || s.i >= len(nodes) {
+		panic(fmt.Sprintf("node index is out of bounds: %d", s.i))
+	}
+	return nodes[s.i].Value(userCtx)
 }
 
 // Nil returns with an interpreter function which always returns with a nil result
