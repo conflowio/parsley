@@ -1,3 +1,9 @@
+## 0.13.2
+
+BUGFIXES:
+
+- The Select interpreter should not run static checking on any child nodes, but simply return the index node's type
+
 ## 0.13.1
 
 IMPROVEMENTS:
