@@ -1,3 +1,9 @@
+## 0.13.1
+
+IMPROVEMENTS:
+
+- The Select interpreter should static check the selected node (if the node is checkable)
+
 ## 0.13.0
 
 BACKWARDS INCOMPATIBILITIES:
