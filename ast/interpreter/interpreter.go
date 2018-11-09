@@ -28,13 +28,7 @@ func (s selectInterpreter) StaticCheck(userCtx interface{}, node parsley.NonTerm
 	if s.i < 0 || s.i >= len(nodes) {
 		panic(fmt.Sprintf("node index is out of bounds: %d", s.i))
 	}
-	if staticCheckableNode, ok := nodes[s.i].(parsley.StaticCheckable); ok {
-		if err := staticCheckableNode.StaticCheck(userCtx); err != nil {
-			return "", err
-		}
-		return nodes[s.i].Type(), nil
-	}
-	return "", nil
+	return nodes[s.i].Type(), nil
 }
 
 func (s selectInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
