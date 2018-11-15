@@ -17,7 +17,7 @@ import (
 )
 
 // Let's define a parser which accepts "a", "b", "c" characters in order.
-func ExampleSeq() {
+func ExampleSeqOf() {
 	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
@@ -60,6 +60,33 @@ func ExampleSeqTry() {
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
 	fmt.Printf("%T %v\n", value, value)
 	// Output: string ab
+}
+
+// Let's define a parser which does a simple integer addition
+func ExampleSeqFirstOrAll() {
+	add := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+		val1, _ := node.Children()[0].Value(userCtx)
+		val2, _ := node.Children()[2].Value(userCtx)
+		return val1.(int64) + val2.(int64), nil
+	})
+
+	p := combinator.SeqFirstOrAll(
+		terminal.Integer(),
+		terminal.Rune('+'),
+		terminal.Integer(),
+	).Bind(add)
+
+	r := text.NewReader(text.NewFile("example.file", []byte("1")))
+	ctx := parsley.NewContext(parsley.NewFileSet(), r)
+	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
+	fmt.Printf("%T %v\n", value, value)
+
+	r2 := text.NewReader(text.NewFile("example.file", []byte("1+2")))
+	ctx2 := parsley.NewContext(parsley.NewFileSet(), r2)
+	value2, _ := parsley.Evaluate(ctx2, combinator.Sentence(p))
+	fmt.Printf("%T %v\n", value2, value2)
+	// Output: int64 1
+	// int64 3
 }
 
 //

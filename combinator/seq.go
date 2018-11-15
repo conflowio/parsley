@@ -22,6 +22,8 @@ type Sequence struct {
 	lenCheck     func(int) bool
 	interpreter  parsley.Interpreter
 	customErr    error
+	returnSingle bool
+	returnEmpty  bool
 }
 
 // Seq tries to apply all parsers after each other and returns with all combinations of the results.
@@ -50,7 +52,9 @@ func (s *Sequence) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsl
 		lenCheck:          s.lenCheck,
 		interpreter:       s.interpreter,
 		curtailingParsers: data.EmptyIntSet,
-		nodes:             []parsley.Node{},
+		nodes:             nil,
+		returnSingle:      s.returnSingle,
+		returnEmpty:       s.returnEmpty,
 	}
 	res, cp, err := p.Parse(ctx, leftRecCtx, pos)
 	if err != nil && s.customErr != nil && err.Pos() == pos {
@@ -73,6 +77,22 @@ func (s *Sequence) Token(token string) *Sequence {
 	return s
 }
 
+// ReturnSingle will change the result of the parser if it returns with a non terminal node
+// with a single child.
+// In this case directly the child will returned.
+func (s *Sequence) ReturnSingle() *Sequence {
+	s.returnSingle = true
+	return s
+}
+
+// ReturnEmpty will change the result of the parser if it returns with a non terminal node
+// without children.
+// In this case an empty node is returned instead.
+func (s *Sequence) ReturnEmpty() *Sequence {
+	s.returnEmpty = true
+	return s
+}
+
 type sequence struct {
 	token             string
 	parserLookUp      func(i int) parsley.Parser
@@ -82,6 +102,8 @@ type sequence struct {
 	result            parsley.Node
 	err               parsley.Error
 	nodes             []parsley.Node
+	returnSingle      bool
+	returnEmpty       bool
 }
 
 // Parse runs the recursive parser
@@ -133,14 +155,22 @@ func (s *sequence) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntMap
 	if res == nil {
 		if s.lenCheck(depth) {
 			if depth > 0 {
-				nodesCopy := make([]parsley.Node, depth)
-				copy(nodesCopy[0:depth], s.nodes[0:depth])
-				s.result = ast.AppendNode(s.result, ast.NewNonTerminalNode(s.token, nodesCopy, s.interpreter))
+				if depth == 1 && s.returnSingle {
+					s.result = ast.AppendNode(s.result, s.nodes[0])
+				} else {
+					nodesCopy := make([]parsley.Node, depth)
+					copy(nodesCopy[0:depth], s.nodes[0:depth])
+					s.result = ast.AppendNode(s.result, ast.NewNonTerminalNode(s.token, nodesCopy, s.interpreter))
+				}
 				if s.nodes[depth-1] != nil && s.nodes[depth-1].Token() == parser.EOF {
 					return true
 				}
 			} else { // It's an empty result
-				s.result = ast.AppendNode(s.result, ast.NewEmptyNonTerminalNode(s.token, pos, s.interpreter))
+				if s.returnEmpty {
+					s.result = ast.AppendNode(s.result, ast.EmptyNode(pos))
+				} else {
+					s.result = ast.AppendNode(s.result, ast.NewEmptyNonTerminalNode(s.token, pos, s.interpreter))
+				}
 			}
 		}
 	}
@@ -166,25 +196,47 @@ func (s *sequence) parseNext(i int, node parsley.Node, depth int, ctx *parsley.C
 // SeqOf tries to apply all parsers after each other and returns with all combinations of the results.
 // Only matches are returned where all parsers were applied successfully.
 func SeqOf(parsers ...parsley.Parser) *Sequence {
-	return newSeq(len(parsers), parsers...)
+	l := len(parsers)
+	lookup := func(i int) parsley.Parser {
+		if i < l {
+			return parsers[i]
+		}
+		return nil
+	}
+	lenCheck := func(len int) bool {
+		return len == l
+	}
+	return Seq("SEQ", lookup, lenCheck)
 }
 
 // SeqTry tries to apply all parsers after each other and returns with all combinations of the results.
 // It needs to match the first parser at least
 func SeqTry(parsers ...parsley.Parser) *Sequence {
-	return newSeq(1, parsers...)
-}
-
-func newSeq(min int, parsers ...parsley.Parser) *Sequence {
+	l := len(parsers)
 	lookup := func(i int) parsley.Parser {
-		if i < len(parsers) {
+		if i < l {
 			return parsers[i]
 		}
 		return nil
 	}
-	l := len(parsers)
 	lenCheck := func(len int) bool {
-		return len >= min && len <= l
+		return len > 0 && len <= l
 	}
 	return Seq("SEQ", lookup, lenCheck)
+}
+
+// SeqFirstOrAll tries to apply all parsers after each other and returns with all combinations of the results.
+// If it can't match all parsers, but it can match the first one it will return with the result of the first one.
+func SeqFirstOrAll(parsers ...parsley.Parser) *Sequence {
+	l := len(parsers)
+	lookup := func(i int) parsley.Parser {
+		if i < l {
+			return parsers[i]
+		}
+		return nil
+	}
+	lenCheck := func(len int) bool {
+		return len == 1 || len == l
+	}
+	return Seq("SEQ", lookup, lenCheck).ReturnSingle()
 }
