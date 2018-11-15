@@ -344,7 +344,7 @@ var _ = Describe("NonTerminalNode", func() {
 			})
 
 			It("Children() should return nil", func() {
-				Expect(node.Children()).To(Equal([]parsley.Node{}))
+				Expect(node.Children()).To(BeEmpty())
 			})
 		})
 	})

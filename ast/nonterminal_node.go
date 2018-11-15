@@ -46,7 +46,6 @@ func NewNonTerminalNode(token string, children []parsley.Node, interpreter parsl
 func NewEmptyNonTerminalNode(token string, pos parsley.Pos, interpreter parsley.Interpreter) *NonTerminalNode {
 	return &NonTerminalNode{
 		token:       token,
-		children:    []parsley.Node{},
 		pos:         pos,
 		readerPos:   pos,
 		interpreter: interpreter,
