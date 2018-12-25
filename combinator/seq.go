@@ -238,5 +238,5 @@ func SeqFirstOrAll(parsers ...parsley.Parser) *Sequence {
 	lenCheck := func(len int) bool {
 		return len == 1 || len == l
 	}
-	return Seq("SEQ", lookup, lenCheck).ReturnSingle()
+	return Seq("SEQ", lookup, lenCheck)
 }
