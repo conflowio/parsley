@@ -65,8 +65,13 @@ func ExampleSeqTry() {
 // Let's define a parser which does a simple integer addition
 func ExampleSeqFirstOrAll() {
 	add := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
-		val1, _ := node.Children()[0].Value(userCtx)
-		val2, _ := node.Children()[2].Value(userCtx)
+		children := node.Children()
+		val1, _ := children[0].Value(userCtx)
+		if len(children) == 1 {
+			return val1.(int64), nil
+		}
+
+		val2, _ := children[2].Value(userCtx)
 		return val1.(int64) + val2.(int64), nil
 	})
 
