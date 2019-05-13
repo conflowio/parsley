@@ -1,3 +1,9 @@
+## 0.13.3
+
+IMPROVEMENTS:
+
+- Make the parsley.StaticCheck method public
+
 ## 0.13.2
 
 BUGFIXES:
