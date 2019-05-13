@@ -35,27 +35,10 @@ func Parse(ctx *Context, p Parser) (Node, error) {
 	}
 
 	if ctx.StaticCheckEnabled() {
-		if err = staticCheck(ctx.UserContext(), node); err != nil {
+		if err = StaticCheck(ctx.UserContext(), node); err != nil {
 			return nil, ctx.FileSet().ErrorWithPosition(err)
 		}
 	}
 
 	return node, nil
-}
-
-func staticCheck(userCtx interface{}, node Node) Error {
-	var staticCheckErr Error
-
-	Walk(node, func(n Node) bool {
-		if staticCheckableNode, ok := n.(StaticCheckable); ok {
-			if err := staticCheckableNode.StaticCheck(userCtx); err != nil {
-				staticCheckErr = err
-				return true
-			}
-		}
-
-		return false
-	})
-
-	return staticCheckErr
 }

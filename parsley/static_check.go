@@ -23,3 +23,21 @@ type StaticCheckableNode interface {
 	Node
 	StaticCheckable
 }
+
+// StaticCheck will run static checking on the given node
+func StaticCheck(userCtx interface{}, node Node) Error {
+	var staticCheckErr Error
+
+	Walk(node, func(n Node) bool {
+		if staticCheckableNode, ok := n.(StaticCheckable); ok {
+			if err := staticCheckableNode.StaticCheck(userCtx); err != nil {
+				staticCheckErr = err
+				return true
+			}
+		}
+
+		return false
+	})
+
+	return staticCheckErr
+}
