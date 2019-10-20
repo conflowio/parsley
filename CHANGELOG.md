@@ -1,3 +1,9 @@
+## 0.13.4
+
+IMPROVEMENTS:
+
+- Allow WsSpacesForceNl mode in RightTrim
+
 ## 0.13.3
 
 IMPROVEMENTS:
