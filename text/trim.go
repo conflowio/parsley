@@ -34,10 +34,6 @@ func LeftTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 
 // RightTrim reads and skips the whitespaces after any parser matches and updates the reader position
 func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
-	if wsMode == WsSpacesForceNl {
-		panic("WsSpacesForceNl whitespace mode is not supported in RightTrim")
-	}
-
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		if wsMode == WsNone {
 			return p.Parse(ctx, leftRecCtx, pos)
@@ -54,10 +50,14 @@ func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 		}
 
 		if res != nil {
+			var ok bool
 			res = ast.SetReaderPos(res, func(pos parsley.Pos) parsley.Pos {
-				pos, _ = tr.SkipWhitespaces(pos, wsMode)
+				pos, ok = tr.SkipWhitespaces(pos, wsMode)
 				return pos
 			})
+			if !ok {
+				return nil, data.EmptyIntSet, parsley.NewError(res.ReaderPos(), errors.New("was expecting a new line"))
+			}
 		}
 
 		return res, cp, nil

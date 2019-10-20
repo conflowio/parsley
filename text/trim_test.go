@@ -133,7 +133,7 @@ var _ = Describe("Trim parsers", func() {
 
 	var _ = Describe("RightTrim", func() {
 		BeforeEach(func() {
-			input = []byte("abc \t\n\f")
+			input = []byte("abc \t\n\fdef")
 			parserRes = nil
 		})
 
@@ -185,6 +185,19 @@ var _ = Describe("Trim parsers", func() {
 
 				It("should trim the spaces and new lines from the right", func() {
 					Expect(res.ReaderPos()).To(Equal(parsley.Pos(8)))
+				})
+			})
+
+			Context("when whitespace mode is forcing new lines", func() {
+				BeforeEach(func() {
+					p = terminal.Word("def", "def", "string")
+					pos = parsley.Pos(8)
+					wsMode = text.WsSpacesForceNl
+				})
+
+				It("should return with error", func() {
+					Expect(err.Error()).To(Equal("was expecting a new line"))
+					Expect(err.Pos()).To(Equal(parsley.Pos(11)))
 				})
 			})
 		})
