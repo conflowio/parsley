@@ -28,3 +28,14 @@ func (f Func) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Po
 func (f Func) Name(name string) Func {
 	return ReturnError(Func(f), fmt.Errorf("was expecting %s", name))
 }
+
+// FuncWrapper is a parser which wraps a parser function as a struct
+// It's useful when you have to use a parser recursively as that's not possible with functions
+type FuncWrapper struct {
+	F Func
+}
+
+// Parse parses the input using the function
+func (f FuncWrapper) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
+	return f.F(ctx, leftRecCtx, pos)
+}
