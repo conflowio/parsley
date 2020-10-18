@@ -8,6 +8,7 @@ package terminal
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -72,7 +73,7 @@ func Op(op string) parser.Func {
 		panic("Op() should not be called with empty string")
 	}
 
-	notFoundErr := fmt.Errorf("was expecting %q", op)
+	notFoundErr := parsley.NotFoundError(strconv.Quote(op))
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

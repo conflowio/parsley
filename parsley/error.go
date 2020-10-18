@@ -84,3 +84,15 @@ var emptyWhitespaceError whitespaceError
 func IsWhitespaceError(err error) bool {
 	return errors.As(err, &emptyWhitespaceError)
 }
+
+type NotFoundError string
+
+func (n NotFoundError) Error() string {
+	return fmt.Sprintf("was expecting %s", string(n))
+}
+
+var emptyNotFoundError NotFoundError
+
+func IsNotFoundError(err error) bool {
+	return errors.As(err, &emptyNotFoundError)
+}

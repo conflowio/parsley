@@ -7,8 +7,6 @@
 package combinator
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -67,7 +65,7 @@ func (s *Sequence) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsl
 // Name overrides the returned error if its position is the same as the reader's position
 // The error will be: "was expecting <name>"
 func (s *Sequence) Name(name string) *Sequence {
-	s.customErr = fmt.Errorf("was expecting %s", name)
+	s.customErr = parsley.NotFoundError(name)
 	return s
 }
 

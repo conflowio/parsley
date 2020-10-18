@@ -7,7 +7,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -73,7 +72,7 @@ func (f *FloatNode) String() string {
 
 // Float matches a float literal
 func Float() parser.Func {
-	notFoundErr := errors.New("was expecting float value")
+	notFoundErr := parsley.NotFoundError("float value")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

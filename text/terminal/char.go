@@ -7,7 +7,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -73,7 +72,7 @@ func (c *CharNode) String() string {
 
 // Char matches a character literal enclosed in single quotes
 func Char() parser.Func {
-	notFoundErr := errors.New("was expecting char literal")
+	notFoundErr := parsley.NotFoundError("char literal")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
