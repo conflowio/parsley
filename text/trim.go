@@ -7,8 +7,6 @@
 package text
 
 import (
-	"errors"
-
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parser"
@@ -17,28 +15,21 @@ import (
 
 // LeftTrim skips the whitespaces before it tries to match the given parser
 func LeftTrim(p parsley.Parser, wsMode WsMode) parser.Func {
-	notFoundErr := errors.New("was expecting a new line")
+	return func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
+		tr := ctx.Reader().(*Reader)
 
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
-		if wsMode == WsNone {
-			return p.Parse(ctx, leftRecCtx, pos)
+		pos, wsErr := tr.SkipWhitespaces(pos, wsMode)
+		if wsErr != nil {
+			return nil, data.EmptyIntSet, wsErr
 		}
 
-		pos, ok := ctx.Reader().(*Reader).SkipWhitespaces(pos, wsMode)
-		if !ok {
-			return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
-		}
 		return p.Parse(ctx, leftRecCtx, pos)
-	})
+	}
 }
 
 // RightTrim reads and skips the whitespaces after any parser matches and updates the reader position
 func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
-	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
-		if wsMode == WsNone {
-			return p.Parse(ctx, leftRecCtx, pos)
-		}
-
+	return func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*Reader)
 		res, cp, err := p.Parse(ctx, leftRecCtx, pos)
 		if err != nil {
@@ -50,18 +41,18 @@ func RightTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 		}
 
 		if res != nil {
-			var ok bool
+			var wsErr parsley.Error
 			res = ast.SetReaderPos(res, func(pos parsley.Pos) parsley.Pos {
-				pos, ok = tr.SkipWhitespaces(pos, wsMode)
+				pos, wsErr = tr.SkipWhitespaces(pos, wsMode)
 				return pos
 			})
-			if !ok {
-				return nil, data.EmptyIntSet, parsley.NewError(res.ReaderPos(), errors.New("was expecting a new line"))
+			if wsErr != nil {
+				return nil, data.EmptyIntSet, wsErr
 			}
 		}
 
 		return res, cp, nil
-	})
+	}
 }
 
 // Trim removes all whitespaces before and after the result token

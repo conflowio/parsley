@@ -45,11 +45,11 @@ var _ = Describe("Trim parsers", func() {
 	BeforeEach(func() {
 		fakep = &parsleyfakes.FakeParser{}
 		p = fakep
-		wsMode = text.WsNone
+		wsMode = text.WsSpacesNl
 		pos = parsley.Pos(1)
 		leftRectCtx = data.EmptyIntMap.Inc(1)
 		parserRes = &parsleyfakes.FakeNode{}
-		parserErr = parsley.NewErrorf(parsley.Pos(1), "some error")
+		parserErr = nil
 		parserCP = data.EmptyIntSet.Insert(1)
 	})
 
@@ -80,9 +80,9 @@ var _ = Describe("Trim parsers", func() {
 				wsMode = text.WsNone
 			})
 
-			It("skips no spaces", func() {
-				_, _, passedPos := fakep.ParseArgsForCall(0)
-				Expect(passedPos).To(Equal(pos))
+			It("returns an error", func() {
+				Expect(fakep.ParseCallCount()).To(Equal(0))
+				Expect(err).To(MatchError(parsley.NewErrorf(pos, "whitespaces are not allowed")))
 			})
 		})
 
@@ -91,9 +91,9 @@ var _ = Describe("Trim parsers", func() {
 				wsMode = text.WsSpaces
 			})
 
-			It("should trim the spaces from the left", func() {
-				_, _, passedPos := fakep.ParseArgsForCall(0)
-				Expect(passedPos).To(Equal(pos + 2))
+			It("should trim all whitespaces from the left and return an error", func() {
+				Expect(fakep.ParseCallCount()).To(Equal(0))
+				Expect(err).To(MatchError(parsley.NewErrorf(pos + 2, "new line is not allowed")))
 			})
 		})
 
@@ -153,51 +153,68 @@ var _ = Describe("Trim parsers", func() {
 			Expect(cp).To(Equal(parserCP))
 		})
 
-		Context("When there is result", func() {
-			BeforeEach(func() {
-				p = terminal.Word("abc", "abc", "string")
-			})
+		When("there is result", func() {
 
-			Context("when whitespace mode is no whitespaces", func() {
-				BeforeEach(func() {
-					wsMode = text.WsNone
-				})
-
-				It("skips no spaces", func() {
-					Expect(res.ReaderPos()).To(Equal(parsley.Pos(4)))
-				})
-			})
-
-			Context("when whitespace mode is spaces", func() {
-				BeforeEach(func() {
-					wsMode = text.WsSpaces
-				})
-
-				It("should trim the spaces from the right", func() {
-					Expect(res.ReaderPos()).To(Equal(parsley.Pos(6)))
-				})
-			})
-
-			Context("when whitespace mode is spaces and new lines", func() {
-				BeforeEach(func() {
-					wsMode = text.WsSpacesNl
-				})
-
-				It("should trim the spaces and new lines from the right", func() {
-					Expect(res.ReaderPos()).To(Equal(parsley.Pos(8)))
-				})
-			})
-
-			Context("when whitespace mode is forcing new lines", func() {
+			When("there are no whitespaces after the match", func() {
 				BeforeEach(func() {
 					p = terminal.Word("def", "def", "string")
 					pos = parsley.Pos(8)
-					wsMode = text.WsSpacesForceNl
 				})
 
-				It("should return with error", func() {
-					Expect(err.Error()).To(Equal("was expecting a new line"))
-					Expect(err.Pos()).To(Equal(parsley.Pos(11)))
+				It("should return the result", func() {
+					Expect(res.ReaderPos()).To(Equal(parsley.Pos(11)))
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			When("there are whitespaces after the match", func() {
+				BeforeEach(func() {
+					p = terminal.Word("abc", "abc", "string")
+					pos = parsley.Pos(1)
+				})
+
+
+				Context("when whitespace mode is no whitespaces", func() {
+					BeforeEach(func() {
+						wsMode = text.WsNone
+					})
+
+					It("should return an error", func() {
+						Expect(err).To(MatchError(parsley.NewErrorf(pos + 3, "whitespaces are not allowed")))
+					})
+				})
+
+				Context("when whitespace mode is spaces", func() {
+					BeforeEach(func() {
+						wsMode = text.WsSpaces
+					})
+
+					It("should return an error", func() {
+						Expect(err).To(MatchError(parsley.NewErrorf(pos + 5, "new line is not allowed")))
+					})
+				})
+
+				Context("when whitespace mode is spaces and new lines", func() {
+					BeforeEach(func() {
+						wsMode = text.WsSpacesNl
+					})
+
+					It("should trim the spaces and new lines from the right", func() {
+						Expect(res.ReaderPos()).To(Equal(parsley.Pos(8)))
+					})
+				})
+
+				Context("when whitespace mode is forcing new lines", func() {
+					BeforeEach(func() {
+						p = terminal.Word("def", "def", "string")
+						pos = parsley.Pos(8)
+						wsMode = text.WsSpacesForceNl
+					})
+
+					It("should return with error", func() {
+						Expect(err.Error()).To(Equal("was expecting a new line"))
+						Expect(err.Pos()).To(Equal(parsley.Pos(11)))
+					})
 				})
 			})
 		})
@@ -213,8 +230,8 @@ var _ = Describe("Trim parsers", func() {
 					wsMode = text.WsNone
 				})
 
-				It("skips no spaces", func() {
-					Expect(err).To(Equal(parserErr))
+				It("returns the error at the position of the whitespaces", func() {
+					Expect(err).To(MatchError(parsley.NewError(parsley.Pos(8), parserErr.Cause())))
 				})
 			})
 
@@ -223,9 +240,9 @@ var _ = Describe("Trim parsers", func() {
 					wsMode = text.WsSpaces
 				})
 
-				It("should trim the spaces from the right", func() {
+				It("should trim all whitespaces from the right", func() {
 					Expect(err.Error()).To(Equal("some error"))
-					Expect(err.Pos()).To(Equal(parsley.Pos(6)))
+					Expect(err.Pos()).To(Equal(parsley.Pos(8)))
 				})
 			})
 

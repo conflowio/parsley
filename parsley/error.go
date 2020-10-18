@@ -7,6 +7,7 @@
 package parsley
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -65,4 +66,21 @@ func (e err) Cause() error {
 // Unwrap returns the wrapped error
 func (e err) Unwrap() error {
 	return e.cause
+}
+
+type whitespaceError string
+
+func (w whitespaceError) Error() string {
+	return string(w)
+}
+
+// NewWhitespaceError creates a new whitespace error
+func NewWhitespaceError(msg string) error {
+	return whitespaceError(msg)
+}
+
+var emptyWhitespaceError whitespaceError
+
+func IsWhitespaceError(err error) bool {
+	return errors.As(err, &emptyWhitespaceError)
 }
