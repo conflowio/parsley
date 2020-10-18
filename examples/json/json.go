@@ -36,7 +36,7 @@ func main() {
 
 	reader := text.NewReader(file)
 	ctx := parsley.NewContext(fs, reader)
-	s := combinator.Sentence(json.NewParser())
+	s := combinator.Sentence(text.Trim(json.NewParser()))
 
 	res, evalErr := parsley.Evaluate(ctx, s)
 	if evalErr != nil {
