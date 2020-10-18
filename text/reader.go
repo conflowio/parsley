@@ -165,26 +165,28 @@ func (r *Reader) IsEOF(pos parsley.Pos) bool {
 	return int(pos)-r.file.offset >= r.file.len
 }
 
-// SkipWhitespaces skips the given whitespaces all the whitespaces
-func (r *Reader) SkipWhitespaces(pos parsley.Pos, wsMode WsMode) (parsley.Pos, bool) {
+// SkipWhitespaces skips all the whitespaces and returns true if it only encountered the required whitespace characters
+func (r *Reader) SkipWhitespaces(pos parsley.Pos, wsMode WsMode) (parsley.Pos, parsley.Error) {
 	cur := int(pos) - r.file.offset
-	ok := wsMode != WsSpacesForceNl
-	switch wsMode {
-	case WsSpacesNl:
-		fallthrough
-	case WsSpacesForceNl:
-		for cur < r.file.len && (r.file.data[cur] == ' ' || r.file.data[cur] == '\t' || r.file.data[cur] == '\n' || r.file.data[cur] == '\f') {
-			if r.file.data[cur] == '\n' || r.file.data[cur] == '\f' {
-				ok = true
-			}
-			cur++
+
+	var nlPos parsley.Pos
+	for cur < r.file.len && (r.file.data[cur] == ' ' || r.file.data[cur] == '\t' || r.file.data[cur] == '\n' || r.file.data[cur] == '\f') {
+		if (r.file.data[cur] == '\n' || r.file.data[cur] == '\f') && nlPos == 0 {
+			nlPos = r.file.Pos(cur)
 		}
-	case WsSpaces:
-		for cur < r.file.len && (r.file.data[cur] == ' ' || r.file.data[cur] == '\t') {
-			cur++
-		}
+		cur++
 	}
-	return r.file.Pos(cur), ok
+
+	switch {
+	case wsMode == WsNone && cur > int(pos) - r.file.offset:
+		return r.file.Pos(cur), parsley.NewError(pos, fmt.Errorf("whitespaces are not allowed"))
+	case wsMode == WsSpacesForceNl && nlPos == 0:
+		return r.file.Pos(cur), parsley.NewError(r.file.Pos(cur), fmt.Errorf("was expecting a new line"))
+	case wsMode == WsSpaces && nlPos > 0:
+		return r.file.Pos(cur), parsley.NewError(nlPos, fmt.Errorf("new line is not allowed"))
+	}
+
+	return r.file.Pos(cur), nil
 }
 
 // Pos returns with the global position for the given cursor
