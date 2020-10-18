@@ -64,7 +64,7 @@ var _ = Describe("TimeDuration", func() {
 			res, curtailingParsers, err := p.Parse(ctx, data.EmptyIntMap, f.Pos(startPos))
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).To(HaveOccurred())
-			Expect(err.Cause()).To(MatchError("was expecting a valid time duration"))
+			Expect(err.Cause()).To(MatchError("was expecting time duration"))
 			Expect(err.Pos()).To(Equal(f.Pos(startPos)))
 			Expect(res).To(BeNil())
 		},

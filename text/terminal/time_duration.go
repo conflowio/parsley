@@ -7,7 +7,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -75,7 +74,7 @@ func (t *TimeDurationNode) String() string {
 // each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
 // Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 func TimeDuration() parser.Func {
-	notFoundErr := errors.New("was expecting a valid time duration")
+	notFoundErr := parsley.NewNotFoundError("time duration")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

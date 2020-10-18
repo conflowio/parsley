@@ -70,7 +70,7 @@ func Nil(nilStr string) parser.Func {
 		panic("Nil() should not be called with an empty nil string")
 	}
 
-	notFoundErr := fmt.Errorf("was expecting %s", nilStr)
+	notFoundErr := parsley.NewNotFoundError(nilStr)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

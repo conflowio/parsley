@@ -75,7 +75,7 @@ func Bool(trueStr string, falseStr string) parser.Func {
 		panic("Bool() should not be called with an empty true/false string")
 	}
 
-	notFoundErr := fmt.Errorf("was expecting %s or %s", trueStr, falseStr)
+	notFoundErr := parsley.NewNotFoundError("boolean")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

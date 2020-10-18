@@ -178,12 +178,12 @@ func (r *Reader) SkipWhitespaces(pos parsley.Pos, wsMode WsMode) (parsley.Pos, p
 	}
 
 	switch {
-	case wsMode == WsNone && cur > int(pos) - r.file.offset:
-		return r.file.Pos(cur), parsley.NewError(pos, fmt.Errorf("whitespaces are not allowed"))
+	case wsMode == WsNone && cur > int(pos)-r.file.offset:
+		return r.file.Pos(cur), parsley.NewError(pos, parsley.NewWhitespaceError("whitespaces are not allowed"))
 	case wsMode == WsSpacesForceNl && nlPos == 0:
-		return r.file.Pos(cur), parsley.NewError(r.file.Pos(cur), fmt.Errorf("was expecting a new line"))
+		return r.file.Pos(cur), parsley.NewError(r.file.Pos(cur), parsley.NewWhitespaceError("was expecting a new line"))
 	case wsMode == WsSpaces && nlPos > 0:
-		return r.file.Pos(cur), parsley.NewError(nlPos, fmt.Errorf("new line is not allowed"))
+		return r.file.Pos(cur), parsley.NewError(nlPos, parsley.NewWhitespaceError("new line is not allowed"))
 	}
 
 	return r.file.Pos(cur), nil

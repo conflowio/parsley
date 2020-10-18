@@ -81,8 +81,7 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("returns an error", func() {
-				Expect(fakep.ParseCallCount()).To(Equal(0))
-				Expect(err).To(MatchError(parsley.NewErrorf(pos, "whitespaces are not allowed")))
+				expectWhiteSpaceError(err, pos, "whitespaces are not allowed")
 			})
 		})
 
@@ -92,8 +91,7 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("should trim all whitespaces from the left and return an error", func() {
-				Expect(fakep.ParseCallCount()).To(Equal(0))
-				Expect(err).To(MatchError(parsley.NewErrorf(pos + 2, "new line is not allowed")))
+				expectWhiteSpaceError(err, pos+2, "new line is not allowed")
 			})
 		})
 
@@ -126,7 +124,8 @@ var _ = Describe("Trim parsers", func() {
 			})
 
 			It("should return an error", func() {
-				Expect(err).To(MatchError(parsley.NewErrorf(parsley.Pos(10), "was expecting a new line")))
+				expectWhiteSpaceError(err, parsley.Pos(10), "was expecting a new line")
+
 			})
 		})
 	})
@@ -173,14 +172,13 @@ var _ = Describe("Trim parsers", func() {
 					pos = parsley.Pos(1)
 				})
 
-
 				Context("when whitespace mode is no whitespaces", func() {
 					BeforeEach(func() {
 						wsMode = text.WsNone
 					})
 
 					It("should return an error", func() {
-						Expect(err).To(MatchError(parsley.NewErrorf(pos + 3, "whitespaces are not allowed")))
+						expectWhiteSpaceError(err, pos+3, "whitespaces are not allowed")
 					})
 				})
 
@@ -190,7 +188,7 @@ var _ = Describe("Trim parsers", func() {
 					})
 
 					It("should return an error", func() {
-						Expect(err).To(MatchError(parsley.NewErrorf(pos + 5, "new line is not allowed")))
+						expectWhiteSpaceError(err, pos+5, "new line is not allowed")
 					})
 				})
 
@@ -280,3 +278,9 @@ var _ = Describe("Trim parsers", func() {
 		})
 	})
 })
+
+func expectWhiteSpaceError(err error, pos parsley.Pos, msg string) {
+	Expect(err).To(MatchError(parsley.NewError(
+		pos, parsley.NewWhitespaceError(msg),
+	)))
+}

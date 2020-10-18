@@ -18,12 +18,37 @@ func LeftTrim(p parsley.Parser, wsMode WsMode) parser.Func {
 	return func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*Reader)
 
+		originalPos := pos
+
 		pos, wsErr := tr.SkipWhitespaces(pos, wsMode)
+
+		res, cp, err := p.Parse(ctx, leftRecCtx, pos)
+
+		if ctxErr := ctx.Error(); ctxErr != nil {
+			if ctxErr.Pos() == pos && parsley.IsNotFoundError(ctxErr) {
+				ctx.SetError(parsley.NewError(originalPos, ctxErr.Cause()))
+			}
+		}
+
+		if err != nil {
+			if wsErr != nil {
+				if err.Pos() > pos {
+					return nil, data.EmptyIntSet, wsErr
+				}
+
+				if parsley.IsNotFoundError(err) {
+					return res, cp, parsley.NewError(originalPos, err.Cause())
+				}
+			}
+
+			return res, cp, err
+		}
+
 		if wsErr != nil {
 			return nil, data.EmptyIntSet, wsErr
 		}
 
-		return p.Parse(ctx, leftRecCtx, pos)
+		return res, cp, nil
 	}
 }
 

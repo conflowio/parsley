@@ -7,7 +7,7 @@
 package terminal
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/opsidian/parsley/ast"
@@ -23,7 +23,7 @@ func Word(word string, value interface{}, valueType string) parser.Func {
 		panic("Word() should not be called with empty word")
 	}
 
-	notFoundErr := fmt.Errorf("was expecting %q", word)
+	notFoundErr := parsley.NewNotFoundError(strconv.Quote(word))
 	token := strings.ToUpper(word)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {

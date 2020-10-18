@@ -21,7 +21,7 @@ import (
 // The includeWhitespaces variable should be true if the reader is by default ignoring the whitespaces but you need to match those as well.
 // If you are using capturing groups you can select which group to use as a value with the groupIdex variable.
 func Regexp(token string, name string, regexp string, groupIndex int) parser.Func {
-	notFoundErr := fmt.Errorf("was expecting %s", name)
+	notFoundErr := parsley.NewNotFoundError(name)
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

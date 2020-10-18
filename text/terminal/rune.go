@@ -7,7 +7,7 @@
 package terminal
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/opsidian/parsley/ast"
 	"github.com/opsidian/parsley/data"
@@ -18,7 +18,7 @@ import (
 
 // Rune matches the given character
 func Rune(ch rune) parser.Func {
-	notFoundErr := fmt.Errorf("was expecting %q", string(ch))
+	notFoundErr := parsley.NewNotFoundError(strconv.Quote(string(ch)))
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

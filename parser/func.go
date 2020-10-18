@@ -8,8 +8,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/opsidian/parsley/data"
 	"github.com/opsidian/parsley/parsley"
 )
@@ -26,7 +24,7 @@ func (f Func) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Po
 // if its position is the same as the reader's position
 // The error will be: "was expecting <name>"
 func (f Func) Name(name string) Func {
-	return ReturnError(Func(f), fmt.Errorf("was expecting %s", name))
+	return ReturnError(Func(f), parsley.NewNotFoundError(name))
 }
 
 // FuncWrapper is a parser which wraps a parser function as a struct

@@ -7,7 +7,6 @@
 package text_test
 
 import (
-	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -483,7 +482,7 @@ var _ = Describe("Reader", func() {
 			It("should return an error", func() {
 				pos, err := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
 				Expect(pos).To(Equal(f.Pos(7)))
-				Expect(err).To(MatchError(parsley.NewError(f.Pos(5), errors.New("new line is not allowed"))))
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(5), parsley.NewWhitespaceError("new line is not allowed"))))
 			})
 		})
 
@@ -491,7 +490,7 @@ var _ = Describe("Reader", func() {
 			It("should return an error", func() {
 				pos, err := r.SkipWhitespaces(f.Pos(3), text.WsNone)
 				Expect(pos).To(Equal(f.Pos(7)))
-				Expect(err).To(MatchError(parsley.NewError(f.Pos(3), errors.New("whitespaces are not allowed"))))
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(3), parsley.NewWhitespaceError("whitespaces are not allowed"))))
 			})
 		})
 
@@ -505,7 +504,7 @@ var _ = Describe("Reader", func() {
 			It("should not match spaces and tabs only", func() {
 				pos, err := r.SkipWhitespaces(f.Pos(10), text.WsSpacesForceNl)
 				Expect(pos).To(Equal(f.Pos(12)))
-				Expect(err).To(MatchError(parsley.NewError(f.Pos(12), errors.New("was expecting a new line"))))
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(12), parsley.NewWhitespaceError("was expecting a new line"))))
 			})
 		})
 	})

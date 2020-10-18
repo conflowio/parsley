@@ -7,7 +7,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"unicode/utf8"
@@ -74,7 +73,7 @@ func (s *StringNode) String() string {
 
 // String matches a string literal enclosed in double quotes
 func String(allowBackquote bool) parser.Func {
-	notFoundErr := errors.New("was expecting string literal")
+	notFoundErr := parsley.NewNotFoundError("string literal")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

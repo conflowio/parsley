@@ -7,6 +7,7 @@
 package parsley
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -66,6 +67,11 @@ func (e err) Cause() error {
 	return e.cause
 }
 
+// Unwrap returns the wrapped error
+func (e err) Unwrap() error {
+	return e.cause
+}
+
 // WrapError wraps the given error in a error
 // If format contains the "{{err}}" placeholder it will be replaced with the original error message
 func WrapError(e Error, format string, values ...interface{}) Error {
@@ -78,4 +84,41 @@ func WrapError(e Error, format string, values ...interface{}) Error {
 		pos:   e.Pos(),
 		msg:   strings.Replace(msg, "{{err}}", e.Error(), -1),
 	}
+}
+
+type NotFoundErr string
+
+func (n NotFoundErr) Name() string {
+	return string(n)
+}
+
+func (n NotFoundErr) Error() string {
+	return fmt.Sprintf("was expecting %s", string(n))
+}
+
+// NewNotFoundError creates a new error which means the parser couldn't find a beginning of a match
+func NewNotFoundError(name string) NotFoundErr {
+	return NotFoundErr(name)
+}
+
+func IsNotFoundError(err error) bool {
+	var nfe NotFoundErr
+	return errors.As(err, &nfe)
+}
+
+type whitespaceError struct {
+	msg string
+}
+
+func (w whitespaceError) Error() string {
+	return w.msg
+}
+
+// NewWhitespaceError creates a new whitespace error
+func NewWhitespaceError(msg string) error {
+	return whitespaceError{msg: msg}
+}
+
+func IsWhitespaceError(err error) bool {
+	return errors.As(err, &whitespaceError{})
 }
