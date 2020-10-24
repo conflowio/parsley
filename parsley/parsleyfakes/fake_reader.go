@@ -8,6 +8,17 @@ import (
 )
 
 type FakeReader struct {
+	IsEOFStub        func(parsley.Pos) bool
+	isEOFMutex       sync.RWMutex
+	isEOFArgsForCall []struct {
+		arg1 parsley.Pos
+	}
+	isEOFReturns struct {
+		result1 bool
+	}
+	isEOFReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	PosStub        func(int) parsley.Pos
 	posMutex       sync.RWMutex
 	posArgsForCall []struct {
@@ -30,19 +41,68 @@ type FakeReader struct {
 	remainingReturnsOnCall map[int]struct {
 		result1 int
 	}
-	IsEOFStub        func(parsley.Pos) bool
-	isEOFMutex       sync.RWMutex
-	isEOFArgsForCall []struct {
-		arg1 parsley.Pos
-	}
-	isEOFReturns struct {
-		result1 bool
-	}
-	isEOFReturnsOnCall map[int]struct {
-		result1 bool
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeReader) IsEOF(arg1 parsley.Pos) bool {
+	fake.isEOFMutex.Lock()
+	ret, specificReturn := fake.isEOFReturnsOnCall[len(fake.isEOFArgsForCall)]
+	fake.isEOFArgsForCall = append(fake.isEOFArgsForCall, struct {
+		arg1 parsley.Pos
+	}{arg1})
+	fake.recordInvocation("IsEOF", []interface{}{arg1})
+	fake.isEOFMutex.Unlock()
+	if fake.IsEOFStub != nil {
+		return fake.IsEOFStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.isEOFReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeReader) IsEOFCallCount() int {
+	fake.isEOFMutex.RLock()
+	defer fake.isEOFMutex.RUnlock()
+	return len(fake.isEOFArgsForCall)
+}
+
+func (fake *FakeReader) IsEOFCalls(stub func(parsley.Pos) bool) {
+	fake.isEOFMutex.Lock()
+	defer fake.isEOFMutex.Unlock()
+	fake.IsEOFStub = stub
+}
+
+func (fake *FakeReader) IsEOFArgsForCall(i int) parsley.Pos {
+	fake.isEOFMutex.RLock()
+	defer fake.isEOFMutex.RUnlock()
+	argsForCall := fake.isEOFArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeReader) IsEOFReturns(result1 bool) {
+	fake.isEOFMutex.Lock()
+	defer fake.isEOFMutex.Unlock()
+	fake.IsEOFStub = nil
+	fake.isEOFReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeReader) IsEOFReturnsOnCall(i int, result1 bool) {
+	fake.isEOFMutex.Lock()
+	defer fake.isEOFMutex.Unlock()
+	fake.IsEOFStub = nil
+	if fake.isEOFReturnsOnCall == nil {
+		fake.isEOFReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.isEOFReturnsOnCall[i] = struct {
+		result1 bool
+	}{result1}
 }
 
 func (fake *FakeReader) Pos(arg1 int) parsley.Pos {
@@ -59,7 +119,8 @@ func (fake *FakeReader) Pos(arg1 int) parsley.Pos {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.posReturns.result1
+	fakeReturns := fake.posReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeReader) PosCallCount() int {
@@ -68,13 +129,22 @@ func (fake *FakeReader) PosCallCount() int {
 	return len(fake.posArgsForCall)
 }
 
+func (fake *FakeReader) PosCalls(stub func(int) parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
+	fake.PosStub = stub
+}
+
 func (fake *FakeReader) PosArgsForCall(i int) int {
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
-	return fake.posArgsForCall[i].arg1
+	argsForCall := fake.posArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeReader) PosReturns(result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	fake.posReturns = struct {
 		result1 parsley.Pos
@@ -82,6 +152,8 @@ func (fake *FakeReader) PosReturns(result1 parsley.Pos) {
 }
 
 func (fake *FakeReader) PosReturnsOnCall(i int, result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	if fake.posReturnsOnCall == nil {
 		fake.posReturnsOnCall = make(map[int]struct {
@@ -107,7 +179,8 @@ func (fake *FakeReader) Remaining(arg1 parsley.Pos) int {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.remainingReturns.result1
+	fakeReturns := fake.remainingReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeReader) RemainingCallCount() int {
@@ -116,13 +189,22 @@ func (fake *FakeReader) RemainingCallCount() int {
 	return len(fake.remainingArgsForCall)
 }
 
+func (fake *FakeReader) RemainingCalls(stub func(parsley.Pos) int) {
+	fake.remainingMutex.Lock()
+	defer fake.remainingMutex.Unlock()
+	fake.RemainingStub = stub
+}
+
 func (fake *FakeReader) RemainingArgsForCall(i int) parsley.Pos {
 	fake.remainingMutex.RLock()
 	defer fake.remainingMutex.RUnlock()
-	return fake.remainingArgsForCall[i].arg1
+	argsForCall := fake.remainingArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeReader) RemainingReturns(result1 int) {
+	fake.remainingMutex.Lock()
+	defer fake.remainingMutex.Unlock()
 	fake.RemainingStub = nil
 	fake.remainingReturns = struct {
 		result1 int
@@ -130,6 +212,8 @@ func (fake *FakeReader) RemainingReturns(result1 int) {
 }
 
 func (fake *FakeReader) RemainingReturnsOnCall(i int, result1 int) {
+	fake.remainingMutex.Lock()
+	defer fake.remainingMutex.Unlock()
 	fake.RemainingStub = nil
 	if fake.remainingReturnsOnCall == nil {
 		fake.remainingReturnsOnCall = make(map[int]struct {
@@ -141,63 +225,15 @@ func (fake *FakeReader) RemainingReturnsOnCall(i int, result1 int) {
 	}{result1}
 }
 
-func (fake *FakeReader) IsEOF(arg1 parsley.Pos) bool {
-	fake.isEOFMutex.Lock()
-	ret, specificReturn := fake.isEOFReturnsOnCall[len(fake.isEOFArgsForCall)]
-	fake.isEOFArgsForCall = append(fake.isEOFArgsForCall, struct {
-		arg1 parsley.Pos
-	}{arg1})
-	fake.recordInvocation("IsEOF", []interface{}{arg1})
-	fake.isEOFMutex.Unlock()
-	if fake.IsEOFStub != nil {
-		return fake.IsEOFStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.isEOFReturns.result1
-}
-
-func (fake *FakeReader) IsEOFCallCount() int {
-	fake.isEOFMutex.RLock()
-	defer fake.isEOFMutex.RUnlock()
-	return len(fake.isEOFArgsForCall)
-}
-
-func (fake *FakeReader) IsEOFArgsForCall(i int) parsley.Pos {
-	fake.isEOFMutex.RLock()
-	defer fake.isEOFMutex.RUnlock()
-	return fake.isEOFArgsForCall[i].arg1
-}
-
-func (fake *FakeReader) IsEOFReturns(result1 bool) {
-	fake.IsEOFStub = nil
-	fake.isEOFReturns = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *FakeReader) IsEOFReturnsOnCall(i int, result1 bool) {
-	fake.IsEOFStub = nil
-	if fake.isEOFReturnsOnCall == nil {
-		fake.isEOFReturnsOnCall = make(map[int]struct {
-			result1 bool
-		})
-	}
-	fake.isEOFReturnsOnCall[i] = struct {
-		result1 bool
-	}{result1}
-}
-
 func (fake *FakeReader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.isEOFMutex.RLock()
+	defer fake.isEOFMutex.RUnlock()
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
 	fake.remainingMutex.RLock()
 	defer fake.remainingMutex.RUnlock()
-	fake.isEOFMutex.RLock()
-	defer fake.isEOFMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

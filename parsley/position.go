@@ -9,7 +9,7 @@ package parsley
 import "fmt"
 
 // Position is an interface to translate a file position to a string
-//go:generate counterfeiter . Position
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Position
 type Position interface {
 	fmt.Stringer
 }

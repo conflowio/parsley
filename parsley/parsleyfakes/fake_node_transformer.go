@@ -8,11 +8,11 @@ import (
 )
 
 type FakeNodeTransformer struct {
-	TransformNodeStub        func(userCtx interface{}, node parsley.Node) (parsley.Node, parsley.Error)
+	TransformNodeStub        func(interface{}, parsley.Node) (parsley.Node, parsley.Error)
 	transformNodeMutex       sync.RWMutex
 	transformNodeArgsForCall []struct {
-		userCtx interface{}
-		node    parsley.Node
+		arg1 interface{}
+		arg2 parsley.Node
 	}
 	transformNodeReturns struct {
 		result1 parsley.Node
@@ -26,22 +26,23 @@ type FakeNodeTransformer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNodeTransformer) TransformNode(userCtx interface{}, node parsley.Node) (parsley.Node, parsley.Error) {
+func (fake *FakeNodeTransformer) TransformNode(arg1 interface{}, arg2 parsley.Node) (parsley.Node, parsley.Error) {
 	fake.transformNodeMutex.Lock()
 	ret, specificReturn := fake.transformNodeReturnsOnCall[len(fake.transformNodeArgsForCall)]
 	fake.transformNodeArgsForCall = append(fake.transformNodeArgsForCall, struct {
-		userCtx interface{}
-		node    parsley.Node
-	}{userCtx, node})
-	fake.recordInvocation("TransformNode", []interface{}{userCtx, node})
+		arg1 interface{}
+		arg2 parsley.Node
+	}{arg1, arg2})
+	fake.recordInvocation("TransformNode", []interface{}{arg1, arg2})
 	fake.transformNodeMutex.Unlock()
 	if fake.TransformNodeStub != nil {
-		return fake.TransformNodeStub(userCtx, node)
+		return fake.TransformNodeStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.transformNodeReturns.result1, fake.transformNodeReturns.result2
+	fakeReturns := fake.transformNodeReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeNodeTransformer) TransformNodeCallCount() int {
@@ -50,13 +51,22 @@ func (fake *FakeNodeTransformer) TransformNodeCallCount() int {
 	return len(fake.transformNodeArgsForCall)
 }
 
+func (fake *FakeNodeTransformer) TransformNodeCalls(stub func(interface{}, parsley.Node) (parsley.Node, parsley.Error)) {
+	fake.transformNodeMutex.Lock()
+	defer fake.transformNodeMutex.Unlock()
+	fake.TransformNodeStub = stub
+}
+
 func (fake *FakeNodeTransformer) TransformNodeArgsForCall(i int) (interface{}, parsley.Node) {
 	fake.transformNodeMutex.RLock()
 	defer fake.transformNodeMutex.RUnlock()
-	return fake.transformNodeArgsForCall[i].userCtx, fake.transformNodeArgsForCall[i].node
+	argsForCall := fake.transformNodeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeNodeTransformer) TransformNodeReturns(result1 parsley.Node, result2 parsley.Error) {
+	fake.transformNodeMutex.Lock()
+	defer fake.transformNodeMutex.Unlock()
 	fake.TransformNodeStub = nil
 	fake.transformNodeReturns = struct {
 		result1 parsley.Node
@@ -65,6 +75,8 @@ func (fake *FakeNodeTransformer) TransformNodeReturns(result1 parsley.Node, resu
 }
 
 func (fake *FakeNodeTransformer) TransformNodeReturnsOnCall(i int, result1 parsley.Node, result2 parsley.Error) {
+	fake.transformNodeMutex.Lock()
+	defer fake.transformNodeMutex.Unlock()
 	fake.TransformNodeStub = nil
 	if fake.transformNodeReturnsOnCall == nil {
 		fake.transformNodeReturnsOnCall = make(map[int]struct {

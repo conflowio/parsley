@@ -8,16 +8,15 @@ import (
 )
 
 type FakeFile struct {
-	PositionStub        func(int) parsley.Position
-	positionMutex       sync.RWMutex
-	positionArgsForCall []struct {
-		arg1 int
+	LenStub        func() int
+	lenMutex       sync.RWMutex
+	lenArgsForCall []struct {
 	}
-	positionReturns struct {
-		result1 parsley.Position
+	lenReturns struct {
+		result1 int
 	}
-	positionReturnsOnCall map[int]struct {
-		result1 parsley.Position
+	lenReturnsOnCall map[int]struct {
+		result1 int
 	}
 	PosStub        func(int) parsley.Pos
 	posMutex       sync.RWMutex
@@ -30,14 +29,16 @@ type FakeFile struct {
 	posReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
-	LenStub        func() int
-	lenMutex       sync.RWMutex
-	lenArgsForCall []struct{}
-	lenReturns     struct {
-		result1 int
+	PositionStub        func(int) parsley.Position
+	positionMutex       sync.RWMutex
+	positionArgsForCall []struct {
+		arg1 int
 	}
-	lenReturnsOnCall map[int]struct {
-		result1 int
+	positionReturns struct {
+		result1 parsley.Position
+	}
+	positionReturnsOnCall map[int]struct {
+		result1 parsley.Position
 	}
 	SetOffsetStub        func(int)
 	setOffsetMutex       sync.RWMutex
@@ -48,51 +49,55 @@ type FakeFile struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeFile) Position(arg1 int) parsley.Position {
-	fake.positionMutex.Lock()
-	ret, specificReturn := fake.positionReturnsOnCall[len(fake.positionArgsForCall)]
-	fake.positionArgsForCall = append(fake.positionArgsForCall, struct {
-		arg1 int
-	}{arg1})
-	fake.recordInvocation("Position", []interface{}{arg1})
-	fake.positionMutex.Unlock()
-	if fake.PositionStub != nil {
-		return fake.PositionStub(arg1)
+func (fake *FakeFile) Len() int {
+	fake.lenMutex.Lock()
+	ret, specificReturn := fake.lenReturnsOnCall[len(fake.lenArgsForCall)]
+	fake.lenArgsForCall = append(fake.lenArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Len", []interface{}{})
+	fake.lenMutex.Unlock()
+	if fake.LenStub != nil {
+		return fake.LenStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.positionReturns.result1
+	fakeReturns := fake.lenReturns
+	return fakeReturns.result1
 }
 
-func (fake *FakeFile) PositionCallCount() int {
-	fake.positionMutex.RLock()
-	defer fake.positionMutex.RUnlock()
-	return len(fake.positionArgsForCall)
+func (fake *FakeFile) LenCallCount() int {
+	fake.lenMutex.RLock()
+	defer fake.lenMutex.RUnlock()
+	return len(fake.lenArgsForCall)
 }
 
-func (fake *FakeFile) PositionArgsForCall(i int) int {
-	fake.positionMutex.RLock()
-	defer fake.positionMutex.RUnlock()
-	return fake.positionArgsForCall[i].arg1
+func (fake *FakeFile) LenCalls(stub func() int) {
+	fake.lenMutex.Lock()
+	defer fake.lenMutex.Unlock()
+	fake.LenStub = stub
 }
 
-func (fake *FakeFile) PositionReturns(result1 parsley.Position) {
-	fake.PositionStub = nil
-	fake.positionReturns = struct {
-		result1 parsley.Position
+func (fake *FakeFile) LenReturns(result1 int) {
+	fake.lenMutex.Lock()
+	defer fake.lenMutex.Unlock()
+	fake.LenStub = nil
+	fake.lenReturns = struct {
+		result1 int
 	}{result1}
 }
 
-func (fake *FakeFile) PositionReturnsOnCall(i int, result1 parsley.Position) {
-	fake.PositionStub = nil
-	if fake.positionReturnsOnCall == nil {
-		fake.positionReturnsOnCall = make(map[int]struct {
-			result1 parsley.Position
+func (fake *FakeFile) LenReturnsOnCall(i int, result1 int) {
+	fake.lenMutex.Lock()
+	defer fake.lenMutex.Unlock()
+	fake.LenStub = nil
+	if fake.lenReturnsOnCall == nil {
+		fake.lenReturnsOnCall = make(map[int]struct {
+			result1 int
 		})
 	}
-	fake.positionReturnsOnCall[i] = struct {
-		result1 parsley.Position
+	fake.lenReturnsOnCall[i] = struct {
+		result1 int
 	}{result1}
 }
 
@@ -110,7 +115,8 @@ func (fake *FakeFile) Pos(arg1 int) parsley.Pos {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.posReturns.result1
+	fakeReturns := fake.posReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeFile) PosCallCount() int {
@@ -119,13 +125,22 @@ func (fake *FakeFile) PosCallCount() int {
 	return len(fake.posArgsForCall)
 }
 
+func (fake *FakeFile) PosCalls(stub func(int) parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
+	fake.PosStub = stub
+}
+
 func (fake *FakeFile) PosArgsForCall(i int) int {
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
-	return fake.posArgsForCall[i].arg1
+	argsForCall := fake.posArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeFile) PosReturns(result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	fake.posReturns = struct {
 		result1 parsley.Pos
@@ -133,6 +148,8 @@ func (fake *FakeFile) PosReturns(result1 parsley.Pos) {
 }
 
 func (fake *FakeFile) PosReturnsOnCall(i int, result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	if fake.posReturnsOnCall == nil {
 		fake.posReturnsOnCall = make(map[int]struct {
@@ -144,43 +161,63 @@ func (fake *FakeFile) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeFile) Len() int {
-	fake.lenMutex.Lock()
-	ret, specificReturn := fake.lenReturnsOnCall[len(fake.lenArgsForCall)]
-	fake.lenArgsForCall = append(fake.lenArgsForCall, struct{}{})
-	fake.recordInvocation("Len", []interface{}{})
-	fake.lenMutex.Unlock()
-	if fake.LenStub != nil {
-		return fake.LenStub()
+func (fake *FakeFile) Position(arg1 int) parsley.Position {
+	fake.positionMutex.Lock()
+	ret, specificReturn := fake.positionReturnsOnCall[len(fake.positionArgsForCall)]
+	fake.positionArgsForCall = append(fake.positionArgsForCall, struct {
+		arg1 int
+	}{arg1})
+	fake.recordInvocation("Position", []interface{}{arg1})
+	fake.positionMutex.Unlock()
+	if fake.PositionStub != nil {
+		return fake.PositionStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.lenReturns.result1
+	fakeReturns := fake.positionReturns
+	return fakeReturns.result1
 }
 
-func (fake *FakeFile) LenCallCount() int {
-	fake.lenMutex.RLock()
-	defer fake.lenMutex.RUnlock()
-	return len(fake.lenArgsForCall)
+func (fake *FakeFile) PositionCallCount() int {
+	fake.positionMutex.RLock()
+	defer fake.positionMutex.RUnlock()
+	return len(fake.positionArgsForCall)
 }
 
-func (fake *FakeFile) LenReturns(result1 int) {
-	fake.LenStub = nil
-	fake.lenReturns = struct {
-		result1 int
+func (fake *FakeFile) PositionCalls(stub func(int) parsley.Position) {
+	fake.positionMutex.Lock()
+	defer fake.positionMutex.Unlock()
+	fake.PositionStub = stub
+}
+
+func (fake *FakeFile) PositionArgsForCall(i int) int {
+	fake.positionMutex.RLock()
+	defer fake.positionMutex.RUnlock()
+	argsForCall := fake.positionArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeFile) PositionReturns(result1 parsley.Position) {
+	fake.positionMutex.Lock()
+	defer fake.positionMutex.Unlock()
+	fake.PositionStub = nil
+	fake.positionReturns = struct {
+		result1 parsley.Position
 	}{result1}
 }
 
-func (fake *FakeFile) LenReturnsOnCall(i int, result1 int) {
-	fake.LenStub = nil
-	if fake.lenReturnsOnCall == nil {
-		fake.lenReturnsOnCall = make(map[int]struct {
-			result1 int
+func (fake *FakeFile) PositionReturnsOnCall(i int, result1 parsley.Position) {
+	fake.positionMutex.Lock()
+	defer fake.positionMutex.Unlock()
+	fake.PositionStub = nil
+	if fake.positionReturnsOnCall == nil {
+		fake.positionReturnsOnCall = make(map[int]struct {
+			result1 parsley.Position
 		})
 	}
-	fake.lenReturnsOnCall[i] = struct {
-		result1 int
+	fake.positionReturnsOnCall[i] = struct {
+		result1 parsley.Position
 	}{result1}
 }
 
@@ -202,21 +239,28 @@ func (fake *FakeFile) SetOffsetCallCount() int {
 	return len(fake.setOffsetArgsForCall)
 }
 
+func (fake *FakeFile) SetOffsetCalls(stub func(int)) {
+	fake.setOffsetMutex.Lock()
+	defer fake.setOffsetMutex.Unlock()
+	fake.SetOffsetStub = stub
+}
+
 func (fake *FakeFile) SetOffsetArgsForCall(i int) int {
 	fake.setOffsetMutex.RLock()
 	defer fake.setOffsetMutex.RUnlock()
-	return fake.setOffsetArgsForCall[i].arg1
+	argsForCall := fake.setOffsetArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeFile) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.positionMutex.RLock()
-	defer fake.positionMutex.RUnlock()
-	fake.posMutex.RLock()
-	defer fake.posMutex.RUnlock()
 	fake.lenMutex.RLock()
 	defer fake.lenMutex.RUnlock()
+	fake.posMutex.RLock()
+	defer fake.posMutex.RUnlock()
+	fake.positionMutex.RLock()
+	defer fake.positionMutex.RUnlock()
 	fake.setOffsetMutex.RLock()
 	defer fake.setOffsetMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

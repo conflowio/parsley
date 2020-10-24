@@ -33,7 +33,7 @@ type ReaderPosSetter interface {
 }
 
 // ReaderPosSetterNode defines a node which also implements the ReaderPosSetter interface
-//go:generate counterfeiter . ReaderPosSetterNode
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ReaderPosSetterNode
 type ReaderPosSetterNode interface {
 	parsley.Node
 	ReaderPosSetter

@@ -9,12 +9,12 @@ import (
 )
 
 type FakeParser struct {
-	ParseStub        func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error)
+	ParseStub        func(*parsley.Context, data.IntMap, parsley.Pos) (parsley.Node, data.IntSet, parsley.Error)
 	parseMutex       sync.RWMutex
 	parseArgsForCall []struct {
-		ctx        *parsley.Context
-		leftRecCtx data.IntMap
-		pos        parsley.Pos
+		arg1 *parsley.Context
+		arg2 data.IntMap
+		arg3 parsley.Pos
 	}
 	parseReturns struct {
 		result1 parsley.Node
@@ -30,23 +30,24 @@ type FakeParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeParser) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
+func (fake *FakeParser) Parse(arg1 *parsley.Context, arg2 data.IntMap, arg3 parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 	fake.parseMutex.Lock()
 	ret, specificReturn := fake.parseReturnsOnCall[len(fake.parseArgsForCall)]
 	fake.parseArgsForCall = append(fake.parseArgsForCall, struct {
-		ctx        *parsley.Context
-		leftRecCtx data.IntMap
-		pos        parsley.Pos
-	}{ctx, leftRecCtx, pos})
-	fake.recordInvocation("Parse", []interface{}{ctx, leftRecCtx, pos})
+		arg1 *parsley.Context
+		arg2 data.IntMap
+		arg3 parsley.Pos
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Parse", []interface{}{arg1, arg2, arg3})
 	fake.parseMutex.Unlock()
 	if fake.ParseStub != nil {
-		return fake.ParseStub(ctx, leftRecCtx, pos)
+		return fake.ParseStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	return fake.parseReturns.result1, fake.parseReturns.result2, fake.parseReturns.result3
+	fakeReturns := fake.parseReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
 func (fake *FakeParser) ParseCallCount() int {
@@ -55,13 +56,22 @@ func (fake *FakeParser) ParseCallCount() int {
 	return len(fake.parseArgsForCall)
 }
 
+func (fake *FakeParser) ParseCalls(stub func(*parsley.Context, data.IntMap, parsley.Pos) (parsley.Node, data.IntSet, parsley.Error)) {
+	fake.parseMutex.Lock()
+	defer fake.parseMutex.Unlock()
+	fake.ParseStub = stub
+}
+
 func (fake *FakeParser) ParseArgsForCall(i int) (*parsley.Context, data.IntMap, parsley.Pos) {
 	fake.parseMutex.RLock()
 	defer fake.parseMutex.RUnlock()
-	return fake.parseArgsForCall[i].ctx, fake.parseArgsForCall[i].leftRecCtx, fake.parseArgsForCall[i].pos
+	argsForCall := fake.parseArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeParser) ParseReturns(result1 parsley.Node, result2 data.IntSet, result3 parsley.Error) {
+	fake.parseMutex.Lock()
+	defer fake.parseMutex.Unlock()
 	fake.ParseStub = nil
 	fake.parseReturns = struct {
 		result1 parsley.Node
@@ -71,6 +81,8 @@ func (fake *FakeParser) ParseReturns(result1 parsley.Node, result2 data.IntSet, 
 }
 
 func (fake *FakeParser) ParseReturnsOnCall(i int, result1 parsley.Node, result2 data.IntSet, result3 parsley.Error) {
+	fake.parseMutex.Lock()
+	defer fake.parseMutex.Unlock()
 	fake.ParseStub = nil
 	if fake.parseReturnsOnCall == nil {
 		fake.parseReturnsOnCall = make(map[int]struct {
