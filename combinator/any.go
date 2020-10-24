@@ -29,7 +29,9 @@ func Any(parsers ...parsley.Parser) parser.Func {
 			cp = cp.Union(cp2)
 			res = ast.AppendNode(res, res2)
 			if err2 != nil && (err == nil || err2.Pos() >= err.Pos()) {
-				err = err2
+				if err2.Pos() > pos || !parsley.IsNotFoundError(err2) {
+					err = err2
+				}
 			}
 		}
 
