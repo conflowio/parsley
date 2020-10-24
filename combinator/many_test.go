@@ -26,7 +26,7 @@ func ExampleMany() {
 		}
 		return res, nil
 	})
-	p := combinator.Many(terminal.Rune('a')).Bind(concat)
+	p := combinator.Many(terminal.Rune('a')).Transform(combinator.TransformNodes("CONCAT", concat, false))
 	f := text.NewFile("example.file", []byte("aaaaa"))
 	fs := parsley.NewFileSet(f)
 	r := text.NewReader(f)

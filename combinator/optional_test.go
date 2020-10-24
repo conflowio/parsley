@@ -36,7 +36,7 @@ func ExampleOptional() {
 		terminal.Rune('a'),
 		combinator.Optional(terminal.Rune('b')),
 		terminal.Rune('c'),
-	).Bind(concat)
+	).Transform(combinator.TransformNodes("CONCAT", concat, false))
 	r := text.NewReader(text.NewFile("example.file", []byte("ac")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))

@@ -24,9 +24,9 @@ func NewParser() parsley.Parser {
 		combinator.SepBy(
 			text.LeftTrim(&value, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
-		).Bind(interpreter.Array()),
+		).Transform(combinator.TransformNodes("ARRAY", interpreter.Array(), false)),
 		text.LeftTrim(terminal.Rune(']'), text.WsSpacesNl),
-	).Bind(interpreter.Select(1))
+	).Transform(combinator.TransformNodes("OBJECT", interpreter.Select(1), false))
 
 	keyValue := combinator.SeqOf(
 		terminal.String(false),
@@ -39,9 +39,9 @@ func NewParser() parsley.Parser {
 		combinator.SepBy(
 			text.LeftTrim(keyValue, text.WsSpacesNl),
 			text.LeftTrim(terminal.Rune(','), text.WsSpaces),
-		).Bind(interpreter.Object()),
+		).Transform(combinator.TransformNodes("OBJECT", interpreter.Object(), false)),
 		text.LeftTrim(terminal.Rune('}'), text.WsSpacesNl),
-	).Bind(interpreter.Select(1))
+	).Transform(combinator.TransformNodes("OBJECT", interpreter.Select(1), false))
 
 	value = combinator.Choice(
 		terminal.String(false),

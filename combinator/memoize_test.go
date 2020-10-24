@@ -37,7 +37,7 @@ func ExampleMemoize() {
 	var p parser.Func
 	p = combinator.Memoize(combinator.Any(
 		terminal.Rune('a'),
-		combinator.SeqOf(&p, terminal.Rune('b')).Bind(concat),
+		combinator.SeqOf(&p, terminal.Rune('b')).Transform(combinator.TransformNodes("CONCAT", concat, false)),
 	))
 	f := text.NewFile("example.file", []byte("abbbbbbbb"))
 	r := text.NewReader(f)

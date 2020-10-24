@@ -31,12 +31,12 @@ func ExampleSepBy() {
 		return res, nil
 	})
 
-	intList := combinator.SepBy(terminal.Integer(), terminal.Rune(',')).Bind(arr)
+	intList := combinator.SepBy(terminal.Integer(), terminal.Rune(',')).Transform(combinator.TransformNodes("ARRAY", arr, false))
 	p := combinator.SeqOf(
 		terminal.Rune('['),
 		intList,
 		terminal.Rune(']'),
-	).Bind(interpreter.Select(1))
+	).Transform(combinator.TransformNodes("ARRAY", interpreter.Select(1), false))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("[]")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
@@ -71,7 +71,7 @@ func ExampleSepBy1() {
 		return sum, nil
 	})
 
-	p := combinator.SepBy1(terminal.Integer(), terminal.Rune('+')).Bind(interpreter)
+	p := combinator.SepBy1(terminal.Integer(), terminal.Rune('+')).Transform(combinator.TransformNodes("SUM", interpreter, false))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)

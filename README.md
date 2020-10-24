@@ -101,7 +101,7 @@ p := combinator.SeqOf(
 	terminal.Integer(),
 	terminal.Rune('+'),
 	terminal.Integer(),
-).Bind(sum)
+).Transform(combinator.TransformNodes("SUM", sum, false))
 
 f := text.NewFile("example.file", []byte("1+2"))
 fs := parsley.NewFileSet(f)

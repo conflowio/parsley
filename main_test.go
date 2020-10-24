@@ -26,7 +26,7 @@ func ExampleParse() {
 		terminal.Integer(),
 		terminal.Rune('+'),
 		terminal.Integer(),
-	).Bind(sum)
+	).Transform(combinator.TransformNodes("SUM", sum, false))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
@@ -56,7 +56,7 @@ func ExampleEvaluate() {
 		terminal.Integer(),
 		terminal.Rune('+'),
 		terminal.Integer(),
-	).Bind(sum)
+	).Transform(combinator.TransformNodes("SUM", sum, false))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
@@ -94,7 +94,7 @@ var _ = Describe("Parsley", func() {
 			combinator.SeqOf(
 				&p,
 				terminal.Rune('b'),
-			).Bind(concat),
+			).Transform(combinator.TransformNodes("CONCAT", concat, false)),
 			terminal.Rune('a'),
 		))
 
@@ -128,7 +128,7 @@ var _ = Describe("Parsley", func() {
 			value,
 			terminal.Rune('+'),
 			value,
-		).Bind(add))
+		).Transform(combinator.TransformNodes("ADD", add, false)))
 
 		f := text.NewFile("testfile", []byte(input))
 		r := text.NewReader(f)

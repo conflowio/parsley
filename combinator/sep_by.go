@@ -31,5 +31,5 @@ func newSepBy(valueP parsley.Parser, sepP parsley.Parser, allowEmpty bool) *Sequ
 	lenCheck := func(len int) bool {
 		return (len == 0 && allowEmpty) || len%2 == 1
 	}
-	return Seq("SEP_BY", lookup, lenCheck)
+	return Seq(lookup, lenCheck)
 }

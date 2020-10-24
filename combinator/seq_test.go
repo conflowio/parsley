@@ -31,7 +31,7 @@ func ExampleSeqOf() {
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),
-	).Bind(concat)
+	).Transform(combinator.TransformNodes("CONCAT", concat, false))
 	r := text.NewReader(text.NewFile("example.file", []byte("abc")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
@@ -54,7 +54,7 @@ func ExampleSeqTry() {
 		terminal.Rune('a'),
 		terminal.Rune('b'),
 		terminal.Rune('c'),
-	).Bind(concat)
+	).Transform(combinator.TransformNodes("CONCAT", concat, false))
 	r := text.NewReader(text.NewFile("example.file", []byte("ab")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)
 	value, _ := parsley.Evaluate(ctx, combinator.Sentence(p))
@@ -79,7 +79,7 @@ func ExampleSeqFirstOrAll() {
 		terminal.Integer(),
 		terminal.Rune('+'),
 		terminal.Integer(),
-	).Bind(add)
+	).Transform(combinator.TransformNodes("ADD", add, false))
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)

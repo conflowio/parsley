@@ -7,12 +7,13 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/parser"
 	"github.com/opsidian/parsley/parsley"
 )
 
 // Sentence matches the given parser until the end of input
 func Sentence(p parsley.Parser) *Sequence {
-	return SeqOf(p, parser.End()).Bind(interpreter.Select(0))
+	return SeqOf(p, parser.End()).Transform(func(nodes []parsley.Node) parsley.Node {
+		return nodes[0]
+	})
 }

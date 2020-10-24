@@ -27,5 +27,5 @@ func newMany(p parsley.Parser, allowEmpty bool) *Sequence {
 	lenCheck := func(len int) bool {
 		return allowEmpty || len > 0
 	}
-	return Seq("MANY", lookup, lenCheck)
+	return Seq(lookup, lenCheck)
 }
