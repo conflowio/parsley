@@ -7,7 +7,7 @@
 package parsley
 
 // StaticChecker defines an interface to run a static analysis on the given nonterminal node
-//go:generate counterfeiter . StaticChecker
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . StaticChecker
 type StaticChecker interface {
 	StaticCheck(userCtx interface{}, node NonTerminalNode) (string, Error)
 }
@@ -18,7 +18,7 @@ type StaticCheckable interface {
 }
 
 // StaticCheckableNode defines a node which also implements the StaticCheckable interface
-//go:generate counterfeiter . StaticCheckableNode
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . StaticCheckableNode
 type StaticCheckableNode interface {
 	Node
 	StaticCheckable

@@ -6,14 +6,14 @@ type Transformable interface {
 }
 
 // TransformableNode defines a transformable node
-//go:generate counterfeiter . TransformableNode
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TransformableNode
 type TransformableNode interface {
 	Node
 	Transformable
 }
 
 // NodeTransformer defines an interface to transform an AST node to an other
-//go:generate counterfeiter . NodeTransformer
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NodeTransformer
 type NodeTransformer interface {
 	TransformNode(userCtx interface{}, node Node) (Node, Error)
 }

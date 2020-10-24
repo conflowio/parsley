@@ -11,7 +11,7 @@ import (
 )
 
 // Parser defines a parser interface
-//go:generate counterfeiter . Parser
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Parser
 type Parser interface {
 	Parse(ctx *Context, leftRecCtx data.IntMap, pos Pos) (Node, data.IntSet, Error)
 }

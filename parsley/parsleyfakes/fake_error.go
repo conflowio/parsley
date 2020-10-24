@@ -8,28 +8,31 @@ import (
 )
 
 type FakeError struct {
-	ErrorStub        func() string
-	errorMutex       sync.RWMutex
-	errorArgsForCall []struct{}
-	errorReturns     struct {
-		result1 string
-	}
-	errorReturnsOnCall map[int]struct {
-		result1 string
-	}
 	CauseStub        func() error
 	causeMutex       sync.RWMutex
-	causeArgsForCall []struct{}
-	causeReturns     struct {
+	causeArgsForCall []struct {
+	}
+	causeReturns struct {
 		result1 error
 	}
 	causeReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ErrorStub        func() string
+	errorMutex       sync.RWMutex
+	errorArgsForCall []struct {
+	}
+	errorReturns struct {
+		result1 string
+	}
+	errorReturnsOnCall map[int]struct {
+		result1 string
+	}
 	PosStub        func() parsley.Pos
 	posMutex       sync.RWMutex
-	posArgsForCall []struct{}
-	posReturns     struct {
+	posArgsForCall []struct {
+	}
+	posReturns struct {
 		result1 parsley.Pos
 	}
 	posReturnsOnCall map[int]struct {
@@ -39,50 +42,11 @@ type FakeError struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeError) Error() string {
-	fake.errorMutex.Lock()
-	ret, specificReturn := fake.errorReturnsOnCall[len(fake.errorArgsForCall)]
-	fake.errorArgsForCall = append(fake.errorArgsForCall, struct{}{})
-	fake.recordInvocation("Error", []interface{}{})
-	fake.errorMutex.Unlock()
-	if fake.ErrorStub != nil {
-		return fake.ErrorStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.errorReturns.result1
-}
-
-func (fake *FakeError) ErrorCallCount() int {
-	fake.errorMutex.RLock()
-	defer fake.errorMutex.RUnlock()
-	return len(fake.errorArgsForCall)
-}
-
-func (fake *FakeError) ErrorReturns(result1 string) {
-	fake.ErrorStub = nil
-	fake.errorReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeError) ErrorReturnsOnCall(i int, result1 string) {
-	fake.ErrorStub = nil
-	if fake.errorReturnsOnCall == nil {
-		fake.errorReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.errorReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
 func (fake *FakeError) Cause() error {
 	fake.causeMutex.Lock()
 	ret, specificReturn := fake.causeReturnsOnCall[len(fake.causeArgsForCall)]
-	fake.causeArgsForCall = append(fake.causeArgsForCall, struct{}{})
+	fake.causeArgsForCall = append(fake.causeArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Cause", []interface{}{})
 	fake.causeMutex.Unlock()
 	if fake.CauseStub != nil {
@@ -91,7 +55,8 @@ func (fake *FakeError) Cause() error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.causeReturns.result1
+	fakeReturns := fake.causeReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeError) CauseCallCount() int {
@@ -100,7 +65,15 @@ func (fake *FakeError) CauseCallCount() int {
 	return len(fake.causeArgsForCall)
 }
 
+func (fake *FakeError) CauseCalls(stub func() error) {
+	fake.causeMutex.Lock()
+	defer fake.causeMutex.Unlock()
+	fake.CauseStub = stub
+}
+
 func (fake *FakeError) CauseReturns(result1 error) {
+	fake.causeMutex.Lock()
+	defer fake.causeMutex.Unlock()
 	fake.CauseStub = nil
 	fake.causeReturns = struct {
 		result1 error
@@ -108,6 +81,8 @@ func (fake *FakeError) CauseReturns(result1 error) {
 }
 
 func (fake *FakeError) CauseReturnsOnCall(i int, result1 error) {
+	fake.causeMutex.Lock()
+	defer fake.causeMutex.Unlock()
 	fake.CauseStub = nil
 	if fake.causeReturnsOnCall == nil {
 		fake.causeReturnsOnCall = make(map[int]struct {
@@ -119,10 +94,63 @@ func (fake *FakeError) CauseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeError) Error() string {
+	fake.errorMutex.Lock()
+	ret, specificReturn := fake.errorReturnsOnCall[len(fake.errorArgsForCall)]
+	fake.errorArgsForCall = append(fake.errorArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Error", []interface{}{})
+	fake.errorMutex.Unlock()
+	if fake.ErrorStub != nil {
+		return fake.ErrorStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.errorReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeError) ErrorCallCount() int {
+	fake.errorMutex.RLock()
+	defer fake.errorMutex.RUnlock()
+	return len(fake.errorArgsForCall)
+}
+
+func (fake *FakeError) ErrorCalls(stub func() string) {
+	fake.errorMutex.Lock()
+	defer fake.errorMutex.Unlock()
+	fake.ErrorStub = stub
+}
+
+func (fake *FakeError) ErrorReturns(result1 string) {
+	fake.errorMutex.Lock()
+	defer fake.errorMutex.Unlock()
+	fake.ErrorStub = nil
+	fake.errorReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeError) ErrorReturnsOnCall(i int, result1 string) {
+	fake.errorMutex.Lock()
+	defer fake.errorMutex.Unlock()
+	fake.ErrorStub = nil
+	if fake.errorReturnsOnCall == nil {
+		fake.errorReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.errorReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeError) Pos() parsley.Pos {
 	fake.posMutex.Lock()
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
-	fake.posArgsForCall = append(fake.posArgsForCall, struct{}{})
+	fake.posArgsForCall = append(fake.posArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Pos", []interface{}{})
 	fake.posMutex.Unlock()
 	if fake.PosStub != nil {
@@ -131,7 +159,8 @@ func (fake *FakeError) Pos() parsley.Pos {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.posReturns.result1
+	fakeReturns := fake.posReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeError) PosCallCount() int {
@@ -140,7 +169,15 @@ func (fake *FakeError) PosCallCount() int {
 	return len(fake.posArgsForCall)
 }
 
+func (fake *FakeError) PosCalls(stub func() parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
+	fake.PosStub = stub
+}
+
 func (fake *FakeError) PosReturns(result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	fake.posReturns = struct {
 		result1 parsley.Pos
@@ -148,6 +185,8 @@ func (fake *FakeError) PosReturns(result1 parsley.Pos) {
 }
 
 func (fake *FakeError) PosReturnsOnCall(i int, result1 parsley.Pos) {
+	fake.posMutex.Lock()
+	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
 	if fake.posReturnsOnCall == nil {
 		fake.posReturnsOnCall = make(map[int]struct {
@@ -162,10 +201,10 @@ func (fake *FakeError) PosReturnsOnCall(i int, result1 parsley.Pos) {
 func (fake *FakeError) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.errorMutex.RLock()
-	defer fake.errorMutex.RUnlock()
 	fake.causeMutex.RLock()
 	defer fake.causeMutex.RUnlock()
+	fake.errorMutex.RLock()
+	defer fake.errorMutex.RUnlock()
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

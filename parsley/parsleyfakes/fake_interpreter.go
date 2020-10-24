@@ -8,11 +8,11 @@ import (
 )
 
 type FakeInterpreter struct {
-	EvalStub        func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error)
+	EvalStub        func(interface{}, parsley.NonTerminalNode) (interface{}, parsley.Error)
 	evalMutex       sync.RWMutex
 	evalArgsForCall []struct {
-		userCtx interface{}
-		node    parsley.NonTerminalNode
+		arg1 interface{}
+		arg2 parsley.NonTerminalNode
 	}
 	evalReturns struct {
 		result1 interface{}
@@ -26,22 +26,23 @@ type FakeInterpreter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
+func (fake *FakeInterpreter) Eval(arg1 interface{}, arg2 parsley.NonTerminalNode) (interface{}, parsley.Error) {
 	fake.evalMutex.Lock()
 	ret, specificReturn := fake.evalReturnsOnCall[len(fake.evalArgsForCall)]
 	fake.evalArgsForCall = append(fake.evalArgsForCall, struct {
-		userCtx interface{}
-		node    parsley.NonTerminalNode
-	}{userCtx, node})
-	fake.recordInvocation("Eval", []interface{}{userCtx, node})
+		arg1 interface{}
+		arg2 parsley.NonTerminalNode
+	}{arg1, arg2})
+	fake.recordInvocation("Eval", []interface{}{arg1, arg2})
 	fake.evalMutex.Unlock()
 	if fake.EvalStub != nil {
-		return fake.EvalStub(userCtx, node)
+		return fake.EvalStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.evalReturns.result1, fake.evalReturns.result2
+	fakeReturns := fake.evalReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeInterpreter) EvalCallCount() int {
@@ -50,13 +51,22 @@ func (fake *FakeInterpreter) EvalCallCount() int {
 	return len(fake.evalArgsForCall)
 }
 
+func (fake *FakeInterpreter) EvalCalls(stub func(interface{}, parsley.NonTerminalNode) (interface{}, parsley.Error)) {
+	fake.evalMutex.Lock()
+	defer fake.evalMutex.Unlock()
+	fake.EvalStub = stub
+}
+
 func (fake *FakeInterpreter) EvalArgsForCall(i int) (interface{}, parsley.NonTerminalNode) {
 	fake.evalMutex.RLock()
 	defer fake.evalMutex.RUnlock()
-	return fake.evalArgsForCall[i].userCtx, fake.evalArgsForCall[i].node
+	argsForCall := fake.evalArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeInterpreter) EvalReturns(result1 interface{}, result2 parsley.Error) {
+	fake.evalMutex.Lock()
+	defer fake.evalMutex.Unlock()
 	fake.EvalStub = nil
 	fake.evalReturns = struct {
 		result1 interface{}
@@ -65,6 +75,8 @@ func (fake *FakeInterpreter) EvalReturns(result1 interface{}, result2 parsley.Er
 }
 
 func (fake *FakeInterpreter) EvalReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
+	fake.evalMutex.Lock()
+	defer fake.evalMutex.Unlock()
 	fake.EvalStub = nil
 	if fake.evalReturnsOnCall == nil {
 		fake.evalReturnsOnCall = make(map[int]struct {

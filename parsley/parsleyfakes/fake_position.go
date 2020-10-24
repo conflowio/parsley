@@ -10,8 +10,9 @@ import (
 type FakePosition struct {
 	StringStub        func() string
 	stringMutex       sync.RWMutex
-	stringArgsForCall []struct{}
-	stringReturns     struct {
+	stringArgsForCall []struct {
+	}
+	stringReturns struct {
 		result1 string
 	}
 	stringReturnsOnCall map[int]struct {
@@ -24,7 +25,8 @@ type FakePosition struct {
 func (fake *FakePosition) String() string {
 	fake.stringMutex.Lock()
 	ret, specificReturn := fake.stringReturnsOnCall[len(fake.stringArgsForCall)]
-	fake.stringArgsForCall = append(fake.stringArgsForCall, struct{}{})
+	fake.stringArgsForCall = append(fake.stringArgsForCall, struct {
+	}{})
 	fake.recordInvocation("String", []interface{}{})
 	fake.stringMutex.Unlock()
 	if fake.StringStub != nil {
@@ -33,7 +35,8 @@ func (fake *FakePosition) String() string {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.stringReturns.result1
+	fakeReturns := fake.stringReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakePosition) StringCallCount() int {
@@ -42,7 +45,15 @@ func (fake *FakePosition) StringCallCount() int {
 	return len(fake.stringArgsForCall)
 }
 
+func (fake *FakePosition) StringCalls(stub func() string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = stub
+}
+
 func (fake *FakePosition) StringReturns(result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
 	fake.StringStub = nil
 	fake.stringReturns = struct {
 		result1 string
@@ -50,6 +61,8 @@ func (fake *FakePosition) StringReturns(result1 string) {
 }
 
 func (fake *FakePosition) StringReturnsOnCall(i int, result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
 	fake.StringStub = nil
 	if fake.stringReturnsOnCall == nil {
 		fake.stringReturnsOnCall = make(map[int]struct {
