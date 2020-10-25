@@ -8,7 +8,6 @@ package parsley
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Error is an error with a position
@@ -21,7 +20,6 @@ type Error interface {
 
 type err struct {
 	cause error
-	msg   string
 	pos   Pos
 }
 
@@ -35,7 +33,6 @@ func NewError(pos Pos, cause error) Error {
 	default:
 		return err{
 			cause: cause,
-			msg:   cause.Error(),
 			pos:   pos,
 		}
 	}
@@ -46,14 +43,13 @@ func NewErrorf(pos Pos, format string, values ...interface{}) Error {
 	cause := fmt.Errorf(format, values...)
 	return err{
 		cause: cause,
-		msg:   cause.Error(),
 		pos:   pos,
 	}
 }
 
 // Error returns with the full error message including the position
 func (e err) Error() string {
-	return e.msg
+	return e.cause.Error()
 }
 
 // Pos returns with the error's position
@@ -66,16 +62,7 @@ func (e err) Cause() error {
 	return e.cause
 }
 
-// WrapError wraps the given error in a error
-// If format contains the "{{err}}" placeholder it will be replaced with the original error message
-func WrapError(e Error, format string, values ...interface{}) Error {
-	msg := fmt.Sprintf(format, values...)
-	if msg == "" {
-		return e
-	}
-	return err{
-		cause: e.Cause(),
-		pos:   e.Pos(),
-		msg:   strings.Replace(msg, "{{err}}", e.Error(), -1),
-	}
+// Unwrap returns the wrapped error
+func (e err) Unwrap() error {
+	return e.cause
 }
