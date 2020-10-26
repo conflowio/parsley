@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/golang:1.15
     working_directory: /go/src/github.com/opsidian/parsley
@@ -8,3 +8,9 @@ jobs:
       - checkout
       - run: make test
       - run: bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
