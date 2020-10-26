@@ -1,3 +1,18 @@
+## 0.14.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- Remove NL and Whitespaces parsers, these are achievable using the trim parsers
+- Change Trim parsers to always skip all whitespaces and return specific whitespace error
+- In text.LeftTrim prefer a not found parse error over a whitespace error if the position is the same
+
+IMPROVEMENTS:
+
+- Add struct wrapper for parser functions to allow recursive parser definitions
+- Simplify parsley.Error, remove unnecessary msg field (and therefore unnecessary .Error()
+- Introduce notfound errors when a parser doesn't match
+- Only collect notfound errors in any/choice if they are not in the starting position
+
 ## 0.13.4
 
 IMPROVEMENTS:
