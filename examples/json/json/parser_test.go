@@ -24,9 +24,9 @@ func benchmarkParsleyJSON(b *testing.B, jsonFilePath string) {
 		b.Fatal(err)
 	}
 
-	s := combinator.Sentence(json.NewParser())
+	s := combinator.Sentence(text.Trim(json.NewParser()))
 	r := text.NewReader(f)
-	ctx := parsley.NewContext(parsley.NewFileSet(), r)
+	ctx := parsley.NewContext(parsley.NewFileSet(f), r)
 	ctx.EnableStaticCheck()
 	ctx.EnableTransformation()
 	if _, err = parsley.Evaluate(ctx, s); err != nil {

@@ -7,7 +7,7 @@
 package parsley
 
 // Node represents an AST node
-//go:generate counterfeiter . Node
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Node
 type Node interface {
 	Token() string
 	Type() string
@@ -17,7 +17,7 @@ type Node interface {
 }
 
 // NonTerminalNode represents a nonterminal AST node
-//go:generate counterfeiter . NonTerminalNode
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NonTerminalNode
 type NonTerminalNode interface {
 	Node
 	Children() []Node

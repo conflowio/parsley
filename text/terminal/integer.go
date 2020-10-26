@@ -7,7 +7,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -73,7 +72,7 @@ func (i *IntegerNode) String() string {
 
 // Integer matches all integer numbers and zero with an optional -/+ sign
 func Integer() parser.Func {
-	notFoundErr := errors.New("was expecting integer value")
+	notFoundErr := parsley.NotFoundError("integer value")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)

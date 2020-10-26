@@ -467,44 +467,44 @@ var _ = Describe("Reader", func() {
 		})
 
 		It("should not match any whitespaces if none", func() {
-			pos, ok := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
+			pos, err := r.SkipWhitespaces(f.Pos(0), text.WsSpacesNl)
 			Expect(pos).To(Equal(f.Pos(0)))
-			Expect(ok).To(BeTrue())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("should match all types of whitespaces", func() {
-			pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
+			pos, err := r.SkipWhitespaces(f.Pos(3), text.WsSpacesNl)
 			Expect(pos).To(Equal(f.Pos(7)))
-			Expect(ok).To(BeTrue())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
-		Context("when not including new lines", func() {
-			It("should only match spaces and tabs", func() {
-				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
-				Expect(pos).To(Equal(f.Pos(5)))
-				Expect(ok).To(BeTrue())
+		Context("when new lines are not valid", func() {
+			It("should return an error", func() {
+				pos, err := r.SkipWhitespaces(f.Pos(3), text.WsSpaces)
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(5), parsley.NewWhitespaceError("new line is not allowed"))))
 			})
 		})
 
 		Context("when not skipping any whitespaces", func() {
-			It("should not match any whitespaces", func() {
-				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsNone)
-				Expect(pos).To(Equal(f.Pos(3)))
-				Expect(ok).To(BeTrue())
+			It("should return an error", func() {
+				pos, err := r.SkipWhitespaces(f.Pos(3), text.WsNone)
+				Expect(pos).To(Equal(f.Pos(7)))
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(3), parsley.NewWhitespaceError("whitespaces are not allowed"))))
 			})
 		})
 
 		Context("when forcing a new line", func() {
-			It("should match new lines", func() {
-				pos, ok := r.SkipWhitespaces(f.Pos(3), text.WsSpacesForceNl)
+			It("should return an error", func() {
+				pos, err := r.SkipWhitespaces(f.Pos(3), text.WsSpacesForceNl)
 				Expect(pos).To(Equal(f.Pos(7)))
-				Expect(ok).To(BeTrue())
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("should not match spaces and tabs only", func() {
-				pos, ok := r.SkipWhitespaces(f.Pos(10), text.WsSpacesForceNl)
+				pos, err := r.SkipWhitespaces(f.Pos(10), text.WsSpacesForceNl)
 				Expect(pos).To(Equal(f.Pos(12)))
-				Expect(ok).To(BeFalse())
+				Expect(err).To(MatchError(parsley.NewError(f.Pos(12), parsley.NewWhitespaceError("was expecting a new line"))))
 			})
 		})
 	})

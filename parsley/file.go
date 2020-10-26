@@ -7,7 +7,7 @@
 package parsley
 
 // File is an interface to translate a byte offset in a file to a position object
-//go:generate counterfeiter . File
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . File
 type File interface {
 	Position(int) Position
 	Pos(int) Pos

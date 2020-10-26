@@ -8,11 +8,11 @@ import (
 )
 
 type FakeStaticChecker struct {
-	StaticCheckStub        func(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error)
+	StaticCheckStub        func(interface{}, parsley.NonTerminalNode) (string, parsley.Error)
 	staticCheckMutex       sync.RWMutex
 	staticCheckArgsForCall []struct {
-		userCtx interface{}
-		node    parsley.NonTerminalNode
+		arg1 interface{}
+		arg2 parsley.NonTerminalNode
 	}
 	staticCheckReturns struct {
 		result1 string
@@ -26,22 +26,23 @@ type FakeStaticChecker struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeStaticChecker) StaticCheck(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error) {
+func (fake *FakeStaticChecker) StaticCheck(arg1 interface{}, arg2 parsley.NonTerminalNode) (string, parsley.Error) {
 	fake.staticCheckMutex.Lock()
 	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
 	fake.staticCheckArgsForCall = append(fake.staticCheckArgsForCall, struct {
-		userCtx interface{}
-		node    parsley.NonTerminalNode
-	}{userCtx, node})
-	fake.recordInvocation("StaticCheck", []interface{}{userCtx, node})
+		arg1 interface{}
+		arg2 parsley.NonTerminalNode
+	}{arg1, arg2})
+	fake.recordInvocation("StaticCheck", []interface{}{arg1, arg2})
 	fake.staticCheckMutex.Unlock()
 	if fake.StaticCheckStub != nil {
-		return fake.StaticCheckStub(userCtx, node)
+		return fake.StaticCheckStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.staticCheckReturns.result1, fake.staticCheckReturns.result2
+	fakeReturns := fake.staticCheckReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeStaticChecker) StaticCheckCallCount() int {
@@ -50,13 +51,22 @@ func (fake *FakeStaticChecker) StaticCheckCallCount() int {
 	return len(fake.staticCheckArgsForCall)
 }
 
+func (fake *FakeStaticChecker) StaticCheckCalls(stub func(interface{}, parsley.NonTerminalNode) (string, parsley.Error)) {
+	fake.staticCheckMutex.Lock()
+	defer fake.staticCheckMutex.Unlock()
+	fake.StaticCheckStub = stub
+}
+
 func (fake *FakeStaticChecker) StaticCheckArgsForCall(i int) (interface{}, parsley.NonTerminalNode) {
 	fake.staticCheckMutex.RLock()
 	defer fake.staticCheckMutex.RUnlock()
-	return fake.staticCheckArgsForCall[i].userCtx, fake.staticCheckArgsForCall[i].node
+	argsForCall := fake.staticCheckArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeStaticChecker) StaticCheckReturns(result1 string, result2 parsley.Error) {
+	fake.staticCheckMutex.Lock()
+	defer fake.staticCheckMutex.Unlock()
 	fake.StaticCheckStub = nil
 	fake.staticCheckReturns = struct {
 		result1 string
@@ -65,6 +75,8 @@ func (fake *FakeStaticChecker) StaticCheckReturns(result1 string, result2 parsle
 }
 
 func (fake *FakeStaticChecker) StaticCheckReturnsOnCall(i int, result1 string, result2 parsley.Error) {
+	fake.staticCheckMutex.Lock()
+	defer fake.staticCheckMutex.Unlock()
 	fake.StaticCheckStub = nil
 	if fake.staticCheckReturnsOnCall == nil {
 		fake.staticCheckReturnsOnCall = make(map[int]struct {

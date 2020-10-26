@@ -7,20 +7,20 @@
 package parsley
 
 // Interpreter defines an interface to evaluate the given nonterminal node
-//go:generate counterfeiter . Interpreter
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Interpreter
 type Interpreter interface {
 	Eval(userCtx interface{}, node NonTerminalNode) (interface{}, Error)
 }
 
 // StaticCheckerInterpreter defines an interpreter which is also a static checker
-//go:generate counterfeiter . StaticCheckerInterpreter
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . StaticCheckerInterpreter
 type StaticCheckerInterpreter interface {
 	Interpreter
 	StaticChecker
 }
 
 // NodeTransformerInterpreter defines an interpreter which is also a node transformer
-//go:generate counterfeiter . NodeTransformerInterpreter
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NodeTransformerInterpreter
 type NodeTransformerInterpreter interface {
 	Interpreter
 	NodeTransformer

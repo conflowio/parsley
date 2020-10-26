@@ -10,12 +10,13 @@ import (
 	"github.com/opsidian/parsley/ast/interpreter"
 	"github.com/opsidian/parsley/combinator"
 	"github.com/opsidian/parsley/parser"
+	"github.com/opsidian/parsley/parsley"
 	"github.com/opsidian/parsley/text"
 	"github.com/opsidian/parsley/text/terminal"
 )
 
 // NewParser returns with a new JSON parser
-func NewParser() *combinator.Sequence {
+func NewParser() parsley.Parser {
 	var value parser.Func
 
 	array := combinator.SeqOf(
@@ -52,8 +53,5 @@ func NewParser() *combinator.Sequence {
 		terminal.Nil("null"),
 	).Name("value")
 
-	return combinator.SeqOf(
-		text.LeftTrim(value, text.WsSpacesNl),
-		terminal.Whitespaces(text.WsSpacesNl),
-	).Bind(interpreter.Select(0))
+	return value
 }

@@ -4,12 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package parsley
+// +build tools
 
-// Reader is a reader interface for parsing
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Reader
-type Reader interface {
-	Pos(int) Pos
-	Remaining(Pos) int
-	IsEOF(Pos) bool
-}
+package main
+
+import (
+	_ "github.com/maxbrunsfeld/counterfeiter/v6"
+)

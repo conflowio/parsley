@@ -7,6 +7,8 @@
 package parsley
 
 import (
+	"fmt"
+
 	"github.com/opsidian/parsley/data"
 )
 
@@ -18,13 +20,13 @@ func Parse(ctx *Context, p Parser) (Node, error) {
 	var node Node
 
 	if node, _, err = p.Parse(ctx, data.EmptyIntMap, ctx.Reader().Pos(0)); err != nil {
-		if ctxErr := ctx.Error(); ctxErr != nil && ctxErr.Pos() > err.Pos() {
-			err = ctxErr
+		if !IsWhitespaceError(err) {
+			if ctxErr := ctx.Error(); ctxErr != nil && ctxErr.Pos() > err.Pos() {
+				err = ctxErr
+			}
 		}
 
-		return nil, ctx.FileSet().ErrorWithPosition(
-			WrapError(err, "failed to parse the input: {{err}}"),
-		)
+		return nil, fmt.Errorf("failed to parse the input: %w", ctx.FileSet().ErrorWithPosition(err))
 	}
 
 	if ctx.TransformationEnabled() {
