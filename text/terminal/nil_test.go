@@ -18,11 +18,17 @@ import (
 
 var _ = Describe("Nil", func() {
 
-	var p = terminal.Nil("nil")
+	var p = terminal.Nil("nil", "nil")
 
 	Context("when called with an empty nil value", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Nil("") }).To(Panic())
+			Expect(func() { terminal.Nil("", "nil") }).To(Panic())
+		})
+	})
+
+	Context("when called with an empty nil type", func() {
+		It("should panic", func() {
+			Expect(func() { terminal.Nil("nil", "") }).To(Panic())
 		})
 	})
 

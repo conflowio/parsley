@@ -50,7 +50,7 @@ func NewParser() parsley.Parser {
 		array,
 		object,
 		terminal.Bool("true", "false"),
-		terminal.Nil("null"),
+		terminal.Nil("null", "null"),
 	).Name("value")
 
 	return value
