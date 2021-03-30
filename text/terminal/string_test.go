@@ -22,7 +22,7 @@ var _ = Describe("String", func() {
 
 	Context("when backquotes are allowed", func() {
 
-		var p = terminal.String(true)
+		var p = terminal.String("string", true)
 
 		DescribeTable("should match",
 			func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
@@ -34,7 +34,7 @@ var _ = Describe("String", func() {
 				Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(res.Token()).To(Equal("STRING"))
-				Expect(res.Type()).To(Equal("string"))
+				Expect(res.Schema()).To(Equal("string"))
 				Expect(res.Value(nil)).To(Equal(value))
 				Expect(res.Pos()).To(Equal(nodePos))
 				Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
@@ -112,7 +112,7 @@ var _ = Describe("String", func() {
 
 	Context("when backquotes are not allowed", func() {
 
-		var p = terminal.String(false)
+		var p = terminal.String("string", false)
 
 		It("should match double-quoted strings", func() {
 			f := text.NewFile("textfile", []byte(`"foo"`))

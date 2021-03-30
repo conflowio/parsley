@@ -38,6 +38,16 @@ type FakeNonTerminalNode struct {
 	readerPosReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
+	SchemaStub        func() interface{}
+	schemaMutex       sync.RWMutex
+	schemaArgsForCall []struct {
+	}
+	schemaReturns struct {
+		result1 interface{}
+	}
+	schemaReturnsOnCall map[int]struct {
+		result1 interface{}
+	}
 	TokenStub        func() string
 	tokenMutex       sync.RWMutex
 	tokenArgsForCall []struct {
@@ -46,16 +56,6 @@ type FakeNonTerminalNode struct {
 		result1 string
 	}
 	tokenReturnsOnCall map[int]struct {
-		result1 string
-	}
-	TypeStub        func() string
-	typeMutex       sync.RWMutex
-	typeArgsForCall []struct {
-	}
-	typeReturns struct {
-		result1 string
-	}
-	typeReturnsOnCall map[int]struct {
 		result1 string
 	}
 	ValueStub        func(interface{}) (interface{}, parsley.Error)
@@ -231,6 +231,58 @@ func (fake *FakeNonTerminalNode) ReaderPosReturnsOnCall(i int, result1 parsley.P
 	}{result1}
 }
 
+func (fake *FakeNonTerminalNode) Schema() interface{} {
+	fake.schemaMutex.Lock()
+	ret, specificReturn := fake.schemaReturnsOnCall[len(fake.schemaArgsForCall)]
+	fake.schemaArgsForCall = append(fake.schemaArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Schema", []interface{}{})
+	fake.schemaMutex.Unlock()
+	if fake.SchemaStub != nil {
+		return fake.SchemaStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.schemaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeNonTerminalNode) SchemaCallCount() int {
+	fake.schemaMutex.RLock()
+	defer fake.schemaMutex.RUnlock()
+	return len(fake.schemaArgsForCall)
+}
+
+func (fake *FakeNonTerminalNode) SchemaCalls(stub func() interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = stub
+}
+
+func (fake *FakeNonTerminalNode) SchemaReturns(result1 interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = nil
+	fake.schemaReturns = struct {
+		result1 interface{}
+	}{result1}
+}
+
+func (fake *FakeNonTerminalNode) SchemaReturnsOnCall(i int, result1 interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = nil
+	if fake.schemaReturnsOnCall == nil {
+		fake.schemaReturnsOnCall = make(map[int]struct {
+			result1 interface{}
+		})
+	}
+	fake.schemaReturnsOnCall[i] = struct {
+		result1 interface{}
+	}{result1}
+}
+
 func (fake *FakeNonTerminalNode) Token() string {
 	fake.tokenMutex.Lock()
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
@@ -279,58 +331,6 @@ func (fake *FakeNonTerminalNode) TokenReturnsOnCall(i int, result1 string) {
 		})
 	}
 	fake.tokenReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeNonTerminalNode) Type() string {
-	fake.typeMutex.Lock()
-	ret, specificReturn := fake.typeReturnsOnCall[len(fake.typeArgsForCall)]
-	fake.typeArgsForCall = append(fake.typeArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Type", []interface{}{})
-	fake.typeMutex.Unlock()
-	if fake.TypeStub != nil {
-		return fake.TypeStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.typeReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeNonTerminalNode) TypeCallCount() int {
-	fake.typeMutex.RLock()
-	defer fake.typeMutex.RUnlock()
-	return len(fake.typeArgsForCall)
-}
-
-func (fake *FakeNonTerminalNode) TypeCalls(stub func() string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = stub
-}
-
-func (fake *FakeNonTerminalNode) TypeReturns(result1 string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = nil
-	fake.typeReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeNonTerminalNode) TypeReturnsOnCall(i int, result1 string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = nil
-	if fake.typeReturnsOnCall == nil {
-		fake.typeReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.typeReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -407,10 +407,10 @@ func (fake *FakeNonTerminalNode) Invocations() map[string][][]interface{} {
 	defer fake.posMutex.RUnlock()
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
+	fake.schemaMutex.RLock()
+	defer fake.schemaMutex.RUnlock()
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
-	fake.typeMutex.RLock()
-	defer fake.typeMutex.RUnlock()
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

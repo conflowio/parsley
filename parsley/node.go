@@ -10,7 +10,7 @@ package parsley
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Node
 type Node interface {
 	Token() string
-	Type() string
+	Schema() interface{}
 	Value(userCtx interface{}) (interface{}, Error)
 	Pos() Pos
 	ReaderPos() Pos

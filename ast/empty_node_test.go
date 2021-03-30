@@ -34,10 +34,6 @@ var _ = Describe("EmptyNode", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Type() should return empty", func() {
-			Expect(node.Type()).To(BeEmpty())
-		})
-
 		It("Pos() should return with the token value", func() {
 			Expect(node.Pos()).To(Equal(pos))
 		})

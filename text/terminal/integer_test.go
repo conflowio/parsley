@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("Integer", func() {
 
-	var p = terminal.Integer()
+	var p = terminal.Integer("integer")
 
 	DescribeTable("should match",
 		func(input string, startPos int, value int, nodePos parsley.Pos, endPos int) {
@@ -30,7 +30,7 @@ var _ = Describe("Integer", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("INTEGER"))
-			Expect(res.Type()).To(Equal("int64"))
+			Expect(res.Schema()).To(Equal("integer"))
 			Expect(res.Value(nil)).To(Equal(int64(value)))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))

@@ -14,8 +14,8 @@ import (
 
 // NonTerminalNode represents a branch node in the AST
 type NonTerminalNode struct {
+	schema      interface{}
 	token       string
-	valueType   string
 	children    []parsley.Node
 	pos         parsley.Pos
 	readerPos   parsley.Pos
@@ -57,9 +57,9 @@ func (n *NonTerminalNode) Token() string {
 	return n.token
 }
 
-// Type returns with the type of the node's value
-func (n *NonTerminalNode) Type() string {
-	return n.valueType
+// Schema returns the schema for the node's value
+func (n *NonTerminalNode) Schema() interface{} {
+	return n.schema
 }
 
 // Value returns with the value of the node
@@ -95,11 +95,11 @@ func (n *NonTerminalNode) StaticCheck(userCtx interface{}) parsley.Error {
 	if n.interpreter != nil {
 		switch i := n.interpreter.(type) {
 		case parsley.StaticChecker:
-			valueType, err := i.StaticCheck(userCtx, n)
+			schema, err := i.StaticCheck(userCtx, n)
 			if err != nil {
 				return err
 			}
-			n.valueType = valueType
+			n.schema = schema
 		}
 	}
 
@@ -128,8 +128,5 @@ func (n *NonTerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 
 // String returns with a string representation of the node
 func (n *NonTerminalNode) String() string {
-	if n.valueType == "" {
-		return fmt.Sprintf("%s{%s, %d..%d}", n.token, n.children, n.pos, n.readerPos)
-	}
-	return fmt.Sprintf("%s{<%s> %s, %d..%d}", n.token, n.valueType, n.children, n.pos, n.readerPos)
+	return fmt.Sprintf("%s{%s, %d..%d}", n.token, n.children, n.pos, n.readerPos)
 }

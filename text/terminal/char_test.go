@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("Char", func() {
 
-	var p = terminal.Char()
+	var p = terminal.Char("char")
 
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
@@ -30,7 +30,7 @@ var _ = Describe("Char", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("CHAR"))
-			Expect(res.Type()).To(Equal("rune"))
+			Expect(res.Schema()).To(Equal("char"))
 			Expect(res.Value(nil)).To(Equal(value))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))

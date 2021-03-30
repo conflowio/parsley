@@ -20,7 +20,7 @@ import (
 
 var _ = Describe("TimeDuration", func() {
 
-	var p = terminal.TimeDuration()
+	var p = terminal.TimeDuration("time.Duration")
 
 	DescribeTable("should match",
 		func(input string, startPos int, value time.Duration, nodePos int, endPos int) {
@@ -32,7 +32,7 @@ var _ = Describe("TimeDuration", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("TIME_DURATION"))
-			Expect(res.Type()).To(Equal("time.Duration"))
+			Expect(res.Schema()).To(Equal("time.Duration"))
 			Expect(res.Value(nil)).To(Equal(value))
 			Expect(res.Pos()).To(Equal(parsley.Pos(nodePos)))
 			Expect(res.ReaderPos()).To(Equal(parsley.Pos(endPos)))

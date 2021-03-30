@@ -18,13 +18,13 @@ var _ = Describe("TerminalNode", func() {
 		node      *ast.TerminalNode
 		token     = "TEST"
 		value     = "some value"
-		valueType = "string"
+		schema    = "string"
 		pos       = parsley.Pos(1)
 		readerPos = parsley.Pos(2)
 	)
 
 	JustBeforeEach(func() {
-		node = ast.NewTerminalNode(token, value, valueType, pos, readerPos)
+		node = ast.NewTerminalNode(schema, token, value, pos, readerPos)
 	})
 
 	Describe("Methods", func() {
@@ -32,8 +32,8 @@ var _ = Describe("TerminalNode", func() {
 			Expect(node.Token()).To(Equal(token))
 		})
 
-		It("Type() should return with the value's type", func() {
-			Expect(node.Type()).To(Equal(valueType))
+		It("Schema() should return with the value's type", func() {
+			Expect(node.Schema()).To(Equal(schema))
 		})
 
 		It("Value() should return with the value", func() {
@@ -58,16 +58,7 @@ var _ = Describe("TerminalNode", func() {
 		})
 
 		It("String() should return with a readable representation", func() {
-			Expect(node.String()).To(Equal("TEST{<string> some value, 1..2}"))
-		})
-
-		Context("when node type is empty", func() {
-			BeforeEach(func() {
-				valueType = ""
-			})
-			It("String() should return with a readable representation", func() {
-				Expect(node.String()).To(Equal("TEST{some value, 1..2}"))
-			})
+			Expect(node.String()).To(Equal("TEST{some value, 1..2}"))
 		})
 	})
 })

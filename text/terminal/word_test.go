@@ -18,11 +18,11 @@ import (
 
 var _ = Describe("Word", func() {
 
-	var p = terminal.Word("foo", 42, "int64")
+	var p = terminal.Word("integer", "foo", 42)
 
 	Context("when called with an empty word", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Word("", 42, "int64") }).To(Panic())
+			Expect(func() { terminal.Word("integer", "", 42) }).To(Panic())
 		})
 	})
 
@@ -36,7 +36,7 @@ var _ = Describe("Word", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("FOO"))
-			Expect(res.Type()).To(Equal("int64"))
+			Expect(res.Schema()).To(Equal("integer"))
 			Expect(res.Value(nil)).To(Equal(value))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))

@@ -18,8 +18,8 @@ import (
 
 var _ = Describe("Regexp", func() {
 
-	var p1 = terminal.Regexp("FOO", "foo", "fo+", 0)
-	var p2 = terminal.Regexp("FOO", "foo", "f(o+)", 1)
+	var p1 = terminal.Regexp("foo", "FOO", "foo", "fo+", 0)
+	var p2 = terminal.Regexp("foo", "FOO", "foo", "f(o+)", 1)
 
 	Context("when regexp matches an empty string", func() {
 		It("should panic", func() {
@@ -27,7 +27,7 @@ var _ = Describe("Regexp", func() {
 			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
 			ctx := parsley.NewContext(fs, r)
-			p := terminal.Regexp("FOO", "foo", "f*", 0)
+			p := terminal.Regexp("foo", "FOO", "foo", "f*", 0)
 			Expect(func() { p.Parse(ctx, data.EmptyIntMap, 0) }).To(Panic())
 		})
 	})
@@ -38,7 +38,7 @@ var _ = Describe("Regexp", func() {
 			fs := parsley.NewFileSet(f)
 			r := text.NewReader(f)
 			ctx := parsley.NewContext(fs, r)
-			p := terminal.Regexp("FOO", "foo", "f(o+)", 2)
+			p := terminal.Regexp("foo", "FOO", "foo", "f(o+)", 2)
 			Expect(func() { p.Parse(ctx, data.EmptyIntMap, 0) }).To(Panic())
 		})
 	})

@@ -44,7 +44,7 @@ var _ = Describe("Single", func() {
 		var childNode parsley.Node
 
 		BeforeEach(func() {
-			childNode = ast.NewTerminalNode("child", "child", "string", parsley.Pos(1), parsley.Pos(2))
+			childNode = ast.NewTerminalNode("string", "child", "child", parsley.Pos(1), parsley.Pos(2))
 			qres = ast.NewNonTerminalNode("res", []parsley.Node{childNode}, nil)
 		})
 
@@ -73,7 +73,7 @@ var _ = Describe("Single", func() {
 	Context("when q does not return with a non terminal node", func() {
 
 		BeforeEach(func() {
-			qres = ast.NewTerminalNode("child", "child", "string", parsley.Pos(1), parsley.Pos(2))
+			qres = ast.NewTerminalNode("string", "child", "child", parsley.Pos(1), parsley.Pos(2))
 		})
 
 		It("should return the original result", func() {

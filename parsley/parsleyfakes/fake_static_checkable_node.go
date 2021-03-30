@@ -28,6 +28,16 @@ type FakeStaticCheckableNode struct {
 	readerPosReturnsOnCall map[int]struct {
 		result1 parsley.Pos
 	}
+	SchemaStub        func() interface{}
+	schemaMutex       sync.RWMutex
+	schemaArgsForCall []struct {
+	}
+	schemaReturns struct {
+		result1 interface{}
+	}
+	schemaReturnsOnCall map[int]struct {
+		result1 interface{}
+	}
 	StaticCheckStub        func(interface{}) parsley.Error
 	staticCheckMutex       sync.RWMutex
 	staticCheckArgsForCall []struct {
@@ -47,16 +57,6 @@ type FakeStaticCheckableNode struct {
 		result1 string
 	}
 	tokenReturnsOnCall map[int]struct {
-		result1 string
-	}
-	TypeStub        func() string
-	typeMutex       sync.RWMutex
-	typeArgsForCall []struct {
-	}
-	typeReturns struct {
-		result1 string
-	}
-	typeReturnsOnCall map[int]struct {
 		result1 string
 	}
 	ValueStub        func(interface{}) (interface{}, parsley.Error)
@@ -180,6 +180,58 @@ func (fake *FakeStaticCheckableNode) ReaderPosReturnsOnCall(i int, result1 parsl
 	}{result1}
 }
 
+func (fake *FakeStaticCheckableNode) Schema() interface{} {
+	fake.schemaMutex.Lock()
+	ret, specificReturn := fake.schemaReturnsOnCall[len(fake.schemaArgsForCall)]
+	fake.schemaArgsForCall = append(fake.schemaArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Schema", []interface{}{})
+	fake.schemaMutex.Unlock()
+	if fake.SchemaStub != nil {
+		return fake.SchemaStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.schemaReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeStaticCheckableNode) SchemaCallCount() int {
+	fake.schemaMutex.RLock()
+	defer fake.schemaMutex.RUnlock()
+	return len(fake.schemaArgsForCall)
+}
+
+func (fake *FakeStaticCheckableNode) SchemaCalls(stub func() interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = stub
+}
+
+func (fake *FakeStaticCheckableNode) SchemaReturns(result1 interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = nil
+	fake.schemaReturns = struct {
+		result1 interface{}
+	}{result1}
+}
+
+func (fake *FakeStaticCheckableNode) SchemaReturnsOnCall(i int, result1 interface{}) {
+	fake.schemaMutex.Lock()
+	defer fake.schemaMutex.Unlock()
+	fake.SchemaStub = nil
+	if fake.schemaReturnsOnCall == nil {
+		fake.schemaReturnsOnCall = make(map[int]struct {
+			result1 interface{}
+		})
+	}
+	fake.schemaReturnsOnCall[i] = struct {
+		result1 interface{}
+	}{result1}
+}
+
 func (fake *FakeStaticCheckableNode) StaticCheck(arg1 interface{}) parsley.Error {
 	fake.staticCheckMutex.Lock()
 	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
@@ -292,58 +344,6 @@ func (fake *FakeStaticCheckableNode) TokenReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeStaticCheckableNode) Type() string {
-	fake.typeMutex.Lock()
-	ret, specificReturn := fake.typeReturnsOnCall[len(fake.typeArgsForCall)]
-	fake.typeArgsForCall = append(fake.typeArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Type", []interface{}{})
-	fake.typeMutex.Unlock()
-	if fake.TypeStub != nil {
-		return fake.TypeStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.typeReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeStaticCheckableNode) TypeCallCount() int {
-	fake.typeMutex.RLock()
-	defer fake.typeMutex.RUnlock()
-	return len(fake.typeArgsForCall)
-}
-
-func (fake *FakeStaticCheckableNode) TypeCalls(stub func() string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = stub
-}
-
-func (fake *FakeStaticCheckableNode) TypeReturns(result1 string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = nil
-	fake.typeReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeStaticCheckableNode) TypeReturnsOnCall(i int, result1 string) {
-	fake.typeMutex.Lock()
-	defer fake.typeMutex.Unlock()
-	fake.TypeStub = nil
-	if fake.typeReturnsOnCall == nil {
-		fake.typeReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.typeReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
 func (fake *FakeStaticCheckableNode) Value(arg1 interface{}) (interface{}, parsley.Error) {
 	fake.valueMutex.Lock()
 	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
@@ -414,12 +414,12 @@ func (fake *FakeStaticCheckableNode) Invocations() map[string][][]interface{} {
 	defer fake.posMutex.RUnlock()
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
+	fake.schemaMutex.RLock()
+	defer fake.schemaMutex.RUnlock()
 	fake.staticCheckMutex.RLock()
 	defer fake.staticCheckMutex.RUnlock()
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
-	fake.typeMutex.RLock()
-	defer fake.typeMutex.RUnlock()
 	fake.valueMutex.RLock()
 	defer fake.valueMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

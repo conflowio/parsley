@@ -14,8 +14,8 @@ import (
 
 // TerminalNode is a leaf node in the AST
 type TerminalNode struct {
+	schema    interface{}
 	token     string
-	valueType string
 	value     interface{}
 	pos       parsley.Pos
 	readerPos parsley.Pos
@@ -23,16 +23,16 @@ type TerminalNode struct {
 
 // NewTerminalNode creates a new TerminalNode instance
 func NewTerminalNode(
+	schema interface{},
 	token string,
 	value interface{},
-	valueType string,
 	pos parsley.Pos,
 	readerPos parsley.Pos,
 ) *TerminalNode {
 	return &TerminalNode{
+		schema:    schema,
 		token:     token,
 		value:     value,
-		valueType: valueType,
 		pos:       pos,
 		readerPos: readerPos,
 	}
@@ -43,9 +43,9 @@ func (t *TerminalNode) Token() string {
 	return t.token
 }
 
-// Type returns with the type of the node's value
-func (t *TerminalNode) Type() string {
-	return t.valueType
+// Schema returns the schema for the node's value
+func (t *TerminalNode) Schema() interface{} {
+	return t.schema
 }
 
 // Value returns with the value of the node
@@ -70,9 +70,5 @@ func (t *TerminalNode) SetReaderPos(f func(parsley.Pos) parsley.Pos) {
 
 // String returns with a string representation of the node
 func (t *TerminalNode) String() string {
-	if t.valueType == "" {
-		return fmt.Sprintf("%s{%v, %d..%d}", t.token, t.value, t.pos, t.readerPos)
-	}
-
-	return fmt.Sprintf("%s{<%s> %v, %d..%d}", t.token, t.valueType, t.value, t.pos, t.readerPos)
+	return fmt.Sprintf("%s{%v, %d..%d}", t.token, t.value, t.pos, t.readerPos)
 }

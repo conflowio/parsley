@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("Float", func() {
 
-	var p = terminal.Float()
+	var p = terminal.Float("float")
 
 	DescribeTable("should match",
 		func(input string, startPos int, value interface{}, nodePos parsley.Pos, endPos int) {
@@ -30,7 +30,7 @@ var _ = Describe("Float", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("FLOAT"))
-			Expect(res.Type()).To(Equal("float64"))
+			Expect(res.Schema()).To(Equal("float"))
 			Expect(res.Value(nil)).To(Equal(value))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))

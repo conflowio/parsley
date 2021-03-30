@@ -17,19 +17,18 @@ import (
 	"github.com/opsidian/parsley/text"
 )
 
-// StringType contains the string type's name
-const StringType = "string"
-
 // StringNode is a leaf node in the AST
 type StringNode struct {
+	schema    interface{}
 	value     string
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewStringNode creates a new StringNode instance
-func NewStringNode(value string, pos parsley.Pos, readerPos parsley.Pos) *StringNode {
+func NewStringNode(schema interface{}, value string, pos parsley.Pos, readerPos parsley.Pos) *StringNode {
 	return &StringNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -41,9 +40,9 @@ func (s *StringNode) Token() string {
 	return "STRING"
 }
 
-// Type returns
-func (s *StringNode) Type() string {
-	return StringType
+// Schema returns the schema for the node's value
+func (s *StringNode) Schema() interface{} {
+	return s.schema
 }
 
 // Value returns with the value of the node
@@ -72,7 +71,7 @@ func (s *StringNode) String() string {
 }
 
 // String matches a string literal enclosed in double quotes
-func String(allowBackquote bool) parser.Func {
+func String(schema interface{}, allowBackquote bool) parser.Func {
 	notFoundErr := parsley.NotFoundError("string literal")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
@@ -93,7 +92,7 @@ func String(allowBackquote bool) parser.Func {
 		// check for empty string
 		readerPos, found = tr.ReadRune(readerPos, quote)
 		if found {
-			return NewStringNode("", pos, readerPos), data.EmptyIntSet, nil
+			return NewStringNode(schema, "", pos, readerPos), data.EmptyIntSet, nil
 		}
 
 		var value []byte
@@ -107,7 +106,7 @@ func String(allowBackquote bool) parser.Func {
 		if !found {
 			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "was expecting '%s'", string(quote))
 		}
-		return NewStringNode(string(value), pos, readerPos), data.EmptyIntSet, nil
+		return NewStringNode(schema, string(value), pos, readerPos), data.EmptyIntSet, nil
 	})
 }
 

@@ -21,14 +21,16 @@ const TimeDurationType = "time.Duration"
 
 // TimeDurationNode is a leaf node in the AST
 type TimeDurationNode struct {
+	schema    interface{}
 	value     time.Duration
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewTimeDurationNode creates a new TimeDurationNode instance
-func NewTimeDurationNode(value time.Duration, pos parsley.Pos, readerPos parsley.Pos) *TimeDurationNode {
+func NewTimeDurationNode(schema interface{}, value time.Duration, pos parsley.Pos, readerPos parsley.Pos) *TimeDurationNode {
 	return &TimeDurationNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -40,9 +42,9 @@ func (t *TimeDurationNode) Token() string {
 	return "TIME_DURATION"
 }
 
-// Type returns
-func (t *TimeDurationNode) Type() string {
-	return TimeDurationType
+// Schema returns the schema for the node's value
+func (t *TimeDurationNode) Schema() interface{} {
+	return t.schema
 }
 
 // Value returns with the value of the node
@@ -73,7 +75,7 @@ func (t *TimeDurationNode) String() string {
 // TimeDuration parses a duration string. A duration string is a possibly signed sequence of decimal numbers,
 // each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
 // Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
-func TimeDuration() parser.Func {
+func TimeDuration(schema interface{}) parser.Func {
 	notFoundErr := parsley.NotFoundError("time duration")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
@@ -83,7 +85,7 @@ func TimeDuration() parser.Func {
 			if err != nil {
 				return nil, data.EmptyIntSet, parsley.NewError(pos, err)
 			}
-			return NewTimeDurationNode(duration, pos, readerPos), data.EmptyIntSet, nil
+			return NewTimeDurationNode(schema, duration, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})
