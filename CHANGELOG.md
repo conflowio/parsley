@@ -1,3 +1,18 @@
+## 0.15.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- Replace `Type() string` on parsley.Node with `Schema() interface{}` to support any user-defined schema
+- Allow to set schema for nil parser
+
+IMPROVEMENTS:
+
+- Use Go 1.16
+- Move tools dependency file to a subpackage
+
+OTHER:
+- Remove CodeCov integration
+
 ## 0.14.0
 
 BACKWARDS INCOMPATIBILITIES:
