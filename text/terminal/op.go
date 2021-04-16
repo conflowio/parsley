@@ -37,9 +37,9 @@ func (o *OpNode) Token() string {
 	return o.value
 }
 
-// Type returns
-func (o *OpNode) Type() string {
-	return StringType
+// Schema returns the schema for the node's value
+func (o *OpNode) Schema() interface{} {
+	return nil
 }
 
 // Value returns with the value of the node

@@ -8,25 +8,25 @@ import (
 )
 
 type FakeStaticChecker struct {
-	StaticCheckStub        func(interface{}, parsley.NonTerminalNode) (string, parsley.Error)
+	StaticCheckStub        func(interface{}, parsley.NonTerminalNode) (interface{}, parsley.Error)
 	staticCheckMutex       sync.RWMutex
 	staticCheckArgsForCall []struct {
 		arg1 interface{}
 		arg2 parsley.NonTerminalNode
 	}
 	staticCheckReturns struct {
-		result1 string
+		result1 interface{}
 		result2 parsley.Error
 	}
 	staticCheckReturnsOnCall map[int]struct {
-		result1 string
+		result1 interface{}
 		result2 parsley.Error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeStaticChecker) StaticCheck(arg1 interface{}, arg2 parsley.NonTerminalNode) (string, parsley.Error) {
+func (fake *FakeStaticChecker) StaticCheck(arg1 interface{}, arg2 parsley.NonTerminalNode) (interface{}, parsley.Error) {
 	fake.staticCheckMutex.Lock()
 	ret, specificReturn := fake.staticCheckReturnsOnCall[len(fake.staticCheckArgsForCall)]
 	fake.staticCheckArgsForCall = append(fake.staticCheckArgsForCall, struct {
@@ -51,7 +51,7 @@ func (fake *FakeStaticChecker) StaticCheckCallCount() int {
 	return len(fake.staticCheckArgsForCall)
 }
 
-func (fake *FakeStaticChecker) StaticCheckCalls(stub func(interface{}, parsley.NonTerminalNode) (string, parsley.Error)) {
+func (fake *FakeStaticChecker) StaticCheckCalls(stub func(interface{}, parsley.NonTerminalNode) (interface{}, parsley.Error)) {
 	fake.staticCheckMutex.Lock()
 	defer fake.staticCheckMutex.Unlock()
 	fake.StaticCheckStub = stub
@@ -64,28 +64,28 @@ func (fake *FakeStaticChecker) StaticCheckArgsForCall(i int) (interface{}, parsl
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeStaticChecker) StaticCheckReturns(result1 string, result2 parsley.Error) {
+func (fake *FakeStaticChecker) StaticCheckReturns(result1 interface{}, result2 parsley.Error) {
 	fake.staticCheckMutex.Lock()
 	defer fake.staticCheckMutex.Unlock()
 	fake.StaticCheckStub = nil
 	fake.staticCheckReturns = struct {
-		result1 string
+		result1 interface{}
 		result2 parsley.Error
 	}{result1, result2}
 }
 
-func (fake *FakeStaticChecker) StaticCheckReturnsOnCall(i int, result1 string, result2 parsley.Error) {
+func (fake *FakeStaticChecker) StaticCheckReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
 	fake.staticCheckMutex.Lock()
 	defer fake.staticCheckMutex.Unlock()
 	fake.StaticCheckStub = nil
 	if fake.staticCheckReturnsOnCall == nil {
 		fake.staticCheckReturnsOnCall = make(map[int]struct {
-			result1 string
+			result1 interface{}
 			result2 parsley.Error
 		})
 	}
 	fake.staticCheckReturnsOnCall[i] = struct {
-		result1 string
+		result1 interface{}
 		result2 parsley.Error
 	}{result1, result2}
 }

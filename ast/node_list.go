@@ -17,9 +17,9 @@ func (nl NodeList) Token() string {
 	return nl[0].Token()
 }
 
-// Type returns with the type of the first node
-func (nl NodeList) Type() string {
-	return nl[0].Type()
+// Schema returns nil
+func (nl NodeList) Schema() interface{} {
+	return nil
 }
 
 // Value returns with the value of the first node

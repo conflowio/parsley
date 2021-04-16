@@ -17,17 +17,17 @@ import (
 
 // NilNode is a leaf node in the AST
 type NilNode struct {
+	schema    interface{}
 	pos       parsley.Pos
 	readerPos parsley.Pos
-	nilType   string
 }
 
 // NewNilNode creates a new NilNode instance
-func NewNilNode(pos parsley.Pos, readerPos parsley.Pos, nilType string) *NilNode {
+func NewNilNode(schema interface{}, pos parsley.Pos, readerPos parsley.Pos) *NilNode {
 	return &NilNode{
+		schema:    schema,
 		pos:       pos,
 		readerPos: readerPos,
-		nilType:   nilType,
 	}
 }
 
@@ -36,9 +36,9 @@ func (n *NilNode) Token() string {
 	return "NIL"
 }
 
-// Type returns
-func (n *NilNode) Type() string {
-	return n.nilType
+// Schema returns the schema for the node's value
+func (n *NilNode) Schema() interface{} {
+	return n.schema
 }
 
 // Value returns with the value of the node
@@ -67,13 +67,9 @@ func (n *NilNode) String() string {
 }
 
 // Nil matches a nil literal
-func Nil(nilStr, nilType string) parser.Func {
+func Nil(schema interface{}, nilStr string) parser.Func {
 	if nilStr == "" {
 		panic("Nil() should not be called with an empty nilStr")
-	}
-
-	if nilType == "" {
-		panic("Nil() should not be called with an empty nilType")
 	}
 
 	notFoundErr := parsley.NotFoundError(nilStr)
@@ -81,7 +77,7 @@ func Nil(nilStr, nilType string) parser.Func {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, nilStr); found {
-			return NewNilNode(pos, readerPos, nilType), data.EmptyIntSet, nil
+			return NewNilNode(schema, pos, readerPos), data.EmptyIntSet, nil
 		}
 
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)

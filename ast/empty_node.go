@@ -20,9 +20,9 @@ func (e EmptyNode) Token() string {
 	return "EMPTY"
 }
 
-// Type returns with an empty type
-func (e EmptyNode) Type() string {
-	return ""
+// Schema returns nil
+func (e EmptyNode) Schema() interface{} {
+	return nil
 }
 
 // Value returns with nil

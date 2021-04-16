@@ -156,7 +156,7 @@ var _ = Describe("Trim parsers", func() {
 
 			When("there are no whitespaces after the match", func() {
 				BeforeEach(func() {
-					p = terminal.Word("def", "def", "string")
+					p = terminal.Word("string", "def", "def")
 					pos = parsley.Pos(8)
 				})
 
@@ -168,7 +168,7 @@ var _ = Describe("Trim parsers", func() {
 
 			When("there are whitespaces after the match", func() {
 				BeforeEach(func() {
-					p = terminal.Word("abc", "abc", "string")
+					p = terminal.Word("string", "abc", "abc")
 					pos = parsley.Pos(1)
 				})
 
@@ -204,7 +204,7 @@ var _ = Describe("Trim parsers", func() {
 
 				Context("when whitespace mode is forcing new lines", func() {
 					BeforeEach(func() {
-						p = terminal.Word("def", "def", "string")
+						p = terminal.Word("string", "def", "def")
 						pos = parsley.Pos(8)
 						wsMode = text.WsSpacesForceNl
 					})
@@ -269,11 +269,11 @@ var _ = Describe("Trim parsers", func() {
 
 		Context("When there is result", func() {
 			BeforeEach(func() {
-				p = terminal.Word("abc", "abc", "string")
+				p = terminal.Word("string", "abc", "abc")
 			})
 
 			It("should trim the spaces and new lines from the right", func() {
-				Expect(res).To(Equal(ast.NewTerminalNode("ABC", "abc", "string", parsley.Pos(5), parsley.Pos(12))))
+				Expect(res).To(Equal(ast.NewTerminalNode("string", "ABC", "abc", parsley.Pos(5), parsley.Pos(12))))
 			})
 		})
 	})

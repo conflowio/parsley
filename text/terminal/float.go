@@ -16,19 +16,18 @@ import (
 	"github.com/opsidian/parsley/text"
 )
 
-// FloatType contains the float type's name
-const FloatType = "float64"
-
 // FloatNode is a leaf node in the AST
 type FloatNode struct {
+	schema    interface{}
 	value     float64
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewFloatNode creates a new FloatNode instance
-func NewFloatNode(value float64, pos parsley.Pos, readerPos parsley.Pos) *FloatNode {
+func NewFloatNode(schema interface{}, value float64, pos parsley.Pos, readerPos parsley.Pos) *FloatNode {
 	return &FloatNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -40,9 +39,9 @@ func (f *FloatNode) Token() string {
 	return "FLOAT"
 }
 
-// Type returns
-func (f *FloatNode) Type() string {
-	return FloatType
+// Schema returns the schema for the node's value
+func (f *FloatNode) Schema() interface{} {
+	return f.schema
 }
 
 // Value returns with the value of the node
@@ -71,7 +70,7 @@ func (f *FloatNode) String() string {
 }
 
 // Float matches a float literal
-func Float() parser.Func {
+func Float(schema interface{}) parser.Func {
 	notFoundErr := parsley.NotFoundError("float value")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
@@ -81,7 +80,7 @@ func Float() parser.Func {
 			if err != nil {
 				return nil, data.EmptyIntSet, parsley.NewErrorf(pos, "invalid float value")
 			}
-			return NewFloatNode(val, pos, readerPos), data.EmptyIntSet, nil
+			return NewFloatNode(schema, val, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

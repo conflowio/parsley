@@ -24,8 +24,8 @@ import (
 // The parser would return only the first match so in this case we have to put the float parser first.
 func ExampleChoice() {
 	p := combinator.Choice(
-		terminal.Float(),
-		terminal.Integer(),
+		terminal.Float("number"),
+		terminal.Integer("integer"),
 	)
 	r := text.NewReader(text.NewFile("example.file", []byte("1.23")))
 	ctx := parsley.NewContext(parsley.NewFileSet(), r)

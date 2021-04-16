@@ -23,12 +23,12 @@ type selectInterpreter struct {
 }
 
 // StaticCheck runs the static checking on the indexed node
-func (s selectInterpreter) StaticCheck(userCtx interface{}, node parsley.NonTerminalNode) (string, parsley.Error) {
+func (s selectInterpreter) StaticCheck(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 	nodes := node.Children()
 	if s.i < 0 || s.i >= len(nodes) {
 		panic(fmt.Sprintf("node index is out of bounds: %d", s.i))
 	}
-	return nodes[s.i].Type(), nil
+	return nodes[s.i].Schema(), nil
 }
 
 func (s selectInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {

@@ -15,19 +15,18 @@ import (
 	"github.com/opsidian/parsley/text"
 )
 
-// BoolType contains the boolean type's name
-const BoolType = "bool"
-
 // BoolNode is a leaf node in the AST
 type BoolNode struct {
+	schema    interface{}
 	value     bool
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewBoolNode creates a new BoolNode instance
-func NewBoolNode(value bool, pos parsley.Pos, readerPos parsley.Pos) *BoolNode {
+func NewBoolNode(schema interface{}, value bool, pos parsley.Pos, readerPos parsley.Pos) *BoolNode {
 	return &BoolNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -39,9 +38,9 @@ func (b *BoolNode) Token() string {
 	return "BOOL"
 }
 
-// Type returns
-func (b *BoolNode) Type() string {
-	return BoolType
+// Schema returns the schema for the node's value
+func (b *BoolNode) Schema() interface{} {
+	return b.schema
 }
 
 // Value returns with the value of the node
@@ -70,7 +69,7 @@ func (b *BoolNode) String() string {
 }
 
 // Bool matches a bool literal: true or false
-func Bool(trueStr string, falseStr string) parser.Func {
+func Bool(schema interface{}, trueStr string, falseStr string) parser.Func {
 	if trueStr == "" || falseStr == "" {
 		panic("Bool() should not be called with an empty true/false string")
 	}
@@ -80,10 +79,10 @@ func Bool(trueStr string, falseStr string) parser.Func {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.MatchWord(pos, trueStr); found {
-			return NewBoolNode(true, pos, readerPos), data.EmptyIntSet, nil
+			return NewBoolNode(schema, true, pos, readerPos), data.EmptyIntSet, nil
 		}
 		if readerPos, found := tr.MatchWord(pos, falseStr); found {
-			return NewBoolNode(false, pos, readerPos), data.EmptyIntSet, nil
+			return NewBoolNode(schema, false, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

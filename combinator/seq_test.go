@@ -76,9 +76,9 @@ func ExampleSeqFirstOrAll() {
 	})
 
 	p := combinator.SeqFirstOrAll(
-		terminal.Integer(),
+		terminal.Integer("integer"),
 		terminal.Rune('+'),
-		terminal.Integer(),
+		terminal.Integer("integer"),
 	).Bind(add)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1")))

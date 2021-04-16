@@ -23,9 +23,9 @@ func ExampleParse() {
 	})
 
 	p := combinator.SeqOf(
-		terminal.Integer(),
+		terminal.Integer("integer"),
 		terminal.Rune('+'),
-		terminal.Integer(),
+		terminal.Integer("integer"),
 	).Bind(sum)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
@@ -53,9 +53,9 @@ func ExampleEvaluate() {
 	})
 
 	p := combinator.SeqOf(
-		terminal.Integer(),
+		terminal.Integer("integer"),
 		terminal.Rune('+'),
-		terminal.Integer(),
+		terminal.Integer("integer"),
 	).Bind(sum)
 
 	r := text.NewReader(text.NewFile("example.file", []byte("1+2")))
@@ -120,7 +120,7 @@ var _ = Describe("Parsley", func() {
 
 		var p parser.Func
 		value := combinator.Memoize(combinator.Any(
-			terminal.Integer(),
+			terminal.Integer("integer"),
 			&p,
 		))
 

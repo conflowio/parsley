@@ -29,7 +29,7 @@ func NewParser() parsley.Parser {
 	).Bind(interpreter.Select(1))
 
 	keyValue := combinator.SeqOf(
-		terminal.String(false),
+		terminal.String("string", false),
 		text.LeftTrim(terminal.Rune(':'), text.WsSpaces),
 		text.LeftTrim(&value, text.WsSpacesNl),
 	)
@@ -44,12 +44,12 @@ func NewParser() parsley.Parser {
 	).Bind(interpreter.Select(1))
 
 	value = combinator.Choice(
-		terminal.String(false),
-		terminal.Float(),
-		terminal.Integer(),
+		terminal.String("string", false),
+		terminal.Float("number"),
+		terminal.Integer("integer"),
 		array,
 		object,
-		terminal.Bool("true", "false"),
+		terminal.Bool("boolean", "true", "false"),
 		terminal.Nil("null", "null"),
 	).Name("value")
 

@@ -105,8 +105,8 @@ var _ = Describe("NonTerminalNode", func() {
 				Expect(node.Pos()).To(Equal(pos))
 			})
 
-			It("Type() should return empty before running a static check", func() {
-				Expect(node.Type()).To(BeEmpty())
+			It("Schema() should return nil before running a static check", func() {
+				Expect(node.Schema()).To(BeNil())
 			})
 
 			It("ReaderPos() should return with the reader position", func() {
@@ -127,22 +127,11 @@ var _ = Describe("NonTerminalNode", func() {
 			Context("when having real children", func() {
 				BeforeEach(func() {
 					children = []parsley.Node{
-						ast.NewTerminalNode("STRING", "foo", "string", parsley.Pos(1), parsley.Pos(2)),
+						ast.NewTerminalNode("string", "STRING", "foo", parsley.Pos(1), parsley.Pos(2)),
 					}
 				})
 				It("String() should return with a readable representation", func() {
-					Expect(node.String()).To(Equal("TEST{[STRING{<string> foo, 1..2}], 1..2}"))
-				})
-				Context("having a type", func() {
-					BeforeEach(func() {
-						staticCheckInterpreter := &parsleyfakes.FakeStaticCheckerInterpreter{}
-						staticCheckInterpreter.StaticCheckReturns("testtype", nil)
-						interpreter = staticCheckInterpreter
-					})
-					It("String() should return with a readable representation", func() {
-						node.StaticCheck("ctx")
-						Expect(node.String()).To(Equal("TEST{<testtype> [STRING{<string> foo, 1..2}], 1..2}"))
-					})
+					Expect(node.String()).To(Equal("TEST{[STRING{foo, 1..2}], 1..2}"))
 				})
 			})
 
@@ -166,7 +155,7 @@ var _ = Describe("NonTerminalNode", func() {
 						Expect(passedCtx).To(Equal(ctx))
 						Expect(passedNode).To(Equal(node))
 
-						Expect(node.Type()).To(Equal("testtype"))
+						Expect(node.Schema()).To(Equal("testtype"))
 					})
 				})
 
@@ -176,7 +165,7 @@ var _ = Describe("NonTerminalNode", func() {
 					BeforeEach(func() {
 						checkErr = parsley.NewError(parsley.Pos(1), errors.New("check error"))
 						staticCheckInterpreter = &parsleyfakes.FakeStaticCheckerInterpreter{}
-						staticCheckInterpreter.StaticCheckReturns("", checkErr)
+						staticCheckInterpreter.StaticCheckReturns(nil, checkErr)
 						interpreter = staticCheckInterpreter
 					})
 
@@ -184,7 +173,7 @@ var _ = Describe("NonTerminalNode", func() {
 						ctx := "some context"
 						err := node.StaticCheck(ctx)
 						Expect(err).To(MatchError(checkErr))
-						Expect(node.Type()).To(BeEmpty())
+						Expect(node.Schema()).To(BeNil())
 					})
 				})
 
@@ -193,7 +182,7 @@ var _ = Describe("NonTerminalNode", func() {
 						ctx := "some context"
 						err := node.StaticCheck(ctx)
 						Expect(err).ToNot(HaveOccurred())
-						Expect(node.Type()).To(BeEmpty())
+						Expect(node.Schema()).To(BeNil())
 					})
 				})
 			})

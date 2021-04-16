@@ -16,19 +16,18 @@ import (
 	"github.com/opsidian/parsley/text"
 )
 
-// IntegerType contains the integer type's name
-const IntegerType = "int64"
-
 // IntegerNode is a leaf node in the AST
 type IntegerNode struct {
+	schema    interface{}
 	value     int64
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewIntegerNode creates a new IntegerNode instance
-func NewIntegerNode(value int64, pos parsley.Pos, readerPos parsley.Pos) *IntegerNode {
+func NewIntegerNode(schema interface{}, value int64, pos parsley.Pos, readerPos parsley.Pos) *IntegerNode {
 	return &IntegerNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -40,9 +39,9 @@ func (i *IntegerNode) Token() string {
 	return "INTEGER"
 }
 
-// Type returns
-func (i *IntegerNode) Type() string {
-	return IntegerType
+// Schema returns the schema for the node's value
+func (i *IntegerNode) Schema() interface{} {
+	return i.schema
 }
 
 // Value returns with the value of the node
@@ -71,7 +70,7 @@ func (i *IntegerNode) String() string {
 }
 
 // Integer matches all integer numbers and zero with an optional -/+ sign
-func Integer() parser.Func {
+func Integer(schema interface{}) parser.Func {
 	notFoundErr := parsley.NotFoundError("integer value")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
@@ -85,7 +84,7 @@ func Integer() parser.Func {
 				// This should never happen
 				panic(fmt.Sprintf("Could not convert %s to integer", string(result)))
 			}
-			return NewIntegerNode(intValue, pos, readerPos), data.EmptyIntSet, nil
+			return NewIntegerNode(schema, intValue, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})

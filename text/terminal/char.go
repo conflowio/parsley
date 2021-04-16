@@ -16,19 +16,18 @@ import (
 	"github.com/opsidian/parsley/text"
 )
 
-// CharType contains the char type's name
-const CharType = "rune"
-
 // CharNode is a leaf node in the AST
 type CharNode struct {
+	schema    interface{}
 	value     rune
 	pos       parsley.Pos
 	readerPos parsley.Pos
 }
 
 // NewCharNode creates a new CharNode instance
-func NewCharNode(value rune, pos parsley.Pos, readerPos parsley.Pos) *CharNode {
+func NewCharNode(schema interface{}, value rune, pos parsley.Pos, readerPos parsley.Pos) *CharNode {
 	return &CharNode{
+		schema:    schema,
 		value:     value,
 		pos:       pos,
 		readerPos: readerPos,
@@ -40,9 +39,9 @@ func (c *CharNode) Token() string {
 	return "CHAR"
 }
 
-// Type returns
-func (c *CharNode) Type() string {
-	return CharType
+// Schema returns the schema for the node's value
+func (c *CharNode) Schema() interface{} {
+	return c.schema
 }
 
 // Value returns with the value of the node
@@ -71,7 +70,7 @@ func (c *CharNode) String() string {
 }
 
 // Char matches a character literal enclosed in single quotes
-func Char() parser.Func {
+func Char(schema interface{}) parser.Func {
 	notFoundErr := parsley.NotFoundError("char literal")
 
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
@@ -98,6 +97,6 @@ func Char() parser.Func {
 			return nil, data.EmptyIntSet, parsley.NewErrorf(readerPos, "invalid character value")
 		}
 
-		return NewCharNode(value, pos, readerPos), data.EmptyIntSet, nil
+		return NewCharNode(schema, value, pos, readerPos), data.EmptyIntSet, nil
 	})
 }

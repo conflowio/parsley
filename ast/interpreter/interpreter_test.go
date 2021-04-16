@@ -26,7 +26,7 @@ var _ = Describe("Interpreter", func() {
 		ctx = "context"
 		node1 = &parsleyfakes.FakeNode{}
 		node1.ValueReturns(1, parsley.NewErrorf(parsley.Pos(1), "err1"))
-		node1.TypeReturns("testtype")
+		node1.SchemaReturns("testtype")
 		node2 = &parsleyfakes.FakeNode{}
 		node2.ValueReturns(2, parsley.NewErrorf(parsley.Pos(2), "err2"))
 		node = &parsleyfakes.FakeNonTerminalNode{}

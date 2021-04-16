@@ -18,12 +18,12 @@ import (
 
 var _ = Describe("Bool", func() {
 
-	var p = terminal.Bool("true", "false")
+	var p = terminal.Bool("bool", "true", "false")
 
 	Context("when called with an empty true/false value", func() {
 		It("should panic", func() {
-			Expect(func() { terminal.Bool("", "false") }).To(Panic())
-			Expect(func() { terminal.Bool("true", "") }).To(Panic())
+			Expect(func() { terminal.Bool("bool", "", "false") }).To(Panic())
+			Expect(func() { terminal.Bool("bool", "true", "") }).To(Panic())
 		})
 	})
 
@@ -37,7 +37,7 @@ var _ = Describe("Bool", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("BOOL"))
-			Expect(res.Type()).To(Equal("bool"))
+			Expect(res.Schema()).To(Equal("bool"))
 			Expect(res.Value(nil)).To(Equal(value))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))

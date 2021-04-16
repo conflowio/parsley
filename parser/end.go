@@ -25,9 +25,9 @@ func (e EndNode) Token() string {
 	return EOF
 }
 
-// Type returns with an empty type
-func (e EndNode) Type() string {
-	return ""
+// Schema returns with nil
+func (e EndNode) Schema() interface{} {
+	return nil
 }
 
 // Value returns with nil

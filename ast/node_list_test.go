@@ -60,31 +60,6 @@ var _ = Describe("NodeList", func() {
 		})
 	})
 
-	Describe("Type", func() {
-		Context("when empty", func() {
-			BeforeEach(func() {
-				nl = ast.NodeList([]parsley.Node{})
-			})
-			It("should panic", func() {
-				Expect(func() { nl.Type() }).To(Panic())
-			})
-		})
-
-		Context("when not empty", func() {
-			BeforeEach(func() {
-				nl = ast.NodeList([]parsley.Node{n1, n2})
-			})
-			It("should return the reader pos of the first item", func() {
-				n1.TypeReturns("testtype")
-
-				Expect(nl.Type()).To(Equal("testtype"))
-
-				Expect(n1.TypeCallCount()).To(Equal(1))
-				Expect(n2.TypeCallCount()).To(Equal(0))
-			})
-		})
-	})
-
 	Describe("Value", func() {
 		Context("when empty", func() {
 			BeforeEach(func() {

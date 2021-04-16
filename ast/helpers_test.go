@@ -57,7 +57,7 @@ var _ = Describe("AppendNode", func() {
 
 var _ = Describe("SetReaderPos", func() {
 	It("calls the SetReaderPos function if node implements the SetReaderPos interface", func() {
-		node := ast.NewTerminalNode("TEST", "x", "string", parsley.Pos(1), parsley.Pos(2))
+		node := ast.NewTerminalNode("string", "TEST", "x", parsley.Pos(1), parsley.Pos(2))
 		f := func(pos parsley.Pos) parsley.Pos {
 			return parsley.Pos(pos + 1)
 		}
@@ -80,7 +80,7 @@ var _ = Describe("SetReaderPos", func() {
 	})
 
 	It("sets the reader position for all nodes in a node list", func() {
-		n1 := ast.NewTerminalNode("TEST", "x", "string", parsley.Pos(1), parsley.Pos(2))
+		n1 := ast.NewTerminalNode("string", "TEST", "x", parsley.Pos(1), parsley.Pos(2))
 		n2 := ast.EmptyNode(parsley.Pos(3))
 
 		nl := ast.NodeList([]parsley.Node{n1, n2})

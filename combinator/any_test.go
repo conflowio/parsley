@@ -25,8 +25,8 @@ import (
 // The parser would return with all matches, so both 1 and 1.23.
 func ExampleAny() {
 	p := combinator.Any(
-		terminal.Integer(),
-		terminal.Float(),
+		terminal.Integer("integer"),
+		terminal.Float("number"),
 	)
 	f := text.NewFile("example.file", []byte("1.23"))
 	fs := parsley.NewFileSet(f)

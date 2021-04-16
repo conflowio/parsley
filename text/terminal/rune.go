@@ -23,7 +23,7 @@ func Rune(ch rune) parser.Func {
 	return parser.Func(func(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsley.Pos) (parsley.Node, data.IntSet, parsley.Error) {
 		tr := ctx.Reader().(*text.Reader)
 		if readerPos, found := tr.ReadRune(pos, ch); found {
-			return ast.NewTerminalNode(string(ch), ch, "rune", pos, readerPos), data.EmptyIntSet, nil
+			return ast.NewTerminalNode(nil, string(ch), ch, pos, readerPos), data.EmptyIntSet, nil
 		}
 		return nil, data.EmptyIntSet, parsley.NewError(pos, notFoundErr)
 	})
