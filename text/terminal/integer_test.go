@@ -31,7 +31,7 @@ var _ = Describe("Integer", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("INTEGER"))
 			Expect(res.Schema()).To(Equal("integer"))
-			Expect(res.Value(nil)).To(Equal(int64(value)))
+			Expect(res.(parsley.LiteralNode).Value()).To(Equal(int64(value)))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},

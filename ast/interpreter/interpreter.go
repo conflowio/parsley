@@ -36,7 +36,7 @@ func (s selectInterpreter) Eval(userCtx interface{}, node parsley.NonTerminalNod
 	if s.i < 0 || s.i >= len(nodes) {
 		panic(fmt.Sprintf("node index is out of bounds: %d", s.i))
 	}
-	return nodes[s.i].Value(userCtx)
+	return parsley.EvaluateNode(userCtx, nodes[s.i])
 }
 
 // Nil returns with an interpreter function which always returns with a nil result
@@ -53,7 +53,7 @@ func Array() ast.InterpreterFunc {
 		nodes := node.Children()
 		res := make([]interface{}, (len(nodes)+1)/2)
 		for i := 0; i < len(nodes); i += 2 {
-			value, err := nodes[i].Value(userCtx)
+			value, err := parsley.EvaluateNode(userCtx, nodes[i])
 			if err != nil {
 				return nil, err
 			}
@@ -71,11 +71,11 @@ func Object() ast.InterpreterFunc {
 		res := make(map[string]interface{}, (len(nodes)+1)/2)
 		for i := 0; i < len(nodes); i += 2 {
 			keyValue := nodes[i].(parsley.NonTerminalNode)
-			key, err := keyValue.Children()[0].Value(userCtx)
+			key, err := parsley.EvaluateNode(userCtx, keyValue.Children()[0])
 			if err != nil {
 				return nil, err
 			}
-			value, err := keyValue.Children()[2].Value(userCtx)
+			value, err := parsley.EvaluateNode(userCtx, keyValue.Children()[2])
 			if err != nil {
 				return nil, err
 			}

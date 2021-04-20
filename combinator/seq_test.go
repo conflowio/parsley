@@ -21,7 +21,7 @@ func ExampleSeqOf() {
 	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(userCtx)
+			val, _ := parsley.EvaluateNode(userCtx, node)
 			res += string(val.(rune))
 		}
 		return res, nil
@@ -44,7 +44,7 @@ func ExampleSeqTry() {
 	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(userCtx)
+			val, _ := parsley.EvaluateNode(userCtx, node)
 			res += string(val.(rune))
 		}
 		return res, nil
@@ -66,12 +66,12 @@ func ExampleSeqTry() {
 func ExampleSeqFirstOrAll() {
 	add := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		children := node.Children()
-		val1, _ := children[0].Value(userCtx)
+		val1, _ := parsley.EvaluateNode(userCtx, children[0])
 		if len(children) == 1 {
 			return val1.(int64), nil
 		}
 
-		val2, _ := children[2].Value(userCtx)
+		val2, _ := parsley.EvaluateNode(userCtx, children[2])
 		return val1.(int64) + val2.(int64), nil
 	})
 
@@ -163,7 +163,7 @@ func ExampleSeqFirstOrAll() {
 // 	nodeBuilder := parsley.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
 // 		var res string
 // 		for _, node := range nodes {
-// 			val, _ := node.Value(nil)
+// 			val, _ := node.EvaluateNode(nil)
 // 			res += val.(string)
 // 		}
 // 		first := nodes[0].(ast.TerminalNode)

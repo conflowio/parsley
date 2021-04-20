@@ -36,7 +36,7 @@ var _ = Describe("Op", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("==="))
-			Expect(res.Value(nil)).To(Equal("==="))
+			Expect(res.(parsley.LiteralNode).Value()).To(Equal("==="))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},

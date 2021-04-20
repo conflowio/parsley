@@ -7,7 +7,7 @@ import (
 	"github.com/opsidian/parsley/parsley"
 )
 
-type FakeNode struct {
+type FakeNonLiteralNode struct {
 	PosStub        func() parsley.Pos
 	posMutex       sync.RWMutex
 	posArgsForCall []struct {
@@ -48,11 +48,24 @@ type FakeNode struct {
 	tokenReturnsOnCall map[int]struct {
 		result1 string
 	}
+	ValueStub        func(interface{}) (interface{}, parsley.Error)
+	valueMutex       sync.RWMutex
+	valueArgsForCall []struct {
+		arg1 interface{}
+	}
+	valueReturns struct {
+		result1 interface{}
+		result2 parsley.Error
+	}
+	valueReturnsOnCall map[int]struct {
+		result1 interface{}
+		result2 parsley.Error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNode) Pos() parsley.Pos {
+func (fake *FakeNonLiteralNode) Pos() parsley.Pos {
 	fake.posMutex.Lock()
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
@@ -69,19 +82,19 @@ func (fake *FakeNode) Pos() parsley.Pos {
 	return fakeReturns.result1
 }
 
-func (fake *FakeNode) PosCallCount() int {
+func (fake *FakeNonLiteralNode) PosCallCount() int {
 	fake.posMutex.RLock()
 	defer fake.posMutex.RUnlock()
 	return len(fake.posArgsForCall)
 }
 
-func (fake *FakeNode) PosCalls(stub func() parsley.Pos) {
+func (fake *FakeNonLiteralNode) PosCalls(stub func() parsley.Pos) {
 	fake.posMutex.Lock()
 	defer fake.posMutex.Unlock()
 	fake.PosStub = stub
 }
 
-func (fake *FakeNode) PosReturns(result1 parsley.Pos) {
+func (fake *FakeNonLiteralNode) PosReturns(result1 parsley.Pos) {
 	fake.posMutex.Lock()
 	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
@@ -90,7 +103,7 @@ func (fake *FakeNode) PosReturns(result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
+func (fake *FakeNonLiteralNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	fake.posMutex.Lock()
 	defer fake.posMutex.Unlock()
 	fake.PosStub = nil
@@ -104,7 +117,7 @@ func (fake *FakeNode) PosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNode) ReaderPos() parsley.Pos {
+func (fake *FakeNonLiteralNode) ReaderPos() parsley.Pos {
 	fake.readerPosMutex.Lock()
 	ret, specificReturn := fake.readerPosReturnsOnCall[len(fake.readerPosArgsForCall)]
 	fake.readerPosArgsForCall = append(fake.readerPosArgsForCall, struct {
@@ -121,19 +134,19 @@ func (fake *FakeNode) ReaderPos() parsley.Pos {
 	return fakeReturns.result1
 }
 
-func (fake *FakeNode) ReaderPosCallCount() int {
+func (fake *FakeNonLiteralNode) ReaderPosCallCount() int {
 	fake.readerPosMutex.RLock()
 	defer fake.readerPosMutex.RUnlock()
 	return len(fake.readerPosArgsForCall)
 }
 
-func (fake *FakeNode) ReaderPosCalls(stub func() parsley.Pos) {
+func (fake *FakeNonLiteralNode) ReaderPosCalls(stub func() parsley.Pos) {
 	fake.readerPosMutex.Lock()
 	defer fake.readerPosMutex.Unlock()
 	fake.ReaderPosStub = stub
 }
 
-func (fake *FakeNode) ReaderPosReturns(result1 parsley.Pos) {
+func (fake *FakeNonLiteralNode) ReaderPosReturns(result1 parsley.Pos) {
 	fake.readerPosMutex.Lock()
 	defer fake.readerPosMutex.Unlock()
 	fake.ReaderPosStub = nil
@@ -142,7 +155,7 @@ func (fake *FakeNode) ReaderPosReturns(result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
+func (fake *FakeNonLiteralNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
 	fake.readerPosMutex.Lock()
 	defer fake.readerPosMutex.Unlock()
 	fake.ReaderPosStub = nil
@@ -156,7 +169,7 @@ func (fake *FakeNode) ReaderPosReturnsOnCall(i int, result1 parsley.Pos) {
 	}{result1}
 }
 
-func (fake *FakeNode) Schema() interface{} {
+func (fake *FakeNonLiteralNode) Schema() interface{} {
 	fake.schemaMutex.Lock()
 	ret, specificReturn := fake.schemaReturnsOnCall[len(fake.schemaArgsForCall)]
 	fake.schemaArgsForCall = append(fake.schemaArgsForCall, struct {
@@ -173,19 +186,19 @@ func (fake *FakeNode) Schema() interface{} {
 	return fakeReturns.result1
 }
 
-func (fake *FakeNode) SchemaCallCount() int {
+func (fake *FakeNonLiteralNode) SchemaCallCount() int {
 	fake.schemaMutex.RLock()
 	defer fake.schemaMutex.RUnlock()
 	return len(fake.schemaArgsForCall)
 }
 
-func (fake *FakeNode) SchemaCalls(stub func() interface{}) {
+func (fake *FakeNonLiteralNode) SchemaCalls(stub func() interface{}) {
 	fake.schemaMutex.Lock()
 	defer fake.schemaMutex.Unlock()
 	fake.SchemaStub = stub
 }
 
-func (fake *FakeNode) SchemaReturns(result1 interface{}) {
+func (fake *FakeNonLiteralNode) SchemaReturns(result1 interface{}) {
 	fake.schemaMutex.Lock()
 	defer fake.schemaMutex.Unlock()
 	fake.SchemaStub = nil
@@ -194,7 +207,7 @@ func (fake *FakeNode) SchemaReturns(result1 interface{}) {
 	}{result1}
 }
 
-func (fake *FakeNode) SchemaReturnsOnCall(i int, result1 interface{}) {
+func (fake *FakeNonLiteralNode) SchemaReturnsOnCall(i int, result1 interface{}) {
 	fake.schemaMutex.Lock()
 	defer fake.schemaMutex.Unlock()
 	fake.SchemaStub = nil
@@ -208,7 +221,7 @@ func (fake *FakeNode) SchemaReturnsOnCall(i int, result1 interface{}) {
 	}{result1}
 }
 
-func (fake *FakeNode) Token() string {
+func (fake *FakeNonLiteralNode) Token() string {
 	fake.tokenMutex.Lock()
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
 	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct {
@@ -225,19 +238,19 @@ func (fake *FakeNode) Token() string {
 	return fakeReturns.result1
 }
 
-func (fake *FakeNode) TokenCallCount() int {
+func (fake *FakeNonLiteralNode) TokenCallCount() int {
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
 	return len(fake.tokenArgsForCall)
 }
 
-func (fake *FakeNode) TokenCalls(stub func() string) {
+func (fake *FakeNonLiteralNode) TokenCalls(stub func() string) {
 	fake.tokenMutex.Lock()
 	defer fake.tokenMutex.Unlock()
 	fake.TokenStub = stub
 }
 
-func (fake *FakeNode) TokenReturns(result1 string) {
+func (fake *FakeNonLiteralNode) TokenReturns(result1 string) {
 	fake.tokenMutex.Lock()
 	defer fake.tokenMutex.Unlock()
 	fake.TokenStub = nil
@@ -246,7 +259,7 @@ func (fake *FakeNode) TokenReturns(result1 string) {
 	}{result1}
 }
 
-func (fake *FakeNode) TokenReturnsOnCall(i int, result1 string) {
+func (fake *FakeNonLiteralNode) TokenReturnsOnCall(i int, result1 string) {
 	fake.tokenMutex.Lock()
 	defer fake.tokenMutex.Unlock()
 	fake.TokenStub = nil
@@ -260,7 +273,70 @@ func (fake *FakeNode) TokenReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeNode) Invocations() map[string][][]interface{} {
+func (fake *FakeNonLiteralNode) Value(arg1 interface{}) (interface{}, parsley.Error) {
+	fake.valueMutex.Lock()
+	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
+	fake.valueArgsForCall = append(fake.valueArgsForCall, struct {
+		arg1 interface{}
+	}{arg1})
+	fake.recordInvocation("Value", []interface{}{arg1})
+	fake.valueMutex.Unlock()
+	if fake.ValueStub != nil {
+		return fake.ValueStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.valueReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeNonLiteralNode) ValueCallCount() int {
+	fake.valueMutex.RLock()
+	defer fake.valueMutex.RUnlock()
+	return len(fake.valueArgsForCall)
+}
+
+func (fake *FakeNonLiteralNode) ValueCalls(stub func(interface{}) (interface{}, parsley.Error)) {
+	fake.valueMutex.Lock()
+	defer fake.valueMutex.Unlock()
+	fake.ValueStub = stub
+}
+
+func (fake *FakeNonLiteralNode) ValueArgsForCall(i int) interface{} {
+	fake.valueMutex.RLock()
+	defer fake.valueMutex.RUnlock()
+	argsForCall := fake.valueArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeNonLiteralNode) ValueReturns(result1 interface{}, result2 parsley.Error) {
+	fake.valueMutex.Lock()
+	defer fake.valueMutex.Unlock()
+	fake.ValueStub = nil
+	fake.valueReturns = struct {
+		result1 interface{}
+		result2 parsley.Error
+	}{result1, result2}
+}
+
+func (fake *FakeNonLiteralNode) ValueReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
+	fake.valueMutex.Lock()
+	defer fake.valueMutex.Unlock()
+	fake.ValueStub = nil
+	if fake.valueReturnsOnCall == nil {
+		fake.valueReturnsOnCall = make(map[int]struct {
+			result1 interface{}
+			result2 parsley.Error
+		})
+	}
+	fake.valueReturnsOnCall[i] = struct {
+		result1 interface{}
+		result2 parsley.Error
+	}{result1, result2}
+}
+
+func (fake *FakeNonLiteralNode) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.posMutex.RLock()
@@ -271,6 +347,8 @@ func (fake *FakeNode) Invocations() map[string][][]interface{} {
 	defer fake.schemaMutex.RUnlock()
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
+	fake.valueMutex.RLock()
+	defer fake.valueMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -278,7 +356,7 @@ func (fake *FakeNode) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeNode) recordInvocation(key string, args []interface{}) {
+func (fake *FakeNonLiteralNode) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -290,4 +368,4 @@ func (fake *FakeNode) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ parsley.Node = new(FakeNode)
+var _ parsley.NonLiteralNode = new(FakeNonLiteralNode)

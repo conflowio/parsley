@@ -76,7 +76,7 @@ var _ = Describe("NonTerminalNode", func() {
 				Expect(node.Token()).To(Equal(token))
 			})
 
-			It("Value() should return the result of the interpreter", func() {
+			It("EvaluateNode() should return the result of the interpreter", func() {
 				ctx := "some context"
 				nodeValue, err := node.Value(ctx)
 				Expect(nodeValue).To(Equal(value))
@@ -92,7 +92,7 @@ var _ = Describe("NonTerminalNode", func() {
 				BeforeEach(func() {
 					interpreter = nil
 				})
-				It("Value() should panic", func() {
+				It("EvaluateNode() should panic", func() {
 					Expect(func() { node.Value("ctx") }).To(Panic())
 				})
 
@@ -296,7 +296,7 @@ var _ = Describe("NonTerminalNode", func() {
 				Expect(node.Token()).To(Equal(token))
 			})
 
-			It("Value() should return the result of the interpreter", func() {
+			It("EvaluateNode() should return the result of the interpreter", func() {
 				ctx := "some context"
 				nodeValue, err := node.Value(ctx)
 				Expect(nodeValue).To(Equal(value))
@@ -312,7 +312,7 @@ var _ = Describe("NonTerminalNode", func() {
 				BeforeEach(func() {
 					interpreter = nil
 				})
-				It("Value() should panic", func() {
+				It("EvaluateNode() should panic", func() {
 					Expect(func() { node.Value("ctx") }).To(Panic())
 				})
 			})

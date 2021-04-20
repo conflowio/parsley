@@ -25,7 +25,7 @@ func ExampleSepBy() {
 		nodes := node.Children()
 		var res []int64
 		for i := 0; i < len(nodes); i += 2 {
-			val, _ := nodes[i].Value(userCtx)
+			val, _ := parsley.EvaluateNode(userCtx, nodes[i])
 			res = append(res, val.(int64))
 		}
 		return res, nil
@@ -65,7 +65,7 @@ func ExampleSepBy1() {
 		}
 		var sum int64
 		for i := 0; i < len(nodes); i += 2 {
-			val, _ := nodes[i].Value(userCtx)
+			val, _ := parsley.EvaluateNode(userCtx, nodes[i])
 			sum += val.(int64)
 		}
 		return sum, nil
@@ -140,7 +140,7 @@ func ExampleSepBy1() {
 // 	interpreter := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 // 		res := ""
 // 		for _, node := range nodes {
-// 			value, _ := node.Value(ctx)
+// 			value, _ := node.EvaluateNode(ctx)
 // 			res += value.(string) + "|"
 // 		}
 // 		return res, nil
@@ -160,8 +160,8 @@ func ExampleSepBy1() {
 // 		h := parser.NewHistory()
 // 		_, rs, err := p.Parse(h, parser.EmptyLeftRecCtx(), r)
 // 		require.Len(t, rs, 2)
-// 		val0, _ := rs[0].Node().Value(nil)
-// 		val1, _ := rs[1].Node().Value(nil)
+// 		val0, _ := rs[0].Node().EvaluateNode(nil)
+// 		val1, _ := rs[1].Node().EvaluateNode(nil)
 // 		assert.Equal(t, "a|,|c|", val0)
 // 		assert.Equal(t, "b|,|d|", val1)
 // 		assert.Nil(t, err)
@@ -175,7 +175,7 @@ func ExampleSepBy1() {
 // 	interpreter1 := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 // 		res := ""
 // 		for _, node := range nodes {
-// 			value, _ := node.Value(ctx)
+// 			value, _ := node.EvaluateNode(ctx)
 // 			res += value.(string) + "&"
 // 		}
 // 		return res, nil
@@ -231,7 +231,7 @@ func ExampleSepBy1() {
 // 	interpreter2 := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 // 		res := ""
 // 		for _, node := range nodes {
-// 			value, _ := node.Value(ctx)
+// 			value, _ := node.EvaluateNode(ctx)
 // 			res += value.(string) + "|"
 // 		}
 // 		return res, nil
@@ -249,7 +249,7 @@ func ExampleSepBy1() {
 // 		sepi = 0
 // 		_, rs, _ := p.Parse(parser.NewHistory(), parser.EmptyLeftRecCtx(), r)
 // 		require.Len(t, rs, 1)
-// 		val0, _ := rs[0].Node().Value(nil)
+// 		val0, _ := rs[0].Node().EvaluateNode(nil)
 // 		assert.Equal(t, "a&b&|,|c&d&|", val0)
 // 	}
 // }

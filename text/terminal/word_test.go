@@ -37,7 +37,7 @@ var _ = Describe("Word", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("FOO"))
 			Expect(res.Schema()).To(Equal("integer"))
-			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.(parsley.LiteralNode).Value()).To(Equal(value))
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},

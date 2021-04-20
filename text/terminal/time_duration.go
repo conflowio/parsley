@@ -48,8 +48,8 @@ func (t *TimeDurationNode) Schema() interface{} {
 }
 
 // Value returns with the value of the node
-func (t *TimeDurationNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return t.value, nil
+func (t *TimeDurationNode) Value() interface{} {
+	return t.value
 }
 
 // Pos returns the position

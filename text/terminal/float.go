@@ -45,8 +45,8 @@ func (f *FloatNode) Schema() interface{} {
 }
 
 // Value returns with the value of the node
-func (f *FloatNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return f.value, nil
+func (f *FloatNode) Value() interface{} {
+	return f.value
 }
 
 // Pos returns the position

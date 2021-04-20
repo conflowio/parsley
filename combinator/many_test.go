@@ -21,7 +21,7 @@ func ExampleMany() {
 	concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		var res string
 		for _, node := range node.Children() {
-			val, _ := node.Value(userCtx)
+			val, _ := parsley.EvaluateNode(userCtx, node)
 			res += string(val.(rune))
 		}
 		return res, nil
@@ -43,7 +43,7 @@ func ExampleMany() {
 // 	concat := parsley.InterpreterFunc(func(ctx interface{}, nodes []parsley.Node) (interface{}, parsley.Error) {
 // 		var res string
 // 		for _, node := range nodes {
-// 			val, _ := node.Value(ctx)
+// 			val, _ := node.EvaluateNode(ctx)
 // 			res += string(val.(rune))
 // 		}
 // 		return res, nil
@@ -98,7 +98,7 @@ func ExampleMany() {
 // 	nodeBuilder := parsley.NodeBuilderFunc(func(nodes []parsley.Node) parsley.Node {
 // 		var res string
 // 		for _, node := range nodes {
-// 			val, _ := node.Value(nil)
+// 			val, _ := node.EvaluateNode(nil)
 // 			res += val.(string)
 // 		}
 // 		first := nodes[0].(ast.TerminalNode)

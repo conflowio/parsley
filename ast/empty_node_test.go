@@ -28,12 +28,6 @@ var _ = Describe("EmptyNode", func() {
 			Expect(node.Token()).To(Equal("EMPTY"))
 		})
 
-		It("Value() should return with nil", func() {
-			nodeValue, err := node.Value(nil)
-			Expect(nodeValue).To(BeNil())
-			Expect(err).ToNot(HaveOccurred())
-		})
-
 		It("Pos() should return with the token value", func() {
 			Expect(node.Pos()).To(Equal(pos))
 		})

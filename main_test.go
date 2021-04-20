@@ -17,8 +17,8 @@ import (
 func ExampleParse() {
 	sum := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		nodes := node.Children()
-		value0, _ := nodes[0].Value(userCtx)
-		value1, _ := nodes[2].Value(userCtx)
+		value0, _ := parsley.EvaluateNode(userCtx, nodes[0])
+		value1, _ := parsley.EvaluateNode(userCtx, nodes[2])
 		return value0.(int64) + value1.(int64), nil
 	})
 
@@ -35,7 +35,7 @@ func ExampleParse() {
 		panic(err)
 	}
 
-	value, err2 := node.Value(nil)
+	value, err2 := parsley.EvaluateNode(nil, node)
 	if err2 != nil {
 		panic(err2)
 	}
@@ -47,8 +47,8 @@ func ExampleParse() {
 func ExampleEvaluate() {
 	sum := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 		nodes := node.Children()
-		value0, _ := nodes[0].Value(userCtx)
-		value1, _ := nodes[2].Value(userCtx)
+		value0, _ := parsley.EvaluateNode(userCtx, nodes[0])
+		value1, _ := parsley.EvaluateNode(userCtx, nodes[2])
 		return value0.(int64) + value1.(int64), nil
 	})
 
@@ -76,7 +76,7 @@ var _ = Describe("Parsley", func() {
 		concat := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 			s := ""
 			for _, node := range node.Children() {
-				val, err := node.Value(userCtx)
+				val, err := parsley.EvaluateNode(userCtx, node)
 				if err != nil {
 					return nil, err
 				}
@@ -113,8 +113,8 @@ var _ = Describe("Parsley", func() {
 
 		add := ast.InterpreterFunc(func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error) {
 			nodes := node.Children()
-			value0, _ := nodes[0].Value(userCtx)
-			value1, _ := nodes[2].Value(userCtx)
+			value0, _ := parsley.EvaluateNode(userCtx, nodes[0])
+			value1, _ := parsley.EvaluateNode(userCtx, nodes[2])
 			return value0.(int64) + value1.(int64), nil
 		})
 

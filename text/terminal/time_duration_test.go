@@ -33,7 +33,7 @@ var _ = Describe("TimeDuration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("TIME_DURATION"))
 			Expect(res.Schema()).To(Equal("time.Duration"))
-			Expect(res.Value(nil)).To(Equal(value))
+			Expect(res.(parsley.LiteralNode).Value()).To(Equal(value))
 			Expect(res.Pos()).To(Equal(parsley.Pos(nodePos)))
 			Expect(res.ReaderPos()).To(Equal(parsley.Pos(endPos)))
 		},

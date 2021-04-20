@@ -49,8 +49,8 @@ func (t *TerminalNode) Schema() interface{} {
 }
 
 // Value returns with the value of the node
-func (t *TerminalNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return t.value, nil
+func (t *TerminalNode) Value() interface{} {
+	return t.value
 }
 
 // Pos returns the position

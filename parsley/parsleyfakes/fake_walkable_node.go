@@ -48,19 +48,6 @@ type FakeWalkableNode struct {
 	tokenReturnsOnCall map[int]struct {
 		result1 string
 	}
-	ValueStub        func(interface{}) (interface{}, parsley.Error)
-	valueMutex       sync.RWMutex
-	valueArgsForCall []struct {
-		arg1 interface{}
-	}
-	valueReturns struct {
-		result1 interface{}
-		result2 parsley.Error
-	}
-	valueReturnsOnCall map[int]struct {
-		result1 interface{}
-		result2 parsley.Error
-	}
 	WalkStub        func(func(n parsley.Node) bool) bool
 	walkMutex       sync.RWMutex
 	walkArgsForCall []struct {
@@ -284,69 +271,6 @@ func (fake *FakeWalkableNode) TokenReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeWalkableNode) Value(arg1 interface{}) (interface{}, parsley.Error) {
-	fake.valueMutex.Lock()
-	ret, specificReturn := fake.valueReturnsOnCall[len(fake.valueArgsForCall)]
-	fake.valueArgsForCall = append(fake.valueArgsForCall, struct {
-		arg1 interface{}
-	}{arg1})
-	fake.recordInvocation("Value", []interface{}{arg1})
-	fake.valueMutex.Unlock()
-	if fake.ValueStub != nil {
-		return fake.ValueStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.valueReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeWalkableNode) ValueCallCount() int {
-	fake.valueMutex.RLock()
-	defer fake.valueMutex.RUnlock()
-	return len(fake.valueArgsForCall)
-}
-
-func (fake *FakeWalkableNode) ValueCalls(stub func(interface{}) (interface{}, parsley.Error)) {
-	fake.valueMutex.Lock()
-	defer fake.valueMutex.Unlock()
-	fake.ValueStub = stub
-}
-
-func (fake *FakeWalkableNode) ValueArgsForCall(i int) interface{} {
-	fake.valueMutex.RLock()
-	defer fake.valueMutex.RUnlock()
-	argsForCall := fake.valueArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeWalkableNode) ValueReturns(result1 interface{}, result2 parsley.Error) {
-	fake.valueMutex.Lock()
-	defer fake.valueMutex.Unlock()
-	fake.ValueStub = nil
-	fake.valueReturns = struct {
-		result1 interface{}
-		result2 parsley.Error
-	}{result1, result2}
-}
-
-func (fake *FakeWalkableNode) ValueReturnsOnCall(i int, result1 interface{}, result2 parsley.Error) {
-	fake.valueMutex.Lock()
-	defer fake.valueMutex.Unlock()
-	fake.ValueStub = nil
-	if fake.valueReturnsOnCall == nil {
-		fake.valueReturnsOnCall = make(map[int]struct {
-			result1 interface{}
-			result2 parsley.Error
-		})
-	}
-	fake.valueReturnsOnCall[i] = struct {
-		result1 interface{}
-		result2 parsley.Error
-	}{result1, result2}
-}
-
 func (fake *FakeWalkableNode) Walk(arg1 func(n parsley.Node) bool) bool {
 	fake.walkMutex.Lock()
 	ret, specificReturn := fake.walkReturnsOnCall[len(fake.walkArgsForCall)]
@@ -418,8 +342,6 @@ func (fake *FakeWalkableNode) Invocations() map[string][][]interface{} {
 	defer fake.schemaMutex.RUnlock()
 	fake.tokenMutex.RLock()
 	defer fake.tokenMutex.RUnlock()
-	fake.valueMutex.RLock()
-	defer fake.valueMutex.RUnlock()
 	fake.walkMutex.RLock()
 	defer fake.walkMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

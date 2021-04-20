@@ -42,7 +42,7 @@ var _ = Describe("Nil", func() {
 			Expect(curtailingParsers).To(Equal(data.EmptyIntSet))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Token()).To(Equal("NIL"))
-			Expect(res.Value(nil)).To(BeNil())
+			Expect(res.(parsley.LiteralNode).Value()).To(BeNil())
 			Expect(res.Pos()).To(Equal(nodePos))
 			Expect(res.ReaderPos()).To(Equal(f.Pos(endPos)))
 		},
