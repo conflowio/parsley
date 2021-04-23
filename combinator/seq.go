@@ -55,7 +55,7 @@ func (s *Sequence) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsl
 		returnEmpty:       s.returnEmpty,
 	}
 	res, cp, err := p.Parse(ctx, leftRecCtx, pos)
-	if err != nil && s.customErr != nil && err.Pos() == pos {
+	if err != nil && s.customErr != nil && err.Pos() == pos && parsley.IsNotFoundError(err) {
 		err = parsley.NewError(pos, s.customErr)
 	}
 
