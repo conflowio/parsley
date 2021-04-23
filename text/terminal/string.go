@@ -46,8 +46,8 @@ func (s *StringNode) Schema() interface{} {
 }
 
 // Value returns with the value of the node
-func (s *StringNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return s.value, nil
+func (s *StringNode) Value() interface{} {
+	return s.value
 }
 
 // Pos returns the position

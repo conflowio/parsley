@@ -21,7 +21,7 @@ var _ = Describe("Evaluate", func() {
 		ctx        *parsley.Context
 		val        interface{}
 		err        error
-		parserRes  *parsleyfakes.FakeNode
+		parserRes  *parsleyfakes.FakeNonTerminalNode
 		parserErr  parsley.Error
 		userCtx    interface{}
 		nodeVal    interface{}
@@ -39,7 +39,7 @@ var _ = Describe("Evaluate", func() {
 		r = &parsleyfakes.FakeReader{}
 		r.PosReturns(parsley.Pos(1))
 		p = &parsleyfakes.FakeParser{}
-		parserRes = &parsleyfakes.FakeNode{}
+		parserRes = &parsleyfakes.FakeNonTerminalNode{}
 		nodeVal = "value"
 		userCtx = "context"
 		parserErr = nil

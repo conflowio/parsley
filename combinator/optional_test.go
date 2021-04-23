@@ -23,7 +23,7 @@ func ExampleOptional() {
 		var res string
 		for _, node := range node.Children() {
 			if node != nil {
-				val, _ := node.Value(userCtx)
+				val, _ := parsley.EvaluateNode(userCtx, node)
 				if val != nil {
 					res += string(val.(rune))
 				}

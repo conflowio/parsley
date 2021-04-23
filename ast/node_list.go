@@ -22,11 +22,6 @@ func (nl NodeList) Schema() interface{} {
 	return nil
 }
 
-// Value returns with the value of the first node
-func (nl NodeList) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return nl[0].Value(userCtx)
-}
-
 // Pos returns the value of the first node
 func (nl NodeList) Pos() parsley.Pos {
 	return nl[0].Pos()

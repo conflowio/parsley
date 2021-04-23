@@ -11,14 +11,25 @@ package parsley
 type Node interface {
 	Token() string
 	Schema() interface{}
-	Value(userCtx interface{}) (interface{}, Error)
 	Pos() Pos
 	ReaderPos() Pos
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . LiteralNode
+type LiteralNode interface {
+	Node
+	Value() interface{}
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NonLiteralNode
+type NonLiteralNode interface {
+	Node
+	Value(userCtx interface{}) (interface{}, Error)
 }
 
 // NonTerminalNode represents a nonterminal AST node
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NonTerminalNode
 type NonTerminalNode interface {
-	Node
+	NonLiteralNode
 	Children() []Node
 }

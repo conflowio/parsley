@@ -43,8 +43,8 @@ func (o *OpNode) Schema() interface{} {
 }
 
 // Value returns with the value of the node
-func (o *OpNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return o.value, nil
+func (o *OpNode) Value() interface{} {
+	return o.value
 }
 
 // Pos returns the position

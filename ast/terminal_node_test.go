@@ -36,10 +36,9 @@ var _ = Describe("TerminalNode", func() {
 			Expect(node.Schema()).To(Equal(schema))
 		})
 
-		It("Value() should return with the value", func() {
-			nodeValue, err := node.Value(nil)
+		It("EvaluateNode() should return with the value", func() {
+			nodeValue := node.Value()
 			Expect(nodeValue).To(Equal(value))
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Pos() should return with the token value", func() {

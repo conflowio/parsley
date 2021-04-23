@@ -60,38 +60,6 @@ var _ = Describe("NodeList", func() {
 		})
 	})
 
-	Describe("Value", func() {
-		Context("when empty", func() {
-			BeforeEach(func() {
-				nl = ast.NodeList([]parsley.Node{})
-			})
-			It("should panic", func() {
-				Expect(func() { nl.Pos() }).To(Panic())
-			})
-		})
-
-		Context("when not empty", func() {
-			BeforeEach(func() {
-				nl = ast.NodeList([]parsley.Node{n1, n2})
-			})
-			It("should return the value of the first item", func() {
-				err := parsley.NewErrorf(parsley.Pos(1), "some error")
-				n1.ValueReturns("res", err)
-
-				ctx := "foo"
-				val, err := nl.Value(ctx)
-				Expect(val).To(Equal("res"))
-				Expect(err).To(MatchError(err))
-
-				Expect(n1.ValueCallCount()).To(Equal(1))
-				passedCtx := n1.ValueArgsForCall(0)
-				Expect(passedCtx).To(Equal(ctx))
-
-				Expect(n2.ValueCallCount()).To(Equal(0))
-			})
-		})
-	})
-
 	Describe("Pos", func() {
 		Context("when empty", func() {
 			BeforeEach(func() {

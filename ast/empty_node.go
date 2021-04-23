@@ -25,11 +25,6 @@ func (e EmptyNode) Schema() interface{} {
 	return nil
 }
 
-// Value returns with nil
-func (e EmptyNode) Value(userCtx interface{}) (interface{}, parsley.Error) {
-	return nil, nil
-}
-
 // Pos returns with the position of the node
 func (e EmptyNode) Pos() parsley.Pos {
 	return parsley.Pos(e)
