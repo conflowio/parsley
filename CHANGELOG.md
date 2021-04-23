@@ -1,3 +1,9 @@
+## 0.16.0
+
+BACKWARDS INCOMPATIBILITIES:
+
+- Remove Value() from the parsley.Node interface{}, differentiate between literal and non-literal nodes
+
 ## 0.15.0
 
 BACKWARDS INCOMPATIBILITIES:
