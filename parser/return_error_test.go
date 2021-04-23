@@ -56,16 +56,29 @@ var _ = Describe("ReturnError", func() {
 		})
 	})
 
-	Context("when q returns an error with the reader's position", func() {
+	Context("when q returns a not found error with the reader's position", func() {
 
 		BeforeEach(func() {
-			qerr = parsley.NewErrorf(pos, "some error")
+			qerr = parsley.NewError(pos, parsley.NotFoundError("some error"))
 		})
 
 		It("should return the custom error", func() {
 			Expect(res).To(BeNil())
 			Expect(cp).To(BeEquivalentTo(qcp))
 			Expect(err).To(MatchError("custom error"))
+		})
+	})
+
+	Context("when q returns a parse error with the reader's position", func() {
+
+		BeforeEach(func() {
+			qerr = parsley.NewErrorf(pos, "some error")
+		})
+
+		It("should return the original error", func() {
+			Expect(res).To(BeNil())
+			Expect(cp).To(BeEquivalentTo(qcp))
+			Expect(err).To(MatchError("some error"))
 		})
 	})
 

@@ -17,7 +17,7 @@ func ReturnError(p parsley.Parser, customErr error) Func {
 		res, cp, err := p.Parse(ctx, leftRecCtx, pos)
 
 		if err != nil {
-			if err.Pos() == pos {
+			if err.Pos() == pos && parsley.IsNotFoundError(err) {
 				err = parsley.NewError(pos, customErr)
 			}
 
