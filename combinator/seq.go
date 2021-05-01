@@ -15,13 +15,12 @@ import (
 
 // Sequence is a recursive and-type combinator
 type Sequence struct {
-	token        string
-	parserLookUp func(int) parsley.Parser
-	lenCheck     func(int) bool
-	interpreter  parsley.Interpreter
-	customErr    error
-	returnSingle bool
-	returnEmpty  bool
+	token         string
+	parserLookUp  func(int) parsley.Parser
+	lenCheck      func(int) bool
+	interpreter   parsley.Interpreter
+	customErr     error
+	resultHandler SeqResultHandler
 }
 
 // Seq tries to apply all parsers after each other and returns with all combinations of the results.
@@ -34,6 +33,26 @@ func Seq(token string, parserLookUp func(int) parsley.Parser, lenCheck func(int)
 		parserLookUp: parserLookUp,
 		lenCheck:     lenCheck,
 	}
+}
+
+// Name overrides the returned error if its position is the same as the reader's position
+// The error will be: "was expecting <name>"
+func (s *Sequence) Name(name string) *Sequence {
+	s.customErr = parsley.NotFoundError(name)
+	return s
+}
+
+// Token sets the result token
+func (s *Sequence) Token(token string) *Sequence {
+	s.token = token
+	return s
+}
+
+// HandleResult sets the result handler
+// If you use a custom function, make sure to make a copy of the nodes slice
+func (s *Sequence) HandleResult(resultHandler SeqResultHandler) *Sequence {
+	s.resultHandler = resultHandler
+	return s
 }
 
 // Bind binds the given interpreter
@@ -51,44 +70,20 @@ func (s *Sequence) Parse(ctx *parsley.Context, leftRecCtx data.IntMap, pos parsl
 		interpreter:       s.interpreter,
 		curtailingParsers: data.EmptyIntSet,
 		nodes:             nil,
-		returnSingle:      s.returnSingle,
-		returnEmpty:       s.returnEmpty,
 	}
+
+	if s.resultHandler != nil {
+		p.resultHandler = s.resultHandler
+	} else {
+		p.resultHandler = seqDefaultResultHandler(false)
+	}
+
 	res, cp, err := p.Parse(ctx, leftRecCtx, pos)
 	if err != nil && s.customErr != nil && err.Pos() == pos && parsley.IsNotFoundError(err) {
 		err = parsley.NewError(pos, s.customErr)
 	}
 
 	return res, cp, err
-}
-
-// Name overrides the returned error if its position is the same as the reader's position
-// The error will be: "was expecting <name>"
-func (s *Sequence) Name(name string) *Sequence {
-	s.customErr = parsley.NotFoundError(name)
-	return s
-}
-
-// Token sets the result token
-func (s *Sequence) Token(token string) *Sequence {
-	s.token = token
-	return s
-}
-
-// ReturnSingle will change the result of the parser if it returns with a non terminal node
-// with a single child.
-// In this case directly the child will returned.
-func (s *Sequence) ReturnSingle() *Sequence {
-	s.returnSingle = true
-	return s
-}
-
-// ReturnEmpty will change the result of the parser if it returns with a non terminal node
-// without children.
-// In this case an empty node is returned instead.
-func (s *Sequence) ReturnEmpty() *Sequence {
-	s.returnEmpty = true
-	return s
 }
 
 type sequence struct {
@@ -100,8 +95,7 @@ type sequence struct {
 	result            parsley.Node
 	err               parsley.Error
 	nodes             []parsley.Node
-	returnSingle      bool
-	returnEmpty       bool
+	resultHandler     SeqResultHandler
 }
 
 // Parse runs the recursive parser
@@ -153,22 +147,13 @@ func (s *sequence) parse(depth int, ctx *parsley.Context, leftRecCtx data.IntMap
 	if res == nil {
 		if s.lenCheck(depth) {
 			if depth > 0 {
-				if depth == 1 && s.returnSingle {
-					s.result = ast.AppendNode(s.result, s.nodes[0])
-				} else {
-					nodesCopy := make([]parsley.Node, depth)
-					copy(nodesCopy[0:depth], s.nodes[0:depth])
-					s.result = ast.AppendNode(s.result, ast.NewNonTerminalNode(s.token, nodesCopy, s.interpreter))
-				}
+				s.result = ast.AppendNode(s.result, s.resultHandler.HandleResult(pos, s.token, s.nodes[0:depth], s.interpreter))
+
 				if s.nodes[depth-1] != nil && s.nodes[depth-1].Token() == parser.EOF {
 					return true
 				}
 			} else { // It's an empty result
-				if s.returnEmpty {
-					s.result = ast.AppendNode(s.result, ast.EmptyNode(pos))
-				} else {
-					s.result = ast.AppendNode(s.result, ast.NewEmptyNonTerminalNode(s.token, pos, s.interpreter))
-				}
+				s.result = ast.AppendNode(s.result, s.resultHandler.HandleResult(pos, s.token, nil, s.interpreter))
 			}
 		}
 	}
@@ -237,4 +222,42 @@ func SeqFirstOrAll(parsers ...parsley.Parser) *Sequence {
 		return len == 1 || len == l
 	}
 	return Seq("SEQ", lookup, lenCheck)
+}
+
+// SeqResultHandler is an interface to handle the result of a Sequence parser
+// Make sure to make a copy of the nodes slice
+type SeqResultHandler interface {
+	HandleResult(pos parsley.Pos, token string, nodes []parsley.Node, interpreter parsley.Interpreter) parsley.Node
+}
+
+// SeqResultHandlerFunc is a function to handle the result of a Sequence parser
+// Make sure to make a copy of the nodes slice
+type SeqResultHandlerFunc func(pos parsley.Pos, token string, nodes []parsley.Node, interpreter parsley.Interpreter) parsley.Node
+
+func (f SeqResultHandlerFunc) HandleResult(pos parsley.Pos, token string, nodes []parsley.Node, interpreter parsley.Interpreter) parsley.Node {
+	return f(pos, token, nodes, interpreter)
+}
+
+// ReturnSingle returns the node, if the sequence parser only matched a single node
+func ReturnSingle() SeqResultHandlerFunc {
+	return seqDefaultResultHandler(true)
+}
+
+func seqDefaultResultHandler(returnSingle bool) SeqResultHandlerFunc {
+	return func(pos parsley.Pos, token string, nodes []parsley.Node, interpreter parsley.Interpreter) parsley.Node {
+		l := len(nodes)
+		switch l {
+		case 0:
+			return ast.NewEmptyNonTerminalNode(token, pos, interpreter)
+		case 1:
+			if returnSingle {
+				return nodes[0]
+			}
+		}
+
+		nodesCopy := make([]parsley.Node, l)
+		copy(nodesCopy, nodes)
+
+		return ast.NewNonTerminalNode(token, nodesCopy, interpreter)
+	}
 }
