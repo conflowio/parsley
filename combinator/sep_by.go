@@ -7,7 +7,7 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // SepBy applies the given value parser zero or more times separated by the separator parser

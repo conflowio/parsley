@@ -7,10 +7,10 @@
 package text
 
 import (
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parser"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // LeftTrim skips the whitespaces before it tries to match the given parser

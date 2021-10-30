@@ -17,10 +17,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/opsidian/parsley/combinator"
-	"github.com/opsidian/parsley/examples/json/json"
-	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/text"
+	"github.com/conflowio/parsley/combinator"
+	"github.com/conflowio/parsley/examples/json/json"
+	"github.com/conflowio/parsley/parsley"
+	"github.com/conflowio/parsley/text"
 )
 
 func main() {

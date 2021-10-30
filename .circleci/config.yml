@@ -2,10 +2,11 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.16
-    working_directory: /go/src/github.com/opsidian/parsley
+      - image: circleci/golang:1.17
+    working_directory: /go/src/github.com/conflowio/parsley
     steps:
       - checkout
+      - run: make check
       - run: make test
 
 workflows:

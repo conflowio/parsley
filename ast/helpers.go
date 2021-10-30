@@ -6,7 +6,7 @@
 
 package ast
 
-import "github.com/opsidian/parsley/parsley"
+import "github.com/conflowio/parsley/parsley"
 
 // AppendNode appends
 func AppendNode(n1, n2 parsley.Node) parsley.Node {
@@ -33,7 +33,7 @@ type ReaderPosSetter interface {
 }
 
 // ReaderPosSetterNode defines a node which also implements the ReaderPosSetter interface
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ReaderPosSetterNode
+//counterfeiter:generate . ReaderPosSetterNode
 type ReaderPosSetterNode interface {
 	parsley.Node
 	ReaderPosSetter

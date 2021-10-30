@@ -7,7 +7,7 @@
 package parsley
 
 // Node represents an AST node
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Node
+//counterfeiter:generate . Node
 type Node interface {
 	Token() string
 	Schema() interface{}
@@ -15,20 +15,20 @@ type Node interface {
 	ReaderPos() Pos
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . LiteralNode
+//counterfeiter:generate . LiteralNode
 type LiteralNode interface {
 	Node
 	Value() interface{}
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NonLiteralNode
+//counterfeiter:generate . NonLiteralNode
 type NonLiteralNode interface {
 	Node
 	Value(userCtx interface{}) (interface{}, Error)
 }
 
 // NonTerminalNode represents a nonterminal AST node
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . NonTerminalNode
+//counterfeiter:generate . NonTerminalNode
 type NonTerminalNode interface {
 	NonLiteralNode
 	Children() []Node

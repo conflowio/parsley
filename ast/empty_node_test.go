@@ -9,8 +9,9 @@ package ast_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/parsley"
+
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/parsley"
 )
 
 var _ = Describe("EmptyNode", func() {

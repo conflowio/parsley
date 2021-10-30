@@ -4,7 +4,7 @@ package parsleyfakes
 import (
 	"sync"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 type FakeError struct {
@@ -47,15 +47,16 @@ func (fake *FakeError) Cause() error {
 	ret, specificReturn := fake.causeReturnsOnCall[len(fake.causeArgsForCall)]
 	fake.causeArgsForCall = append(fake.causeArgsForCall, struct {
 	}{})
+	stub := fake.CauseStub
+	fakeReturns := fake.causeReturns
 	fake.recordInvocation("Cause", []interface{}{})
 	fake.causeMutex.Unlock()
-	if fake.CauseStub != nil {
-		return fake.CauseStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.causeReturns
 	return fakeReturns.result1
 }
 
@@ -99,15 +100,16 @@ func (fake *FakeError) Error() string {
 	ret, specificReturn := fake.errorReturnsOnCall[len(fake.errorArgsForCall)]
 	fake.errorArgsForCall = append(fake.errorArgsForCall, struct {
 	}{})
+	stub := fake.ErrorStub
+	fakeReturns := fake.errorReturns
 	fake.recordInvocation("Error", []interface{}{})
 	fake.errorMutex.Unlock()
-	if fake.ErrorStub != nil {
-		return fake.ErrorStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.errorReturns
 	return fakeReturns.result1
 }
 
@@ -151,15 +153,16 @@ func (fake *FakeError) Pos() parsley.Pos {
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
 	}{})
+	stub := fake.PosStub
+	fakeReturns := fake.posReturns
 	fake.recordInvocation("Pos", []interface{}{})
 	fake.posMutex.Unlock()
-	if fake.PosStub != nil {
-		return fake.PosStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.posReturns
 	return fakeReturns.result1
 }
 

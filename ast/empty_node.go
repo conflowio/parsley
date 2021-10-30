@@ -9,7 +9,7 @@ package ast
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // EmptyNode represents an empty node

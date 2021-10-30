@@ -4,7 +4,7 @@ package parsleyfakes
 import (
 	"sync"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 type FakeReader struct {
@@ -51,15 +51,16 @@ func (fake *FakeReader) IsEOF(arg1 parsley.Pos) bool {
 	fake.isEOFArgsForCall = append(fake.isEOFArgsForCall, struct {
 		arg1 parsley.Pos
 	}{arg1})
+	stub := fake.IsEOFStub
+	fakeReturns := fake.isEOFReturns
 	fake.recordInvocation("IsEOF", []interface{}{arg1})
 	fake.isEOFMutex.Unlock()
-	if fake.IsEOFStub != nil {
-		return fake.IsEOFStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.isEOFReturns
 	return fakeReturns.result1
 }
 
@@ -111,15 +112,16 @@ func (fake *FakeReader) Pos(arg1 int) parsley.Pos {
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.PosStub
+	fakeReturns := fake.posReturns
 	fake.recordInvocation("Pos", []interface{}{arg1})
 	fake.posMutex.Unlock()
-	if fake.PosStub != nil {
-		return fake.PosStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.posReturns
 	return fakeReturns.result1
 }
 
@@ -171,15 +173,16 @@ func (fake *FakeReader) Remaining(arg1 parsley.Pos) int {
 	fake.remainingArgsForCall = append(fake.remainingArgsForCall, struct {
 		arg1 parsley.Pos
 	}{arg1})
+	stub := fake.RemainingStub
+	fakeReturns := fake.remainingReturns
 	fake.recordInvocation("Remaining", []interface{}{arg1})
 	fake.remainingMutex.Unlock()
-	if fake.RemainingStub != nil {
-		return fake.RemainingStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.remainingReturns
 	return fakeReturns.result1
 }
 

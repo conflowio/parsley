@@ -9,7 +9,7 @@ package ast
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // TerminalNode is a leaf node in the AST

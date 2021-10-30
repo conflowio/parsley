@@ -4,7 +4,7 @@ package parsleyfakes
 import (
 	"sync"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 type FakeNodeTransformerInterpreter struct {
@@ -47,15 +47,16 @@ func (fake *FakeNodeTransformerInterpreter) Eval(arg1 interface{}, arg2 parsley.
 		arg1 interface{}
 		arg2 parsley.NonTerminalNode
 	}{arg1, arg2})
+	stub := fake.EvalStub
+	fakeReturns := fake.evalReturns
 	fake.recordInvocation("Eval", []interface{}{arg1, arg2})
 	fake.evalMutex.Unlock()
-	if fake.EvalStub != nil {
-		return fake.EvalStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.evalReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -111,15 +112,16 @@ func (fake *FakeNodeTransformerInterpreter) TransformNode(arg1 interface{}, arg2
 		arg1 interface{}
 		arg2 parsley.Node
 	}{arg1, arg2})
+	stub := fake.TransformNodeStub
+	fakeReturns := fake.transformNodeReturns
 	fake.recordInvocation("TransformNode", []interface{}{arg1, arg2})
 	fake.transformNodeMutex.Unlock()
-	if fake.TransformNodeStub != nil {
-		return fake.TransformNodeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.transformNodeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

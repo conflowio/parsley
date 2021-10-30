@@ -12,10 +12,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/terminal"
+
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
+	"github.com/conflowio/parsley/text"
+	"github.com/conflowio/parsley/text/terminal"
 )
 
 var _ = Describe("TimeDuration", func() {

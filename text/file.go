@@ -9,10 +9,10 @@ package text
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // File contains the contents of a file and the line offsets for quick line+column lookup
@@ -37,7 +37,7 @@ func NewFile(filename string, data []byte) *File {
 
 // ReadFile reads a file and creates a File object
 func ReadFile(filename string) (*File, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("can not read %s", filename)
 	}

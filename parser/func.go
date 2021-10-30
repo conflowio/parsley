@@ -8,8 +8,8 @@
 package parser
 
 import (
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Func defines a helper to implement the Parser interface with functions

@@ -6,7 +6,7 @@
 
 package ast
 
-import "github.com/opsidian/parsley/parsley"
+import "github.com/conflowio/parsley/parsley"
 
 // NodeList contains a list of nodes, should be used when a parser returns with multiple results
 // If you call any of the parsley.Node methods on it then it will behave as it would be the first node.

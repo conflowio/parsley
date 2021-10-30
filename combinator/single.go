@@ -7,9 +7,9 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parser"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Single will change the result of p if it returns with a non terminal node

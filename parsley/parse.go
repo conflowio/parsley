@@ -9,7 +9,7 @@ package parsley
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/data"
+	"github.com/conflowio/parsley/data"
 )
 
 // Parse parses the given input and returns with the root node of the AST.

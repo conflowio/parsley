@@ -9,8 +9,8 @@ package interpreter
 import (
 	"fmt"
 
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Select returns with an interpreter which returns the value of the selected node

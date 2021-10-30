@@ -9,7 +9,8 @@ package parsley_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/parsley"
+
+	"github.com/conflowio/parsley/parsley"
 )
 
 var _ = Describe("NilPosition", func() {

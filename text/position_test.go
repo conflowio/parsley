@@ -9,8 +9,9 @@ package text_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/text"
+
+	"github.com/conflowio/parsley/parsley"
+	"github.com/conflowio/parsley/text"
 )
 
 var _ = Describe("Position", func() {

@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // EOF is the end-of-file token

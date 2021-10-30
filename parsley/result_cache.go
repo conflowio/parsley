@@ -7,7 +7,7 @@
 package parsley
 
 import (
-	"github.com/opsidian/parsley/data"
+	"github.com/conflowio/parsley/data"
 )
 
 // Result is a stored parser result
