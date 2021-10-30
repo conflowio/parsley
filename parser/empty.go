@@ -7,9 +7,9 @@
 package parser
 
 import (
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Empty always matches and returns with an empty node result

@@ -7,8 +7,8 @@
 package parser
 
 import (
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // ReturnError will override the returned error by the parser if its position is the same as the reader's position

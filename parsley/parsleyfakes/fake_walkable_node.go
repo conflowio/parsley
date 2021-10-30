@@ -4,7 +4,7 @@ package parsleyfakes
 import (
 	"sync"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 type FakeWalkableNode struct {

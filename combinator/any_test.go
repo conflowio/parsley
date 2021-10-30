@@ -11,14 +11,15 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/combinator"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/parsley/parsleyfakes"
-	"github.com/opsidian/parsley/text"
-	"github.com/opsidian/parsley/text/terminal"
+
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/combinator"
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parser"
+	"github.com/conflowio/parsley/parsley"
+	"github.com/conflowio/parsley/parsley/parsleyfakes"
+	"github.com/conflowio/parsley/text"
+	"github.com/conflowio/parsley/text/terminal"
 )
 
 // Let's define a parser which accepts integer or float numbers.

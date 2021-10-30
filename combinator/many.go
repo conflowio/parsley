@@ -7,7 +7,7 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Many applies the  parser zero or more times

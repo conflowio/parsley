@@ -11,9 +11,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/opsidian/parsley/data"
-	"github.com/opsidian/parsley/parsley"
-	"github.com/opsidian/parsley/parsley/parsleyfakes"
+
+	"github.com/conflowio/parsley/data"
+	"github.com/conflowio/parsley/parsley"
+	"github.com/conflowio/parsley/parsley/parsleyfakes"
 )
 
 var _ = Describe("Parse", func() {

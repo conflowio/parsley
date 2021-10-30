@@ -12,7 +12,7 @@ import (
 	"io/ioutil"
 	"sort"
 
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // File contains the contents of a file and the line offsets for quick line+column lookup

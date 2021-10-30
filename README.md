@@ -1,6 +1,6 @@
 # Parsley - Parser combinator library written in Go
 
-[![CircleCI status](https://circleci.com/gh/opsidian/parsley.svg?style=shield&circle-token=c42cce0e1ae1496645d1d6dc640d86a9e6de808d)](https://circleci.com/gh/opsidian/parsley) [![GoDoc](https://godoc.org/github.com/opsidian/parsley?status.svg)](https://godoc.org/github.com/opsidian/parsley) [![Latest release](https://img.shields.io/github/release/opsidian/parsley.svg)](https://github.com/opsidian/parsley/releases/latest)
+[![CircleCI status](https://circleci.com/gh/conflowio/parsley.svg?style=shield&circle-token=c42cce0e1ae1496645d1d6dc640d86a9e6de808d)](https://circleci.com/gh/conflowio/parsley) [![GoDoc](https://godoc.org/github.com/conflowio/parsley?status.svg)](https://godoc.org/github.com/conflowio/parsley) [![Latest release](https://img.shields.io/github/release/conflowio/parsley.svg)](https://github.com/conflowio/parsley/releases/latest)
 
 Parsley is a general parser combinator library which can be used to parse context-free, left-recursive languages. It handles indirect as well as direct left-recursion in polynomial time and defines a memoization helper for speeding up parsing time. The language grammar can be easily translated to a set of rules using parsers and combinators.
 
@@ -119,13 +119,13 @@ The **add** variable will contain a parser which is able to parse the given expr
 
 #### More examples
 
-There is a JSON-like parser implementation in the [examples/json](examples/json) directory. It also gives you some
+There is a JSON-like parser implementation in the [examples/json](examples/json) directory.
 
-For a more complex expression parser you can check out the [Flint interpolation language](https://github.com/opsidian/flint).
+For a more complex expression parser you can check out the [Conflow language](https://github.com/conflowio/conflow).
 
 ### Documentation
 
-Please more information about the available parsers and combinators please check out the [Go docs](https://godoc.org/github.com/opsidian/parsley).
+Please more information about the available parsers and combinators please check out the [Go docs](https://godoc.org/github.com/conflowio/parsley).
 
 ## Library packages
 
@@ -164,7 +164,7 @@ $ cd examples/json/json
 $ go test -bench=. -benchmem
 goos: darwin
 goarch: amd64
-pkg: github.com/opsidian/parsley/examples/json/json
+pkg: github.com/conflowio/parsley/examples/json/json
 BenchmarkParsleyJSON1k-4      	   20000	     79929 ns/op	   26557 B/op	     570 allocs/op
 BenchmarkParsleyJSON10k-4     	    2000	    681273 ns/op	  248000 B/op	    4435 allocs/op
 BenchmarkParsleyJSON100k-4    	     200	   6999517 ns/op	 6011530 B/op	   41647 allocs/op
@@ -172,7 +172,7 @@ BenchmarkEncodingJSON1k-4     	   50000	     23834 ns/op	    5794 B/op	     113 
 BenchmarkEncodingJSON10k-4    	   10000	    190699 ns/op	   44140 B/op	     869 allocs/op
 BenchmarkEncodingJSON100k-4   	    1000	   1880887 ns/op	  418492 B/op	    8153 allocs/op
 PASS
-ok  	github.com/opsidian/parsley/examples/json/json	11.410s
+ok  	github.com/conflowio/parsley/examples/json/json	11.410s
 ```
 
 ## LICENSE

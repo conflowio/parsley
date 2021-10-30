@@ -7,9 +7,9 @@
 package combinator
 
 import (
-	"github.com/opsidian/parsley/ast/interpreter"
-	"github.com/opsidian/parsley/parser"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/ast/interpreter"
+	"github.com/conflowio/parsley/parser"
+	"github.com/conflowio/parsley/parsley"
 )
 
 // Sentence matches the given parser until the end of input

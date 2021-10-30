@@ -4,8 +4,8 @@ package astfakes
 import (
 	"sync"
 
-	"github.com/opsidian/parsley/ast"
-	"github.com/opsidian/parsley/parsley"
+	"github.com/conflowio/parsley/ast"
+	"github.com/conflowio/parsley/parsley"
 )
 
 type FakeReaderPosSetterNode struct {

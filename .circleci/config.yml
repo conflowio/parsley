@@ -3,7 +3,7 @@ jobs:
   test:
     docker:
       - image: circleci/golang:1.16
-    working_directory: /go/src/github.com/opsidian/parsley
+    working_directory: /go/src/github.com/conflowio/parsley
     steps:
       - checkout
       - run: make test

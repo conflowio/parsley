@@ -6,7 +6,7 @@
 
 package ast
 
-import "github.com/opsidian/parsley/parsley"
+import "github.com/conflowio/parsley/parsley"
 
 // InterpreterFunc defines a helper to implement the Interpreter interface with functions
 type InterpreterFunc func(userCtx interface{}, node parsley.NonTerminalNode) (interface{}, parsley.Error)

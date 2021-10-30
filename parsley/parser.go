@@ -7,7 +7,7 @@
 package parsley
 
 import (
-	"github.com/opsidian/parsley/data"
+	"github.com/conflowio/parsley/data"
 )
 
 // Parser defines a parser interface

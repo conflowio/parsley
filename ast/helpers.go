@@ -6,7 +6,7 @@
 
 package ast
 
-import "github.com/opsidian/parsley/parsley"
+import "github.com/conflowio/parsley/parsley"
 
 // AppendNode appends
 func AppendNode(n1, n2 parsley.Node) parsley.Node {
