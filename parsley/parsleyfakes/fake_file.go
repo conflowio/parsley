@@ -54,15 +54,16 @@ func (fake *FakeFile) Len() int {
 	ret, specificReturn := fake.lenReturnsOnCall[len(fake.lenArgsForCall)]
 	fake.lenArgsForCall = append(fake.lenArgsForCall, struct {
 	}{})
+	stub := fake.LenStub
+	fakeReturns := fake.lenReturns
 	fake.recordInvocation("Len", []interface{}{})
 	fake.lenMutex.Unlock()
-	if fake.LenStub != nil {
-		return fake.LenStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.lenReturns
 	return fakeReturns.result1
 }
 
@@ -107,15 +108,16 @@ func (fake *FakeFile) Pos(arg1 int) parsley.Pos {
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.PosStub
+	fakeReturns := fake.posReturns
 	fake.recordInvocation("Pos", []interface{}{arg1})
 	fake.posMutex.Unlock()
-	if fake.PosStub != nil {
-		return fake.PosStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.posReturns
 	return fakeReturns.result1
 }
 
@@ -167,15 +169,16 @@ func (fake *FakeFile) Position(arg1 int) parsley.Position {
 	fake.positionArgsForCall = append(fake.positionArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.PositionStub
+	fakeReturns := fake.positionReturns
 	fake.recordInvocation("Position", []interface{}{arg1})
 	fake.positionMutex.Unlock()
-	if fake.PositionStub != nil {
-		return fake.PositionStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.positionReturns
 	return fakeReturns.result1
 }
 
@@ -226,9 +229,10 @@ func (fake *FakeFile) SetOffset(arg1 int) {
 	fake.setOffsetArgsForCall = append(fake.setOffsetArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.SetOffsetStub
 	fake.recordInvocation("SetOffset", []interface{}{arg1})
 	fake.setOffsetMutex.Unlock()
-	if fake.SetOffsetStub != nil {
+	if stub != nil {
 		fake.SetOffsetStub(arg1)
 	}
 }

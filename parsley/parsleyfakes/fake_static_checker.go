@@ -33,15 +33,16 @@ func (fake *FakeStaticChecker) StaticCheck(arg1 interface{}, arg2 parsley.NonTer
 		arg1 interface{}
 		arg2 parsley.NonTerminalNode
 	}{arg1, arg2})
+	stub := fake.StaticCheckStub
+	fakeReturns := fake.staticCheckReturns
 	fake.recordInvocation("StaticCheck", []interface{}{arg1, arg2})
 	fake.staticCheckMutex.Unlock()
-	if fake.StaticCheckStub != nil {
-		return fake.StaticCheckStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.staticCheckReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

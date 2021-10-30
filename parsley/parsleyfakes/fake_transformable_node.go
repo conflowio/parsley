@@ -70,15 +70,16 @@ func (fake *FakeTransformableNode) Pos() parsley.Pos {
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
 	}{})
+	stub := fake.PosStub
+	fakeReturns := fake.posReturns
 	fake.recordInvocation("Pos", []interface{}{})
 	fake.posMutex.Unlock()
-	if fake.PosStub != nil {
-		return fake.PosStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.posReturns
 	return fakeReturns.result1
 }
 
@@ -122,15 +123,16 @@ func (fake *FakeTransformableNode) ReaderPos() parsley.Pos {
 	ret, specificReturn := fake.readerPosReturnsOnCall[len(fake.readerPosArgsForCall)]
 	fake.readerPosArgsForCall = append(fake.readerPosArgsForCall, struct {
 	}{})
+	stub := fake.ReaderPosStub
+	fakeReturns := fake.readerPosReturns
 	fake.recordInvocation("ReaderPos", []interface{}{})
 	fake.readerPosMutex.Unlock()
-	if fake.ReaderPosStub != nil {
-		return fake.ReaderPosStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.readerPosReturns
 	return fakeReturns.result1
 }
 
@@ -174,15 +176,16 @@ func (fake *FakeTransformableNode) Schema() interface{} {
 	ret, specificReturn := fake.schemaReturnsOnCall[len(fake.schemaArgsForCall)]
 	fake.schemaArgsForCall = append(fake.schemaArgsForCall, struct {
 	}{})
+	stub := fake.SchemaStub
+	fakeReturns := fake.schemaReturns
 	fake.recordInvocation("Schema", []interface{}{})
 	fake.schemaMutex.Unlock()
-	if fake.SchemaStub != nil {
-		return fake.SchemaStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.schemaReturns
 	return fakeReturns.result1
 }
 
@@ -226,15 +229,16 @@ func (fake *FakeTransformableNode) Token() string {
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
 	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct {
 	}{})
+	stub := fake.TokenStub
+	fakeReturns := fake.tokenReturns
 	fake.recordInvocation("Token", []interface{}{})
 	fake.tokenMutex.Unlock()
-	if fake.TokenStub != nil {
-		return fake.TokenStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.tokenReturns
 	return fakeReturns.result1
 }
 
@@ -279,15 +283,16 @@ func (fake *FakeTransformableNode) Transform(arg1 interface{}) (parsley.Node, pa
 	fake.transformArgsForCall = append(fake.transformArgsForCall, struct {
 		arg1 interface{}
 	}{arg1})
+	stub := fake.TransformStub
+	fakeReturns := fake.transformReturns
 	fake.recordInvocation("Transform", []interface{}{arg1})
 	fake.transformMutex.Unlock()
-	if fake.TransformStub != nil {
-		return fake.TransformStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.transformReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

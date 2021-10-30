@@ -7,7 +7,7 @@ type Walkable interface {
 }
 
 // WalkableNode defines a node which also implements the Walkable interface
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . WalkableNode
+//counterfeiter:generate . WalkableNode
 type WalkableNode interface {
 	Node
 	Walk(f func(n Node) bool) bool

@@ -27,15 +27,16 @@ func (fake *FakePosition) String() string {
 	ret, specificReturn := fake.stringReturnsOnCall[len(fake.stringArgsForCall)]
 	fake.stringArgsForCall = append(fake.stringArgsForCall, struct {
 	}{})
+	stub := fake.StringStub
+	fakeReturns := fake.stringReturns
 	fake.recordInvocation("String", []interface{}{})
 	fake.stringMutex.Unlock()
-	if fake.StringStub != nil {
-		return fake.StringStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.stringReturns
 	return fakeReturns.result1
 }
 

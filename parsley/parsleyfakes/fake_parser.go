@@ -38,15 +38,16 @@ func (fake *FakeParser) Parse(arg1 *parsley.Context, arg2 data.IntMap, arg3 pars
 		arg2 data.IntMap
 		arg3 parsley.Pos
 	}{arg1, arg2, arg3})
+	stub := fake.ParseStub
+	fakeReturns := fake.parseReturns
 	fake.recordInvocation("Parse", []interface{}{arg1, arg2, arg3})
 	fake.parseMutex.Unlock()
-	if fake.ParseStub != nil {
-		return fake.ParseStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.parseReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 

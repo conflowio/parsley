@@ -57,15 +57,16 @@ func (fake *FakeNode) Pos() parsley.Pos {
 	ret, specificReturn := fake.posReturnsOnCall[len(fake.posArgsForCall)]
 	fake.posArgsForCall = append(fake.posArgsForCall, struct {
 	}{})
+	stub := fake.PosStub
+	fakeReturns := fake.posReturns
 	fake.recordInvocation("Pos", []interface{}{})
 	fake.posMutex.Unlock()
-	if fake.PosStub != nil {
-		return fake.PosStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.posReturns
 	return fakeReturns.result1
 }
 
@@ -109,15 +110,16 @@ func (fake *FakeNode) ReaderPos() parsley.Pos {
 	ret, specificReturn := fake.readerPosReturnsOnCall[len(fake.readerPosArgsForCall)]
 	fake.readerPosArgsForCall = append(fake.readerPosArgsForCall, struct {
 	}{})
+	stub := fake.ReaderPosStub
+	fakeReturns := fake.readerPosReturns
 	fake.recordInvocation("ReaderPos", []interface{}{})
 	fake.readerPosMutex.Unlock()
-	if fake.ReaderPosStub != nil {
-		return fake.ReaderPosStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.readerPosReturns
 	return fakeReturns.result1
 }
 
@@ -161,15 +163,16 @@ func (fake *FakeNode) Schema() interface{} {
 	ret, specificReturn := fake.schemaReturnsOnCall[len(fake.schemaArgsForCall)]
 	fake.schemaArgsForCall = append(fake.schemaArgsForCall, struct {
 	}{})
+	stub := fake.SchemaStub
+	fakeReturns := fake.schemaReturns
 	fake.recordInvocation("Schema", []interface{}{})
 	fake.schemaMutex.Unlock()
-	if fake.SchemaStub != nil {
-		return fake.SchemaStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.schemaReturns
 	return fakeReturns.result1
 }
 
@@ -213,15 +216,16 @@ func (fake *FakeNode) Token() string {
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
 	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct {
 	}{})
+	stub := fake.TokenStub
+	fakeReturns := fake.tokenReturns
 	fake.recordInvocation("Token", []interface{}{})
 	fake.tokenMutex.Unlock()
-	if fake.TokenStub != nil {
-		return fake.TokenStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.tokenReturns
 	return fakeReturns.result1
 }
 

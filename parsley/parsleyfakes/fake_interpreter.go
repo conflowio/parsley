@@ -33,15 +33,16 @@ func (fake *FakeInterpreter) Eval(arg1 interface{}, arg2 parsley.NonTerminalNode
 		arg1 interface{}
 		arg2 parsley.NonTerminalNode
 	}{arg1, arg2})
+	stub := fake.EvalStub
+	fakeReturns := fake.evalReturns
 	fake.recordInvocation("Eval", []interface{}{arg1, arg2})
 	fake.evalMutex.Unlock()
-	if fake.EvalStub != nil {
-		return fake.EvalStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.evalReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

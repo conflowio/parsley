@@ -33,15 +33,16 @@ func (fake *FakeNodeTransformer) TransformNode(arg1 interface{}, arg2 parsley.No
 		arg1 interface{}
 		arg2 parsley.Node
 	}{arg1, arg2})
+	stub := fake.TransformNodeStub
+	fakeReturns := fake.transformNodeReturns
 	fake.recordInvocation("TransformNode", []interface{}{arg1, arg2})
 	fake.transformNodeMutex.Unlock()
-	if fake.TransformNodeStub != nil {
-		return fake.TransformNodeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.transformNodeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 // Error is an error with a position
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Error
+//counterfeiter:generate . Error
 type Error interface {
 	Error() string
 	Cause() error
