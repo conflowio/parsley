@@ -6,6 +6,7 @@ jobs:
     working_directory: /go/src/github.com/conflowio/parsley
     steps:
       - checkout
+      - run: make check
       - run: make test
 
 workflows:

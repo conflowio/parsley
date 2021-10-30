@@ -1,0 +1,25 @@
+---
+run:
+  tests: false
+  timeout: 10m
+
+linters:
+  enable:
+    - depguard
+    - exportloopref
+    - unparam
+    - wastedassign
+
+linters-settings:
+  depguard:
+    list-type: blacklist
+    include-go-root: true
+    packages-with-error-message:
+      - github.com/davecgh/go-spew/spew: "used for debugging - should not appear in the codebase"
+      - io/ioutil: "deprecated in go1.16 - see https://golang.org/doc/go1.16#ioutil"
+
+  govet:
+    settings:
+      printf:
+        funcs:
+          - parsley.NewErrorf
